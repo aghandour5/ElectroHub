@@ -40,5 +40,5 @@ app.use((req, res) => {
 // Boot Server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`AuraTech Backend Server successfully started on http://localhost:${PORT}`);
+  console.log(`ElectroHub Backend Server successfully started on http://localhost:${PORT}`);
 });

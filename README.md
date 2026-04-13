@@ -1,6 +1,6 @@
-# AuraTech E-Commerce Platform
+# ElectroHub E-Commerce Platform
 
-AuraTech is a polished, full-stack, competition-ready e-commerce platform designed for selling premium electronics. It focuses heavily on extremely elegant UI/UX design fused with a robust, functional backend capable of secure session handling and real-time AJAX operations.
+ElectroHub is a polished, full-stack, competition-ready e-commerce platform designed for selling premium electronics. It focuses heavily on extremely elegant UI/UX design fused with a robust, functional backend capable of secure session handling and real-time AJAX operations.
 
 ## Features
 *   **Dual Authentication**: Encrypted registration and login flows using `bcryptjs`.
