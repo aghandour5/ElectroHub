@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AuraTech Operator Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { background-color: #f8fafc; }
+        .sidebar { min-height: 100vh; background: #0f172a; color: #fff; padding-top: 20px; }
+        .sidebar a { color: #cbd5e1; text-decoration: none; padding: 12px 20px; display: block; border-left: 3px solid transparent; }
+        .sidebar a:hover, .sidebar a.active { background: #1e293b; color: #fff; border-left-color: #4f46e5; }
+        .stat-card { background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+    </style>
+</head>
+<body>
+    <div class="d-flex">
+        <!-- Sidebar -->
+        <div class="sidebar" style="width: 250px;">
+            <h4 class="text-center mb-4">Aura<span style="color:#4f46e5">Admin</span></h4>
+            <a href="#" class="active"><i class="fas fa-home me-2"></i> Dashboard</a>
+            <a href="#" id="view-products"><i class="fas fa-box me-2"></i> Products</a>
+            <a href="#" id="view-orders"><i class="fas fa-shopping-cart me-2"></i> Orders</a>
+            <a href="/index.html" class="mt-5"><i class="fas fa-store me-2"></i> View Store</a>
+            <a href="#" id="logout-btn" class="text-danger"><i class="fas fa-sign-out-alt me-2"></i> Logout</a>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-grow-1 p-4">
+            <h2 class="mb-4">System Overview</h2>
+            
+            <div class="row g-4 mb-4" id="stats-container">
+                <!-- Stats injected here via AJAX -->
+            </div>
+
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+                    <h5 class="mb-0">Product Inventory</h5>
+                    <button class="btn btn-sm btn-primary" onclick="$('#addProductModal').modal('show')">Add Product</button>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Name</th>
+                                <th>Category</th>
+                                <th>Price</th>
+                                <th>Stock</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="product-table-body">
+                            <!-- Products injected here via AJAX -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Product Modal -->
+    <div class="modal fade" id="addProductModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Deploy New Product</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="add-product-form">
+                        <div class="mb-2"><label>Name</label><input type="text" name="name" class="form-control" required></div>
+                        <div class="mb-2"><label>Price ($)</label><input type="number" step="0.01" name="price" class="form-control" required></div>
+                        <div class="mb-2"><label>Stock</label><input type="number" name="stock" class="form-control" required></div>
+                        <div class="mb-2 form-check">
+                            <input type="checkbox" name="is_new" class="form-check-input" id="new-check">
+                            <label class="form-check-label" for="new-check">Mark as NEW</label>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 mt-3">Commit to Database</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Verify access
+            $.get('/api/auth/me', function(res) {
+                if(!res.isAuthenticated || res.user.role !== 'admin') {
+                    alert('Access Denied. You are not an operator.');
+                    window.location.href = '/login.html';
+                } else {
+                    loadDashboard();
+                    loadProducts();
+                }
+            });
+
+            function loadDashboard() {
+                $.get('/api/admin/dashboard').done(function(res) {
+                    $('#stats-container').html(`
+                        <div class="col-md-4"><div class="stat-card"><h5>Total Users</h5><h2>${res.totalUsers}</h2></div></div>
+                        <div class="col-md-4"><div class="stat-card"><h5>Total Products</h5><h2>${res.totalProducts}</h2></div></div>
+                        <div class="col-md-4"><div class="stat-card"><h5>Active Orders</h5><h2>${res.totalOrders}</h2></div></div>
+                    `);
+                });
+            }
+
+            function loadProducts() {
+                $.get('/api/products').done(function(prods) {
+                    let html = '';
+                    prods.forEach(p => {
+                        const newBadge = p.is_new ? '<span class="badge bg-danger">NEW</span>' : '<span class="badge bg-secondary">OFF</span>';
+                        html += `<tr>
+                            <td>${p.name}</td>
+                            <td>${p.category_name}</td>
+                            <td>$${p.price}</td>
+                            <td>${p.stock}</td>
+                            <td>
+                                <button class="btn btn-sm ${p.is_new ? 'btn-outline-danger' : 'btn-outline-secondary'} toggle-new-btn" 
+                                        data-id="${p.id}" data-status="${p.is_new}" data-name="${p.name}" data-price="${p.price}" data-stock="${p.stock}">
+                                    ${newBadge}
+                                </button>
+                            </td>
+                            <td><button class="btn btn-sm btn-danger delete-btn" data-id="${p.id}">Delete</button></td>
+                        </tr>`;
+                    });
+                    $('#product-table-body').html(html);
+                });
+            }
+
+            $('#add-product-form').submit(function(e) {
+                e.preventDefault();
+                const payload = {
+                    name: $('input[name="name"]').val(),
+                    price: $('input[name="price"]').val(),
+                    stock: $('input[name="stock"]').val(),
+                    is_new: $('input[name="is_new"]').is(':checked')
+                };
+                $.ajax({
+                    url: '/api/admin/products', type: 'POST', contentType: 'application/json',
+                    data: JSON.stringify(payload),
+                    success: function() {
+                        $('#addProductModal').modal('hide');
+                        loadProducts(); 
+                        loadDashboard();
+                        alert('Product Added!');
+                    }
+                });
+            });
+
+            $(document).on('click', '.toggle-new-btn', function() {
+                const id = $(this).data('id');
+                const name = $(this).data('name');
+                const price = $(this).data('price');
+                const stock = $(this).data('stock');
+                const currentStatus = $(this).data('status');
+                
+                $.ajax({
+                    url: '/api/admin/products/' + id,
+                    type: 'PUT',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ 
+                        name: name,
+                        price: price,
+                        stock: stock,
+                        is_new: !currentStatus 
+                    }),
+                    success: function() {
+                        loadProducts();
+                    }
+                });
+            });
+
+            $(document).on('click', '.delete-btn', function() {
+                if(confirm('Delete product permanently?')) {
+                    const id = $(this).data('id');
+                    $.ajax({
+                        url: '/api/admin/products/' + id, type: 'DELETE',
+                        success: function() { loadProducts(); loadDashboard(); }
+                    });
+                }
+            });
+
+            $('#logout-btn').click(function() {
+                $.post('/api/auth/logout', function() { window.location.href = '/login.html'; });
+            });
+        });
+    </script>
+</body>
+</html>

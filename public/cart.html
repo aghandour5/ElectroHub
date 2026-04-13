@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your Cart | ElectroHub</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container header-inner">
+    <a href="index.html" class="site-logo">Electro<span>Hub</span></a>
+    <nav class="site-nav">
+      <a href="index.html">Home</a>
+      <a href="shop.html">Shop</a>
+      <a href="index.html#categories">Categories</a>
+    </nav>
+    <div class="header-actions">
+      <a href="cart.html" class="icon-btn active" title="Cart"><i class="fas fa-shopping-cart" style="color:var(--coral);"></i></a>
+      <a href="login.html" class="icon-btn filled" id="nav-account" title="Account"><i class="fas fa-user"></i></a>
+    </div>
+  </div>
+</header>
+
+<div class="bg-soft py-4">
+  <div class="container">
+    <nav aria-label="breadcrumb" style="font-size:.85rem;">
+      <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item"><a href="index.html" class="text-muted">Home</a></li>
+        <li class="breadcrumb-item active text-muted">Shopping Cart</li>
+      </ol>
+    </nav>
+  </div>
+</div>
+
+<section class="section-gap">
+  <div class="container">
+    <h1 class="section-title mb-5">Shopping Cart</h1>
+    <div class="row g-5">
+
+      <!-- Cart Items -->
+      <div class="col-lg-8" id="cart-items-wrap">
+        <div class="text-center py-5 text-muted">
+          <div class="spinner-border" style="color:var(--coral);" role="status"></div>
+          <p class="mt-3">Loading your cart…</p>
+        </div>
+      </div>
+
+      <!-- Order Summary -->
+      <div class="col-lg-4">
+        <div class="order-summary-card">
+          <h5 class="fw-700 mb-4" style="font-weight:700;">Order Summary</h5>
+
+          <div class="d-flex justify-content-between mb-3" style="font-size:.9rem;">
+            <span class="text-muted">Subtotal</span>
+            <span id="summary-subtotal" class="fw-600" style="font-weight:600;">$0.00</span>
+          </div>
+          <div class="d-flex justify-content-between mb-3" style="font-size:.9rem;">
+            <span class="text-muted">Shipping</span>
+            <span class="fw-600" style="font-weight:600;color:#16a34a;">Free</span>
+          </div>
+          <hr>
+          <div class="d-flex justify-content-between mb-5" style="font-size:1.1rem;">
+            <span class="fw-700" style="font-weight:700;">Total</span>
+            <span class="fw-700" style="font-weight:700;color:var(--coral);" id="summary-total">$0.00</span>
+          </div>
+
+          <!-- Shipping Address -->
+          <div class="mb-4">
+            <label class="form-label" style="font-size:.85rem;font-weight:600;">Shipping Address</label>
+            <textarea id="checkout-address" class="form-control" rows="3" placeholder="Enter full delivery address, city, country…" style="border-radius:var(--radius-sm);border-color:var(--border);font-size:.9rem;resize:none;"></textarea>
+          </div>
+
+          <button class="btn-coral w-100 mb-3" id="checkout-btn" style="padding:14px;border-radius:var(--radius-sm);font-size:1rem;">
+            <i class="fas fa-lock me-2"></i> Secure Checkout
+          </button>
+          <a href="shop.html" class="btn-outline-coral w-100 text-center" style="padding:12px;border-radius:var(--radius-sm);font-size:.9rem;">
+            <i class="fas fa-arrow-left me-2"></i> Continue Shopping
+          </a>
+
+          <!-- Trust badges -->
+          <div class="d-flex justify-content-center gap-3 mt-4" style="font-size:.75rem;color:var(--muted);">
+            <span><i class="fas fa-shield-alt me-1"></i> Secure</span>
+            <span><i class="fas fa-truck me-1"></i> Free Shipping</span>
+            <span><i class="fas fa-undo me-1"></i> Easy Returns</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<div class="toast-wrap" id="toast-wrap"></div>
+
+<!-- Footer -->
+<footer class="site-footer mt-5">
+  <div class="container">
+    <div class="footer-bottom">
+      <span>© 2025 ElectroHub · Ali Ghandour. All rights reserved.</span>
+      <span>📍 Nabatiye, Lebanon</span>
+    </div>
+  </div>
+</footer>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/app.js"></script>
+<script>
+$(document).ready(function () {
+
+  function loadCart() {
+    $.get('/api/cart').done(function (res) {
+      if (!res.items || res.items.length === 0) {
+        $('#cart-items-wrap').html(`
+          <div class="text-center py-5">
+            <i class="fas fa-shopping-cart fa-4x mb-4" style="color:var(--border);"></i>
+            <h4 class="fw-600" style="font-weight:600;">Your cart is empty</h4>
+            <p class="text-muted mb-4">Looks like you haven't added anything yet.</p>
+            <a href="shop.html" class="btn-coral" style="padding:12px 28px;border-radius:var(--radius-sm);">Start Shopping</a>
+          </div>`);
+        $('#summary-subtotal, #summary-total').text('$0.00');
+        return;
+      }
+
+      let html = '';
+      res.items.forEach(item => {
+        html += `
+        <div class="cart-item-card d-flex align-items-center gap-4" id="cart-row-${item.product_id}">
+          <img src="/${item.image_path}" class="cart-item-img" alt="${item.name}">
+          <div class="flex-grow-1">
+            <div class="product-category mb-1">${item.category_name || ''}</div>
+            <div style="font-weight:600;font-size:1rem;">${item.name}</div>
+            <div style="color:var(--coral);font-weight:700;margin-top:4px;">$${parseFloat(item.price).toFixed(2)}</div>
+          </div>
+          <div class="qty-ctrl">
+            <button class="qty-btn cart-qty-minus" data-id="${item.product_id}" data-qty="${item.quantity}">−</button>
+            <span style="min-width:24px;text-align:center;font-weight:600;">${item.quantity}</span>
+            <button class="qty-btn cart-qty-plus" data-id="${item.product_id}" data-qty="${item.quantity}">+</button>
+          </div>
+          <div class="text-end">
+            <div style="font-weight:700;font-size:1.05rem;">$${(item.price * item.quantity).toFixed(2)}</div>
+            <button class="btn btn-link text-danger p-0 mt-1 cart-remove-btn" data-id="${item.product_id}" style="font-size:.8rem;">
+              <i class="fas fa-trash me-1"></i> Remove
+            </button>
+          </div>
+        </div>`;
+      });
+      $('#cart-items-wrap').html(html);
+      const subtotal = parseFloat(res.subtotal) || 0;
+      $('#summary-subtotal, #summary-total').text('$' + subtotal.toFixed(2));
+    }).fail(function() {
+      $('#cart-items-wrap').html('<div class="alert alert-danger">Failed to load cart. Please refresh.</div>');
+    });
+  }
+
+  // Remove item
+  $(document).on('click', '.cart-remove-btn', function () {
+    const id = $(this).data('id');
+    $.ajax({ url: '/api/cart/remove', type: 'POST', contentType: 'application/json',
+      data: JSON.stringify({ product_id: id }),
+      success: function () { loadCart(); showToast('Item removed from cart.', 'error'); }
+    });
+  });
+
+  // Adjust quantity
+  $(document).on('click', '.cart-qty-plus', function () {
+    const id = $(this).data('id');
+    $.ajax({ url: '/api/cart/add', type: 'POST', contentType: 'application/json',
+      data: JSON.stringify({ product_id: id, quantity: 1 }),
+      success: function () { loadCart(); }
+    });
+  });
+  $(document).on('click', '.cart-qty-minus', function () {
+    const id = $(this).data('id');
+    const qty = parseInt($(this).data('qty'));
+    if (qty <= 1) {
+      if (!confirm('Remove this item from cart?')) return;
+      $.ajax({ url: '/api/cart/remove', type: 'POST', contentType: 'application/json',
+        data: JSON.stringify({ product_id: id }),
+        success: function () { loadCart(); showToast('Item removed.', 'error'); }
+      });
+    } else {
+      $.ajax({ url: '/api/cart/update', type: 'POST', contentType: 'application/json',
+        data: JSON.stringify({ product_id: id, quantity: qty - 1 }),
+        success: function () { loadCart(); }
+      });
+    }
+  });
+
+  // Checkout
+  $('#checkout-btn').click(function () {
+    const addr = $('#checkout-address').val().trim();
+    if (!addr) { showToast('Please enter a shipping address.', 'error'); return; }
+    $(this).prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i> Processing…');
+    $.ajax({
+      url: '/api/cart/checkout', type: 'POST', contentType: 'application/json',
+      data: JSON.stringify({ shipping_address: addr }),
+      success: function (res) {
+        showToast('Order #' + res.orderId + ' placed successfully! 🎉', 'success');
+        setTimeout(() => window.location.href = '/profile.html', 2000);
+      },
+      error: function (err) {
+        const msg = err.responseJSON?.error || 'Checkout failed.';
+        showToast(msg, 'error');
+        if (err.status === 401) setTimeout(() => window.location.href = '/login.html', 1500);
+        $('#checkout-btn').prop('disabled', false).html('<i class="fas fa-lock me-2"></i> Secure Checkout');
+      }
+    });
+  });
+
+  loadCart();
+  checkAuthState();
+});
+</script>
+</body>
+</html>

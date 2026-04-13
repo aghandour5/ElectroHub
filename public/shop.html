@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shop | ElectroHub</title>
+  <meta name="description" content="Browse all premium electronics at ElectroHub — filter by category, price, and more.">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="site-header">
+  <div class="container header-inner" style="display:grid; grid-template-columns: 1fr auto 1fr; align-items:center; height:80px; gap:24px;">
+    <!-- Logo Left -->
+    <div style="display:flex; align-items:center;">
+      <a href="index.html" class="site-logo">Electro<span>Hub</span></a>
+    </div>
+    
+    <!-- New Search Bar Layout (Dead Center) -->
+    <div class="header-search-bar" style="display:flex; align-items:center; width:600px; border:1px solid #e2e8f0; border-radius:4px; overflow:hidden; height:46px;">
+      <input type="text" id="global-search" placeholder="Search Products" style="flex:1; height:100%; border:none; padding:0 16px; margin:0; outline:none; font-size:0.95rem; background:#fff;" aria-label="Search">
+      <select class="search-cat-dropdown" style="height:100%; border:none; border-left:1px solid #e2e8f0; background:#fff; color:#64748b; padding:0 12px; font-size:0.9rem; outline:none; cursor:pointer;">
+        <option>All Categories</option>
+        <option value="computing">Computing</option>
+        <option value="acoustics">Acoustics</option>
+      </select>
+      <button onclick="window.location.href='shop.html?search='+document.getElementById('global-search').value" class="search-btn" style="height:100%; background:#111; color:#fff; border:none; width:52px; display:flex; align-items:center; justify-content:center; cursor:pointer;"><i class="fas fa-search"></i></button>
+    </div>
+
+    <!-- Right Actions -->
+    <div class="header-right-actions" style="display:flex; align-items:center; justify-content:flex-end; gap:20px;">
+      <a href="login.html" style="font-size:0.95rem; font-weight:500; color:var(--charcoal); text-decoration:none;">Login / SignUp</a>
+      <div style="width:1px; height:16px; background:#e2e8f0;"></div>
+      <a href="#" style="font-size:1.3rem; color:var(--charcoal); text-decoration:none; margin-right:4px;"><i class="far fa-heart"></i></a>
+      <a href="cart.html" style="font-size:1.3rem; color:var(--charcoal); text-decoration:none; position:relative; display:flex; align-items:center;">
+        <i class="fas fa-shopping-bag"></i>
+        <span class="badge" id="nav-cart-count" style="position:absolute; top:-5px; right:-12px; background:#ef4444; color:#fff; font-size:0.65rem; font-weight:700; padding:2px 6px; min-width:20px; height:20px; border-radius:12px; display:flex; align-items:center; justify-content:center;">01</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Main Navigation moved below -->
+  <div class="nav-bottom-bar" style="border-top:1px solid #e2e8f0; background:#fff;">
+    <div class="container d-flex justify-content-center" style="padding:12px 0;">
+      <nav class="site-nav">
+        <a href="index.html">Home</a>
+        <a href="shop.html" class="active">Shop</a>
+        <a href="index.html#categories">Categories</a>
+        <a href="index.html#reviews">Reviews</a>
+        <a href="contact.html">Contact</a>
+      </nav>
+    </div>
+  </div>
+</header>
+
+<!-- PAGE HEADER -->
+<div class="bg-soft py-5">
+  <div class="container">
+    <nav aria-label="breadcrumb" class="mb-3">
+      <ol class="breadcrumb" style="font-size:.85rem;">
+        <li class="breadcrumb-item"><a href="index.html" class="text-muted">Home</a></li>
+        <li class="breadcrumb-item active text-muted">Shop</li>
+      </ol>
+    </nav>
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+      <div>
+        <h1 class="section-title mb-1">All Products</h1>
+        <p class="text-muted mb-0" id="result-count">Loading products…</p>
+      </div>
+      <div class="d-flex gap-2 align-items-center">
+        <label class="text-muted" style="font-size:.88rem;white-space:nowrap;">Sort by:</label>
+        <select id="sort-select" class="form-select form-select-sm" style="width:160px;border-radius:var(--radius-pill);">
+          <option value="default">Default</option>
+          <option value="price_asc">Price: Low → High</option>
+          <option value="price_desc">Price: High → Low</option>
+          <option value="name_asc">Name A → Z</option>
+        </select>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SHOP BODY -->
+<section class="section-gap">
+  <div class="container">
+    <div class="row g-5">
+
+      <!-- SIDEBAR -->
+      <div class="col-lg-3">
+        <div class="filter-sidebar">
+          <!-- Search -->
+          <div class="filter-block">
+            <div class="filter-title">Search</div>
+            <div class="input-group input-group-sm">
+              <input type="text" id="shop-search" class="form-control" placeholder="Product name…">
+              <button class="btn btn-coral" style="padding:6px 14px;border-radius:0 var(--radius-sm) var(--radius-sm) 0;"><i class="fas fa-search"></i></button>
+            </div>
+          </div>
+
+          <!-- Categories -->
+          <div class="filter-block">
+            <div class="filter-title">Categories</div>
+            <div class="d-flex flex-column gap-2">
+              <div class="form-check">
+                <input class="form-check-input cat-filter" type="checkbox" id="cat-all" value="" checked>
+                <label class="form-check-label d-flex justify-content-between" for="cat-all">All <span class="filter-count">—</span></label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input cat-filter" type="checkbox" id="cat-computing" value="computing">
+                <label class="form-check-label d-flex justify-content-between" for="cat-computing">Computing <span class="filter-count">—</span></label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input cat-filter" type="checkbox" id="cat-acoustics" value="acoustics">
+                <label class="form-check-label d-flex justify-content-between" for="cat-acoustics">Acoustics <span class="filter-count">—</span></label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input cat-filter" type="checkbox" id="cat-mobile" value="mobile">
+                <label class="form-check-label d-flex justify-content-between" for="cat-mobile">Mobile <span class="filter-count">—</span></label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input cat-filter" type="checkbox" id="cat-wearables" value="wearables">
+                <label class="form-check-label d-flex justify-content-between" for="cat-wearables">Wearables <span class="filter-count">—</span></label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input cat-filter" type="checkbox" id="cat-gaming" value="gaming">
+                <label class="form-check-label d-flex justify-content-between" for="cat-gaming">Gaming &amp; VR <span class="filter-count">—</span></label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input cat-filter" type="checkbox" id="cat-smarthome" value="smarthome">
+                <label class="form-check-label d-flex justify-content-between" for="cat-smarthome">Smart Home <span class="filter-count">—</span></label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Price Range -->
+          <div class="filter-block">
+            <div class="filter-title">Max Price: <span id="price-label" class="text-coral" style="font-weight:700;">$2000</span></div>
+            <input type="range" class="form-range" id="price-range" min="0" max="2000" value="2000" step="50">
+            <div class="d-flex justify-content-between mt-1" style="font-size:.78rem;color:var(--muted);">
+              <span>$0</span><span>$2000</span>
+            </div>
+          </div>
+
+          <!-- Reset -->
+          <button class="btn-outline-coral w-100" id="reset-filters" style="padding:10px;border-radius:var(--radius-sm);">
+            <i class="fas fa-undo me-2"></i> Reset Filters
+          </button>
+        </div>
+      </div>
+
+      <!-- PRODUCT GRID -->
+      <div class="col-lg-9">
+        <div class="row g-4" id="shop-grid">
+          <!-- Injected via AJAX -->
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- QUICK VIEW MODAL -->
+<div class="modal fade" id="quickViewModal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content border-0" style="border-radius:var(--radius-xl);overflow:hidden;">
+      <button type="button" class="btn-close position-absolute top-0 end-0 m-3 z-3" data-bs-dismiss="modal" style="background-color:#fff;border-radius:50%;padding:8px;box-shadow:var(--shadow-sm);"></button>
+      <div class="modal-body p-0">
+        <div class="row g-0">
+          <div class="col-md-5 qv-img-wrap"><img src="" id="qv-img" alt="Product"></div>
+          <div class="col-md-7 p-5 d-flex flex-column justify-content-center">
+            <span class="badge text-bg-secondary rounded-pill align-self-start mb-2" id="qv-cat" style="font-size:.75rem;"></span>
+            <h3 class="fw-700 mb-1" id="qv-name" style="font-size:1.5rem;font-weight:700;"></h3>
+            <div class="rating-stars mb-2"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i></div>
+            <div class="mb-3" style="font-size:1.8rem;font-weight:800;color:var(--coral);" id="qv-price"></div>
+            <p class="text-muted mb-4" id="qv-desc" style="font-size:.9rem;line-height:1.7;"></p>
+            <div class="d-flex align-items-center gap-3 mb-4">
+              <label style="font-size:.85rem;font-weight:600;">Qty:</label>
+              <div class="qty-ctrl">
+                <button class="qty-btn" id="qv-qty-minus">−</button>
+                <span id="qv-qty" style="font-weight:600;min-width:24px;text-align:center;">1</span>
+                <button class="qty-btn" id="qv-qty-plus">+</button>
+              </div>
+              <span id="qv-stock" style="font-size:.8rem;color:var(--muted);"></span>
+            </div>
+            <div class="d-flex gap-3">
+              <button class="btn-coral flex-grow-1" id="qv-add-btn"><i class="fas fa-shopping-cart me-2"></i>Add to Cart</button>
+              <button class="icon-btn" id="qv-wishlist-btn" style="border:1px solid var(--border);width:48px;height:48px;border-radius:var(--radius-sm);" title="Wishlist"><i class="far fa-heart"></i></button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast-wrap" id="toast-wrap"></div>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/app.js"></script>
+<script>
+$(document).ready(function () {
+  // Read URL params for pre-filtering (from category cards on homepage)
+  const urlParams = new URLSearchParams(window.location.search);
+  const urlCat = urlParams.get('category') || '';
+  const urlSearch = urlParams.get('search') || '';
+  if (urlCat) { $('.cat-filter[value="'+urlCat+'"]').prop('checked', true); $('#cat-all').prop('checked', false); }
+  if (urlSearch) { $('#shop-search').val(urlSearch); }
+
+  let allProducts = [];
+  let maxPrice = 2000;
+
+  function renderProducts(products) {
+    if (!products.length) {
+      $('#shop-grid').html('<div class="col-12 text-center py-5 text-muted"><i class="fas fa-box-open fa-3x mb-3"></i><p>No products match your filters.</p></div>');
+      $('#result-count').text('0 products found');
+      return;
+    }
+    $('#result-count').text(products.length + ' product' + (products.length !== 1 ? 's' : '') + ' found');
+    let html = '';
+    products.forEach(p => {
+      const badge = (p.is_new || p.is_featured) ? '<span class="product-badge">NEW</span>' : '';
+      const stockBadge = p.stock < 5 ? `<span class="product-badge sale" style="left:auto;right:12px;">Low Stock</span>` : '';
+      html += `
+      <div class="col-sm-6 col-xl-4">
+        <div class="product-card h-100">
+          <div class="product-img-box">
+            ${badge}${stockBadge}
+            <img src="/images/${p.image_path}" alt="${p.name}">
+            <div class="product-hover-actions">
+              <button class="prod-act-btn add-to-cart-btn" data-id="${p.id}" title="Add to cart"><i class="fas fa-shopping-cart"></i></button>
+              <button class="prod-act-btn quick-view-btn" data-id="${p.id}" title="Quick view"><i class="fas fa-arrow-right" style="transform:rotate(-45deg);"></i></button>
+            </div>
+          </div>
+          <div class="product-body">
+            <div class="product-header">
+              <div class="product-name" title="${p.name}"><a href="#">${p.name}</a></div>
+              <div class="product-price">$${parseFloat(p.price).toFixed(2)}</div>
+            </div>
+            <div class="product-footer">
+              <div class="product-category">${p.category_name || ''}</div>
+              <div class="product-swatches"><i class="fas fa-circle"></i> <i class="fas fa-circle" style="color:var(--muted-lt);"></i> <i class="far fa-circle" style="color:var(--muted-lt);"></i></div>
+            </div>
+          </div>
+        </div>
+      </div>`;
+    });
+    $('#shop-grid').html(html);
+  }
+
+  function applyFilters() {
+    const search = $('#shop-search').val().toLowerCase().trim();
+    const cat = $('.cat-filter:not(#cat-all):checked').val() || '';
+    const price = parseInt($('#price-range').val());
+    const sort = $('#sort-select').val();
+
+    let filtered = allProducts.filter(p => {
+      if (search && !p.name.toLowerCase().includes(search)) return false;
+      if (cat && p.category_slug !== cat) return false;
+      if (parseFloat(p.price) > price) return false;
+      return true;
+    });
+
+    if (sort === 'price_asc') filtered.sort((a, b) => a.price - b.price);
+    else if (sort === 'price_desc') filtered.sort((a, b) => b.price - a.price);
+    else if (sort === 'name_asc') filtered.sort((a, b) => a.name.localeCompare(b.name));
+
+    renderProducts(filtered);
+  }
+
+  // Load all products once
+  $('#shop-grid').html('<div class="col-12 py-5 text-center"><div class="spinner-border text-coral" style="color:var(--coral);" role="status"></div><p class="mt-3 text-muted">Loading products…</p></div>');
+  $.get('/api/products').done(function (products) {
+    allProducts = products;
+    if (urlCat) allProducts = allProducts.filter(p => p.category_slug === urlCat);
+    applyFilters();
+  });
+
+  // Events
+  let debounce;
+  $('#shop-search').on('keyup', () => { clearTimeout(debounce); debounce = setTimeout(applyFilters, 300); });
+  $('#sort-select').on('change', applyFilters);
+  $('#price-range').on('input', function () { $('#price-label').text('$' + $(this).val()); applyFilters(); });
+
+  $('.cat-filter').on('change', function () {
+    if ($(this).attr('id') === 'cat-all') {
+      if ($(this).is(':checked')) $('.cat-filter:not(#cat-all)').prop('checked', false);
+    } else {
+      $('#cat-all').prop('checked', false);
+      if (!$('.cat-filter:not(#cat-all):checked').length) $('#cat-all').prop('checked', true);
+    }
+    applyFilters();
+  });
+
+  $('#reset-filters').on('click', function () {
+    $('#shop-search').val('');
+    $('.cat-filter').prop('checked', false);
+    $('#cat-all').prop('checked', true);
+    $('#price-range').val(2000); $('#price-label').text('$2000');
+    $('#sort-select').val('default');
+    allProducts = [];
+    $.get('/api/products').done(function (products) { allProducts = products; applyFilters(); });
+  });
+});
+</script>
+
+<!-- Footer -->
+<footer class="site-footer mt-5">
+  <div class="container">
+    <div class="row g-4">
+      <div class="col-lg-4">
+        <div class="footer-logo">Electro<span>Hub</span></div>
+        <p class="footer-desc">Premium electronics delivered fast and securely to your door.</p>
+        <div class="footer-social">
+          <a href="#" class="social-btn"><i class="fab fa-instagram"></i></a>
+          <a href="#" class="social-btn"><i class="fab fa-twitter"></i></a>
+          <a href="#" class="social-btn"><i class="fab fa-facebook-f"></i></a>
+        </div>
+      </div>
+      <div class="col-6 col-lg-2">
+        <div class="footer-col">
+          <h6>Shop</h6>
+          <ul>
+            <li><a href="shop.html">All Products</a></li>
+            <li><a href="shop.html?category=computing">Computing</a></li>
+            <li><a href="shop.html?category=acoustics">Acoustics</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="col-6 col-lg-2">
+        <div class="footer-col">
+          <h6>Account</h6>
+          <ul>
+            <li><a href="login.html">Login</a></li>
+            <li><a href="profile.html">My Orders</a></li>
+            <li><a href="cart.html">Cart</a></li>
+          </ul>
+          <p style="font-size:.78rem;color:rgba(255,255,255,.3);margin-top:10px;margin-bottom:0;"><i class="fa-solid fa-location-dot" style="color:#ef4444;"></i> Nabatiye, Lebanon &nbsp;|&nbsp; <i class="fa-solid fa-phone" style="color:#ef4444;"></i> +961 79 30 79 04</p>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 ElectroHub · Ali Ghandour. All rights reserved.</span>
+      <span>Built with <i class="fa-solid fa-heart" style="color:#ef4444;"></i> in Lebanon</span>
+    </div>
+  </div>
+</footer>
+</body>
+</html>
