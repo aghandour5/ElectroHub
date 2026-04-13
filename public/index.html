@@ -24,22 +24,25 @@
     <div class="header-search-bar" style="display:flex; align-items:center; width:600px; border:1px solid #e2e8f0; border-radius:4px; overflow:hidden; height:46px;">
       <input type="text" id="global-search" placeholder="Search Products" style="flex:1; height:100%; border:none; padding:0 16px; margin:0; outline:none; font-size:0.95rem; background:#fff;" aria-label="Search">
       <select class="search-cat-dropdown" style="height:100%; border:none; border-left:1px solid #e2e8f0; background:#fff; color:#64748b; padding:0 12px; font-size:0.9rem; outline:none; cursor:pointer;">
-        <option>All Categories</option>
-        <option value="computing">Computing</option>
-        <option value="acoustics">Acoustics</option>
+        <!-- Categories loaded via AJAX -->
+        <option value="">All Categories</option>
       </select>
       <button onclick="window.location.href='shop.html?search='+document.getElementById('global-search').value" class="search-btn" style="height:100%; background:#111; color:#fff; border:none; width:52px; display:flex; align-items:center; justify-content:center; cursor:pointer;"><i class="fas fa-search"></i></button>
     </div>
 
     <!-- Right Actions -->
     <div class="header-right-actions" style="display:flex; align-items:center; justify-content:flex-end; gap:20px;">
-      <a href="login.html" style="font-size:0.95rem; font-weight:500; color:var(--charcoal); text-decoration:none;">Login / SignUp</a>
-      <div style="width:1px; height:16px; background:#e2e8f0;"></div>
+      <a href="login.html" class="header-login-link" style="font-size:0.95rem; font-weight:500; color:var(--charcoal); text-decoration:none;">Login / SignUp</a>
+      <div class="header-divider" style="width:1px; height:16px; background:#e2e8f0;"></div>
       <a href="#" style="font-size:1.3rem; color:var(--charcoal); text-decoration:none; margin-right:4px;"><i class="far fa-heart"></i></a>
       <a href="cart.html" style="font-size:1.3rem; color:var(--charcoal); text-decoration:none; position:relative; display:flex; align-items:center;">
         <i class="fas fa-shopping-bag"></i>
         <span class="badge" id="nav-cart-count" style="position:absolute; top:-5px; right:-12px; background:#ef4444; color:#fff; font-size:0.65rem; font-weight:700; padding:2px 6px; min-width:20px; height:20px; border-radius:12px; display:flex; align-items:center; justify-content:center;">01</span>
       </a>
+      <!-- Hamburger button: only visible on mobile -->
+      <button class="burger-btn" id="burger-btn" aria-label="Open menu">
+        <span></span><span></span><span></span>
+      </button>
     </div>
   </div>
 
@@ -57,34 +60,130 @@
   </div>
 </header>
 
+<!-- ── MOBILE DRAWER ─────────────────────────────── -->
+<div class="mobile-drawer" id="mobile-drawer">
+  <div class="mobile-drawer-inner">
+    <!-- Header -->
+    <div class="mobile-drawer-header">
+      <a href="index.html" class="site-logo">Electro<span>Hub</span></a>
+      <button class="drawer-close-btn" id="drawer-close-btn" aria-label="Close menu">&times;</button>
+    </div>
+    <!-- Search -->
+    <div class="mobile-search">
+      <input type="text" id="mobile-search-input" placeholder="Search products...">
+      <button onclick="window.location.href='shop.html?search='+document.getElementById('mobile-search-input').value">
+        <i class="fas fa-search"></i>
+      </button>
+    </div>
+    <!-- Navigation Links -->
+    <nav class="mobile-nav">
+      <a href="index.html"><i class="fas fa-home"></i> Home</a>
+      <a href="shop.html"><i class="fas fa-store"></i> Shop</a>
+      <a href="index.html#categories"><i class="fas fa-th-large"></i> Categories</a>
+      <a href="index.html#reviews"><i class="fas fa-star"></i> Reviews</a>
+      <a href="contact.html"><i class="fas fa-envelope"></i> Contact</a>
+    </nav>
+    <!-- Auth / Account -->
+    <div class="mobile-drawer-footer">
+      <a href="login.html" class="mobile-auth-btn"><i class="fas fa-user"></i> Login / Sign Up</a>
+      <a href="cart.html" class="mobile-auth-btn mobile-cart-btn"><i class="fas fa-shopping-bag"></i> Cart</a>
+    </div>
+  </div>
+</div>
+<!-- Overlay -->
+<div class="mobile-drawer-overlay" id="mobile-drawer-overlay"></div>
+
 <!-- ── HERO SECTION ────────────────────────────────── -->
-<section class="hero-section" style="padding:120px 0 80px; background:var(--bg);">
-  <div class="container">
-    <div class="row align-items-center">
-      <div class="col-lg-6 mb-5 mb-lg-0 text-center text-lg-start">
-        <div class="tag justify-content-center justify-content-lg-start mb-3">New Arrivals</div>
-        <h1 class="display-3 fw-bold mb-4" style="color:var(--charcoal); letter-spacing:-.03em;">
-          Shop Smarter Easily,<br> <span style="font-weight: 500;">Live Better Daily</span>
-        </h1>
-        <p class="lead text-muted mb-5 mx-auto mx-lg-0" style="max-width: 480px; font-size: 1.1rem;">
-          Explore essential devices designed for comfort, security, and seamless connected living.
-        </p>
-        <div class="d-flex justify-content-center justify-content-lg-start gap-3">
-          <a href="shop.html" class="btn-dark-arrow">EXPLORE PRODUCTS <span class="arrow-circle"><i class="fas fa-arrow-right"></i></span></a>
+<section class="hero-section" style="padding:120px 0 80px; position:relative; overflow:hidden;">
+  <!-- Glow Elements -->
+  <div class="glow-orb glow-blue"></div>
+  <div class="container pb-5">
+    <!-- Swiper Container -->
+    <div class="swiper hero-swiper">
+      <div class="swiper-wrapper">
+        <!-- Slide 1 -->
+        <div class="swiper-slide">
+          <div class="row align-items-center">
+            <div class="col-lg-6 mb-5 mb-lg-0 text-center text-lg-start">
+              <div class="tag justify-content-center justify-content-lg-start mb-3">Official Release</div>
+              <h1 class="display-3 fw-bold mb-4" style="color:var(--charcoal); letter-spacing:-.03em;">
+                Lenovo Legion Gen 9,<br> <span style="font-weight: 500;">Absolute Power</span>
+              </h1>
+              <p class="lead text-muted mb-5 mx-auto mx-lg-0" style="max-width: 480px; font-size: 1.1rem;">
+                The Legion 7i and 5i are official with understated looks and uncompromising performance, featuring an optional Core i9-14900HX.
+              </p>
+              <div class="d-flex justify-content-center justify-content-lg-start gap-3">
+                <a href="shop.html?category=gaming" class="btn-dark-arrow">EXPLORE GAMING <span class="arrow-circle"><i class="fas fa-arrow-right"></i></span></a>
+              </div>
+            </div>
+            <div class="col-lg-6 text-center">
+              <div style="border-radius: var(--radius-xl); overflow: hidden; height: 460px; width: 100%; background: transparent;">
+                <img src="images/legion.png" alt="Lenovo Legion Gen 9 Laptop" style="width: 100%; height: 100%; object-fit: contain; transform: scale(1.15);">
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
-      <div class="col-lg-6 text-center">
-        <div style="border-radius: var(--radius-xl); overflow: hidden; height: 460px; width: 100%; background: var(--bg-soft);">
-          <img src="images/hero_workspace.png" alt="Premium electronics" style="width: 100%; height: 100%; object-fit: cover;">
+        
+        <!-- Slide 2 -->
+        <div class="swiper-slide">
+          <div class="row align-items-center">
+            <div class="col-lg-6 mb-5 mb-lg-0 text-center text-lg-start">
+              <div class="tag justify-content-center justify-content-lg-start mb-3">Pro Computing</div>
+              <h1 class="display-3 fw-bold mb-4" style="color:var(--charcoal); letter-spacing:-.03em;">
+                Uncompromised Power,<br> <span style="font-weight: 500;">Absolute Freedom</span>
+              </h1>
+              <p class="lead text-muted mb-5 mx-auto mx-lg-0" style="max-width: 480px; font-size: 1.1rem;">
+                Discover the new MacBook Air powered by the M3 chip. Supercharged for work, play, and everything in between.
+              </p>
+              <div class="d-flex justify-content-center justify-content-lg-start gap-3">
+                <a href="shop.html?category=laptops" class="btn-dark-arrow">SHOP LAPTOPS <span class="arrow-circle"><i class="fas fa-arrow-right"></i></span></a>
+              </div>
+            </div>
+            <div class="col-lg-6 text-center">
+              <div style="border-radius: var(--radius-xl); overflow: hidden; height: 460px; width: 100%; background: var(--bg-soft);">
+                <img src="images/macbook-air-m3.webp" alt="MacBook Air M3" style="width: 100%; height: 100%; object-fit: cover;">
+              </div>
+            </div>
+          </div>
         </div>
+
+        <!-- Slide 3 -->
+        <div class="swiper-slide">
+          <div class="row align-items-center">
+            <div class="col-lg-6 mb-5 mb-lg-0 text-center text-lg-start">
+              <div class="tag justify-content-center justify-content-lg-start mb-3">Mobile Innovation</div>
+              <h1 class="display-3 fw-bold mb-4" style="color:var(--charcoal); letter-spacing:-.03em;">
+                Capture Every Moment,<br> <span style="font-weight: 500;">In Pixel Perfection</span>
+              </h1>
+              <p class="lead text-muted mb-5 mx-auto mx-lg-0" style="max-width: 480px; font-size: 1.1rem;">
+                Experience the brilliance of the Galaxy S26 Ultra. Featuring revolutionary AI capabilities and a masterful camera system.
+              </p>
+              <div class="d-flex justify-content-center justify-content-lg-start gap-3">
+                <a href="shop.html?category=phones" class="btn-dark-arrow">SHOP PHONES <span class="arrow-circle"><i class="fas fa-arrow-right"></i></span></a>
+              </div>
+            </div>
+            <div class="col-lg-6 text-center">
+              <div style="border-radius: var(--radius-xl); overflow: hidden; height: 460px; width: 100%; background: transparent;">
+                <img src="images/s26_ultra.png" alt="Samsung Galaxy S26 Ultra" style="width: 100%; height: 100%; object-fit: contain;">
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
+      <!-- Swiper Pagination -->
+      <div class="swiper-pagination hero-pagination mt-4 position-relative" style="bottom: 0;"></div>
     </div>
   </div>
 </section>
 
 <!-- ── BRAND TICKER ──────────────────────────────────── -->
-<div class="brand-ticker my-5">
+<div class="brand-ticker" style="border-top: none; padding: 32px 0 48px;">
   <div class="ticker-inner">
+    <span>Samsung</span><span>Apple</span><span>Sony</span><span>Bose</span>
+    <span>LG</span><span>Microsoft</span><span>ASUS</span><span>Dell</span>
+    <span>Samsung</span><span>Apple</span><span>Sony</span><span>Bose</span>
+    <span>LG</span><span>Microsoft</span><span>ASUS</span><span>Dell</span>
     <span>Samsung</span><span>Apple</span><span>Sony</span><span>Bose</span>
     <span>LG</span><span>Microsoft</span><span>ASUS</span><span>Dell</span>
     <span>Samsung</span><span>Apple</span><span>Sony</span><span>Bose</span>
@@ -92,83 +191,38 @@
   </div>
 </div>
 
-<!-- ── CATEGORIES ────────────────────────────────────── -->
-<section class="section-gap" id="categories" style="padding-top:40px;">
+<!-- ── FEATURED CATEGORIES ───────────────────────────── -->
+<section class="section-gap bg-soft" id="featured-categories">
   <div class="container">
     <div class="text-center mb-5">
       <div class="tag justify-content-center mb-3">Categories</div>
-      <h2 class="section-title">Explore Product Categories</h2>
+      <h2 class="section-title">Explore Hub Connections</h2>
     </div>
-    <div class="row g-4">
-      <!-- Large Feature Card -->
-      <div class="col-lg-5 d-flex">
-        <div class="cat-feature-card w-100">
-          <span class="cat-badge">Essentials</span>
-          <h3>Smart Essentials<br>Collection</h3>
-          <p>Smart everyday devices designed for comfort, convenience, and modern living.</p>
-          <a href="shop.html" class="btn-dark-arrow mb-4">VIEW ALL PRODUCTS <span class="arrow-circle"><i class="fas fa-arrow-right"></i></span></a>
-          <img src="images/hero_workspace.png" alt="Featured electronics" class="cat-img">
+    <div class="featured-cat-grid mb-0">
+      <!-- Accessories -->
+      <a href="shop.html?category=wearables" class="featured-cat-card dark text-decoration-none">
+        <div class="card-content">
+          <h3 class="cat-title">Accessories</h3>
+          <span class="btn-browse">Browse</span>
         </div>
-      </div>
-      <!-- 2×2 Small Cards -->
-      <div class="col-lg-7">
-        <div class="row g-4">
-          <div class="col-md-6 d-flex">
-            <a href="shop.html?category=computing" class="cat-small-card w-100 text-decoration-none">
-              <div class="cat-icon"><i class="fas fa-laptop"></i></div>
-              <div class="cat-text">
-                <h5>Computing</h5>
-                <p>Advanced solutions that power your work and play anytime.</p>
-              </div>
-            </a>
-          </div>
-          <div class="col-md-6 d-flex">
-            <a href="shop.html?category=acoustics" class="cat-small-card w-100 text-decoration-none">
-              <div class="cat-icon"><i class="fas fa-headphones-alt"></i></div>
-              <div class="cat-text">
-                <h5>Acoustics &amp; Sound</h5>
-                <p>Smart systems that envelope your space with immersive audio.</p>
-              </div>
-            </a>
-          </div>
-          <div class="col-md-6 d-flex">
-            <a href="shop.html?category=mobile" class="cat-small-card w-100 text-decoration-none">
-              <div class="cat-icon"><i class="fas fa-mobile-alt"></i></div>
-              <div class="cat-text">
-                <h5>Mobile &amp; Connect</h5>
-                <p>Advanced smartphones to protect and secure your modern life.</p>
-              </div>
-            </a>
-          </div>
-          <div class="col-md-6 d-flex">
-            <a href="shop.html?category=wearables" class="cat-small-card w-100 text-decoration-none">
-              <div class="cat-icon"><i class="fas fa-stopwatch"></i></div>
-              <div class="cat-text">
-                <h5>Wearables</h5>
-                <p>Smart devices that track your lifestyle and comfort effortlessly.</p>
-              </div>
-            </a>
-          </div>
-          <div class="col-md-6 d-flex">
-            <a href="shop.html?category=gaming" class="cat-small-card w-100 text-decoration-none">
-              <div class="cat-icon"><i class="fas fa-gamepad"></i></div>
-              <div class="cat-text">
-                <h5>Gaming &amp; VR</h5>
-                <p>Next-generation consoles and accessories for immersive play.</p>
-              </div>
-            </a>
-          </div>
-          <div class="col-md-6 d-flex">
-            <a href="shop.html?category=smarthome" class="cat-small-card w-100 text-decoration-none">
-              <div class="cat-icon"><i class="fas fa-home"></i></div>
-              <div class="cat-text">
-                <h5>Smart Home</h5>
-                <p>Intelligent automation and security for a seamless connected living.</p>
-              </div>
-            </a>
-          </div>
+        <img src="images/airpods-pro-trans.png" alt="Accessories" class="cat-img">
+      </a>
+      <!-- Watches -->
+      <a href="shop.html?category=wearables" class="featured-cat-card yellow text-decoration-none">
+        <div class="card-content">
+          <h3 class="cat-title">Watches</h3>
+          <span class="btn-browse">Browse</span>
         </div>
-      </div>
+        <img src="images/Apple-watch-trans.png" alt="Watches" class="cat-img">
+      </a>
+      <!-- Headphones -->
+      <a href="shop.html?category=acoustics" class="featured-cat-card red text-decoration-none">
+        <div class="card-content">
+          <h3 class="cat-title">Headphones</h3>
+          <span class="btn-browse">Browse</span>
+        </div>
+        <img src="images/headphones-trans.png" alt="Headphones" class="cat-img">
+      </a>
     </div>
   </div>
 </section>
@@ -185,11 +239,10 @@
       <div class="swiper-wrapper" id="featured-products-wrap">
         <!-- Injected via AJAX -->
       </div>
-      <div class="swiper-pagination mt-3"></div>
+      <div class="swiper-pagination"></div>
     </div>
   </div>
 </section>
-
 
 <!-- ── TESTIMONIALS ──────────────────────────────────────── -->
 <section class="section-gap bg-soft" id="reviews">
@@ -256,8 +309,44 @@
   </div>
 </section>
 
+<!-- ── TRUST BADGES ──────────────────────────────────── -->
+<section class="section-gap bg-white" style="border-bottom: 1px solid var(--border);">
+  <div class="container">
+    <div class="features-row m-0 border-0 p-0">
+      <div class="feature-item">
+        <div class="feature-icon-box"><i class="fas fa-shipping-fast"></i></div>
+        <div class="feature-text">
+          <h6>Free Shipping</h6>
+          <p>Free Shipping On All Order</p>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon-box"><i class="fas fa-award"></i></div>
+        <div class="feature-text">
+          <h6>Money Guarantee</h6>
+          <p>30 Day Money Back</p>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon-box"><i class="fas fa-headset"></i></div>
+        <div class="feature-text">
+          <h6>Online Support 24/7</h6>
+          <p>Technical Support 24/7</p>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon-box"><i class="fas fa-wallet"></i></div>
+        <div class="feature-text">
+          <h6>Secure Payment</h6>
+          <p>All Payment Secured</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- ── NEWSLETTER CTA ─────────────────────────────────── -->
-<section class="section-gap">
+<section class="section-gap bg-soft" style="padding: 120px 0;">
   <div class="container">
     <div class="text-center" style="max-width:520px; margin: 0 auto;">
       <div class="tag justify-content-center mb-3">Stay Updated</div>
@@ -288,12 +377,9 @@
       <div class="col-6 col-lg-2">
         <div class="footer-col">
           <h6>Shop</h6>
-          <ul>
+          <ul id="footer-categories">
             <li><a href="shop.html">All Products</a></li>
-            <li><a href="shop.html?category=computing">Computing</a></li>
-            <li><a href="shop.html?category=acoustics">Acoustics</a></li>
-            <li><a href="shop.html?category=mobile">Mobile</a></li>
-            <li><a href="shop.html?category=wearables">Wearables</a></li>
+            <!-- Categories loaded via AJAX in app.js -->
           </ul>
         </div>
       </div>
@@ -381,11 +467,18 @@
     showToast('You\'ve been subscribed! Welcome to ElectroHub.', 'success');
     document.getElementById('newsletter-email').value = '';
   }
-  // Search bar toggle
-  document.getElementById('search-toggle-btn').addEventListener('click', () => {
-    const bar = document.getElementById('search-bar');
-    bar.style.display = bar.style.display === 'none' ? 'block' : 'none';
-    if (bar.style.display === 'block') document.getElementById('global-search').focus();
+
+  // Init Hero Swiper (Executes immediately since it's at end of body)
+  const heroSwiper = new Swiper('.hero-swiper', {
+    loop: true,
+    autoplay: {
+      delay: 5000,
+      disableOnInteraction: false,
+    },
+    pagination: {
+      el: '.hero-pagination',
+      clickable: true,
+    },
   });
 </script>
 </body>

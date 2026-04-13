@@ -23,9 +23,8 @@
     <div class="header-search-bar" style="display:flex; align-items:center; width:600px; border:1px solid #e2e8f0; border-radius:4px; overflow:hidden; height:46px;">
       <input type="text" id="global-search" placeholder="Search Products" style="flex:1; height:100%; border:none; padding:0 16px; margin:0; outline:none; font-size:0.95rem; background:#fff;" aria-label="Search">
       <select class="search-cat-dropdown" style="height:100%; border:none; border-left:1px solid #e2e8f0; background:#fff; color:#64748b; padding:0 12px; font-size:0.9rem; outline:none; cursor:pointer;">
-        <option>All Categories</option>
-        <option value="computing">Computing</option>
-        <option value="acoustics">Acoustics</option>
+        <!-- Categories loaded via AJAX in app.js -->
+        <option value="">All Categories</option>
       </select>
       <button onclick="window.location.href='shop.html?search='+document.getElementById('global-search').value" class="search-btn" style="height:100%; background:#111; color:#fff; border:none; width:52px; display:flex; align-items:center; justify-content:center; cursor:pointer;"><i class="fas fa-search"></i></button>
     </div>
@@ -54,7 +53,42 @@
       </nav>
     </div>
   </div>
+
+      <!-- Hamburger button: only visible on mobile -->
+      <button class="burger-btn" id="burger-btn" aria-label="Open menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
 </header>
+
+<!-- ── MOBILE DRAWER ──────────────────────────────── -->
+<div class="mobile-drawer" id="mobile-drawer">
+  <div class="mobile-drawer-inner">
+    <div class="mobile-drawer-header">
+      <a href="index.html" class="site-logo">Electro<span>Hub</span></a>
+      <button class="drawer-close-btn" id="drawer-close-btn" aria-label="Close menu">&times;</button>
+    </div>
+    <div class="mobile-search">
+      <input type="text" id="mobile-search-input" placeholder="Search products...">
+      <button onclick="window.location.href='shop.html?search='+document.getElementById('mobile-search-input').value">
+        <i class="fas fa-search"></i>
+      </button>
+    </div>
+    <nav class="mobile-nav">
+      <a href="index.html"><i class="fas fa-home"></i> Home</a>
+      <a href="shop.html"><i class="fas fa-store"></i> Shop</a>
+      <a href="index.html#categories"><i class="fas fa-th-large"></i> Categories</a>
+      <a href="index.html#reviews"><i class="fas fa-star"></i> Reviews</a>
+      <a href="contact.html"><i class="fas fa-envelope"></i> Contact</a>
+    </nav>
+    <div class="mobile-drawer-footer">
+      <a href="login.html" class="mobile-auth-btn"><i class="fas fa-user"></i> Login / Sign Up</a>
+      <a href="cart.html" class="mobile-auth-btn mobile-cart-btn"><i class="fas fa-shopping-bag"></i> Cart</a>
+    </div>
+  </div>
+</div>
+<div class="mobile-drawer-overlay" id="mobile-drawer-overlay"></div>
 
 <!-- PAGE HEADER -->
 <div class="bg-soft py-5">
@@ -103,34 +137,11 @@
           <!-- Categories -->
           <div class="filter-block">
             <div class="filter-title">Categories</div>
-            <div class="d-flex flex-column gap-2">
+            <div class="d-flex flex-column gap-2" id="sidebar-categories">
+              <!-- Categories loaded via AJAX in app.js -->
               <div class="form-check">
                 <input class="form-check-input cat-filter" type="checkbox" id="cat-all" value="" checked>
                 <label class="form-check-label d-flex justify-content-between" for="cat-all">All <span class="filter-count">—</span></label>
-              </div>
-              <div class="form-check">
-                <input class="form-check-input cat-filter" type="checkbox" id="cat-computing" value="computing">
-                <label class="form-check-label d-flex justify-content-between" for="cat-computing">Computing <span class="filter-count">—</span></label>
-              </div>
-              <div class="form-check">
-                <input class="form-check-input cat-filter" type="checkbox" id="cat-acoustics" value="acoustics">
-                <label class="form-check-label d-flex justify-content-between" for="cat-acoustics">Acoustics <span class="filter-count">—</span></label>
-              </div>
-              <div class="form-check">
-                <input class="form-check-input cat-filter" type="checkbox" id="cat-mobile" value="mobile">
-                <label class="form-check-label d-flex justify-content-between" for="cat-mobile">Mobile <span class="filter-count">—</span></label>
-              </div>
-              <div class="form-check">
-                <input class="form-check-input cat-filter" type="checkbox" id="cat-wearables" value="wearables">
-                <label class="form-check-label d-flex justify-content-between" for="cat-wearables">Wearables <span class="filter-count">—</span></label>
-              </div>
-              <div class="form-check">
-                <input class="form-check-input cat-filter" type="checkbox" id="cat-gaming" value="gaming">
-                <label class="form-check-label d-flex justify-content-between" for="cat-gaming">Gaming &amp; VR <span class="filter-count">—</span></label>
-              </div>
-              <div class="form-check">
-                <input class="form-check-input cat-filter" type="checkbox" id="cat-smarthome" value="smarthome">
-                <label class="form-check-label d-flex justify-content-between" for="cat-smarthome">Smart Home <span class="filter-count">—</span></label>
               </div>
             </div>
           </div>
@@ -254,13 +265,13 @@ $(document).ready(function () {
 
   function applyFilters() {
     const search = $('#shop-search').val().toLowerCase().trim();
-    const cat = $('.cat-filter:not(#cat-all):checked').val() || '';
+    const selectedCats = $('.cat-filter:not(#cat-all):checked').map(function() { return $(this).val(); }).get();
     const price = parseInt($('#price-range').val());
     const sort = $('#sort-select').val();
 
     let filtered = allProducts.filter(p => {
       if (search && !p.name.toLowerCase().includes(search)) return false;
-      if (cat && p.category_slug !== cat) return false;
+      if (selectedCats.length && !selectedCats.includes(p.category_slug)) return false;
       if (parseFloat(p.price) > price) return false;
       return true;
     });
@@ -276,7 +287,6 @@ $(document).ready(function () {
   $('#shop-grid').html('<div class="col-12 py-5 text-center"><div class="spinner-border text-coral" style="color:var(--coral);" role="status"></div><p class="mt-3 text-muted">Loading products…</p></div>');
   $.get('/api/products').done(function (products) {
     allProducts = products;
-    if (urlCat) allProducts = allProducts.filter(p => p.category_slug === urlCat);
     applyFilters();
   });
 
@@ -286,7 +296,7 @@ $(document).ready(function () {
   $('#sort-select').on('change', applyFilters);
   $('#price-range').on('input', function () { $('#price-label').text('$' + $(this).val()); applyFilters(); });
 
-  $('.cat-filter').on('change', function () {
+  $(document).on('change', '.cat-filter', function () {
     if ($(this).attr('id') === 'cat-all') {
       if ($(this).is(':checked')) $('.cat-filter:not(#cat-all)').prop('checked', false);
     } else {
@@ -324,10 +334,8 @@ $(document).ready(function () {
       <div class="col-6 col-lg-2">
         <div class="footer-col">
           <h6>Shop</h6>
-          <ul>
+          <ul id="footer-categories">
             <li><a href="shop.html">All Products</a></li>
-            <li><a href="shop.html?category=computing">Computing</a></li>
-            <li><a href="shop.html?category=acoustics">Acoustics</a></li>
           </ul>
         </div>
       </div>

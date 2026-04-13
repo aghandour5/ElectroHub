@@ -23,7 +23,42 @@
       <a href="login.html" class="icon-btn filled" id="nav-account"><i class="fas fa-user"></i></a>
     </div>
   </div>
+
+      <!-- Hamburger button: only visible on mobile -->
+      <button class="burger-btn" id="burger-btn" aria-label="Open menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
 </header>
+
+<!-- ── MOBILE DRAWER ──────────────────────────────── -->
+<div class="mobile-drawer" id="mobile-drawer">
+  <div class="mobile-drawer-inner">
+    <div class="mobile-drawer-header">
+      <a href="index.html" class="site-logo">Electro<span>Hub</span></a>
+      <button class="drawer-close-btn" id="drawer-close-btn" aria-label="Close menu">&times;</button>
+    </div>
+    <div class="mobile-search">
+      <input type="text" id="mobile-search-input" placeholder="Search products...">
+      <button onclick="window.location.href='shop.html?search='+document.getElementById('mobile-search-input').value">
+        <i class="fas fa-search"></i>
+      </button>
+    </div>
+    <nav class="mobile-nav">
+      <a href="index.html"><i class="fas fa-home"></i> Home</a>
+      <a href="shop.html"><i class="fas fa-store"></i> Shop</a>
+      <a href="index.html#categories"><i class="fas fa-th-large"></i> Categories</a>
+      <a href="index.html#reviews"><i class="fas fa-star"></i> Reviews</a>
+      <a href="contact.html"><i class="fas fa-envelope"></i> Contact</a>
+    </nav>
+    <div class="mobile-drawer-footer">
+      <a href="login.html" class="mobile-auth-btn"><i class="fas fa-user"></i> Login / Sign Up</a>
+      <a href="cart.html" class="mobile-auth-btn mobile-cart-btn"><i class="fas fa-shopping-bag"></i> Cart</a>
+    </div>
+  </div>
+</div>
+<div class="mobile-drawer-overlay" id="mobile-drawer-overlay"></div>
 
 <div class="bg-soft py-5">
   <div class="container text-center">

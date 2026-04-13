@@ -160,7 +160,7 @@ function loadFeaturedProducts() {
       spaceBetween: 20,
       allowTouchMove: false,   // disable drag/swipe
       simulateTouch: false,    // prevent mouse-drag simulation
-      pagination: { el: '.swiper-pagination', clickable: true },
+      pagination: { el: '.swiper-pagination', clickable: true, dynamicBullets: true },
       autoplay: { delay: 4000, disableOnInteraction: false },
       breakpoints: {
         576: { slidesPerView: 2 },
@@ -173,9 +173,124 @@ function loadFeaturedProducts() {
   });
 }
 
+// ── CATEGORIES ────────────────────────────────
+function loadCategories() {
+  const dropdowns = $('.search-cat-dropdown');
+  const sidebar = $('#sidebar-categories');
+
+  $.get('/api/products/categories/all').done(function (categories) {
+    // 1. Fill header dropdowns
+    if (dropdowns.length) {
+      let dropHtml = '<option value="">All Categories</option>';
+      categories.forEach(cat => {
+        dropHtml += `<option value="${cat.slug}">${cat.name}</option>`;
+      });
+      dropdowns.html(dropHtml);
+    }
+
+    // 2. Fill sidebar (Shop page)
+    if (sidebar.length) {
+      let sideHtml = `
+        <div class="form-check">
+          <input class="form-check-input cat-filter" type="checkbox" id="cat-all" value="" checked>
+          <label class="form-check-label d-flex justify-content-between" for="cat-all">All <span class="filter-count">—</span></label>
+        </div>`;
+      categories.forEach(cat => {
+        sideHtml += `
+        <div class="form-check">
+          <input class="form-check-input cat-filter" type="checkbox" id="cat-${cat.slug}" value="${cat.slug}">
+          <label class="form-check-label d-flex justify-content-between" for="cat-${cat.slug}">${cat.name} <span class="filter-count">—</span></label>
+        </div>`;
+      });
+      sidebar.html(sideHtml);
+
+      // Trigger pre-filter if URL has category
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlCat = urlParams.get('category') || '';
+      if (urlCat) {
+        $('.cat-filter[value="' + urlCat + '"]').prop('checked', true);
+        $('#cat-all').prop('checked', false);
+        // Dispatch change event to trigger shop filters
+        $('.cat-filter[value="' + urlCat + '"]').trigger('change');
+      }
+    }
+
+    // 3. Fill footer categories
+    const footerCats = $('#footer-categories');
+    if (footerCats.length) {
+      let footerHtml = '<li><a href="shop.html">All Products</a></li>';
+      categories.forEach(cat => {
+        footerHtml += `<li><a href="shop.html?category=${cat.slug}">${cat.name}</a></li>`;
+      });
+      footerCats.html(footerHtml);
+    }
+  });
+}
+window.loadCategories = loadCategories;
+
+// ── BACK TO TOP ─────────────────────────────
+function initBackToTop() {
+  const btn = $('<button id="back-to-top" title="Go to top"><i class="fas fa-arrow-up"></i></button>');
+  $('body').append(btn);
+
+  $(window).on('scroll', function () {
+    if ($(window).scrollTop() > 400) btn.addClass('show');
+    else btn.removeClass('show');
+  });
+
+  btn.on('click', function () {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+}
+
+// ── DYNAMIC COPYRIGHT ─────────────────────────
+function updateCopyrightYear() {
+  const currentYear = new Date().getFullYear();
+  $('.footer-bottom span:first').html(`&copy; ${currentYear} ElectroHub &middot; Ali Ghandour. All rights reserved.`);
+}
+
+// ── BURGER MENU ───────────────────────────────
+function initBurgerMenu() {
+  const burgerBtn   = document.getElementById('burger-btn');
+  const drawer      = document.getElementById('mobile-drawer');
+  const overlay     = document.getElementById('mobile-drawer-overlay');
+  const closeBtn    = document.getElementById('drawer-close-btn');
+
+  if (!burgerBtn || !drawer) return; // not on a page with the drawer
+
+  function openDrawer() {
+    drawer.classList.add('open');
+    overlay.classList.add('open');
+    burgerBtn.classList.add('open');
+    // iOS-safe scroll lock: freeze body at current position
+    const scrollY = window.scrollY;
+    document.body.style.top = '-' + scrollY + 'px';
+    document.body.classList.add('drawer-open');
+  }
+
+  function closeDrawer() {
+    drawer.classList.remove('open');
+    overlay.classList.remove('open');
+    burgerBtn.classList.remove('open');
+    // Restore scroll position
+    const scrollY = parseInt(document.body.style.top || '0') * -1;
+    document.body.classList.remove('drawer-open');
+    document.body.style.top = '';
+    window.scrollTo(0, scrollY);
+  }
+
+  burgerBtn.addEventListener('click', openDrawer);
+  closeBtn.addEventListener('click', closeDrawer);
+  overlay.addEventListener('click', closeDrawer);
+}
+
 // ── INIT ──────────────────────────────────────
 $(document).ready(function () {
   checkAuthState();
   updateCartBadge();
   loadFeaturedProducts();
+  loadCategories();
+  initBackToTop();
+  updateCopyrightYear();
+  initBurgerMenu();
 });
