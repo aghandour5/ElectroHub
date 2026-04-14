@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Checkout | ElectroHub</title>
+  <link rel="icon" href="images/favicon-brand.png">
+  <meta name="description" content="Secure checkout at ElectroHub. Enter your shipping details and place your order.">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    /* ── Checkout Page Specific ─────────────────── */
+    .checkout-wrap {
+      min-height: 100vh;
+      background: var(--bg-soft);
+    }
+
+    .checkout-header {
+      background: #fff;
+      border-bottom: 1px solid var(--border);
+      padding: 0;
+    }
+
+    .checkout-header .container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 68px;
+    }
+
+    .checkout-steps {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: .82rem;
+      font-weight: 500;
+      color: var(--muted);
+    }
+
+    .checkout-steps .step {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .checkout-steps .step.active {
+      color: var(--charcoal);
+      font-weight: 700;
+    }
+
+    .checkout-steps .step-arrow {
+      color: var(--muted-lt);
+      font-size: .7rem;
+    }
+
+    /* Main layout */
+    .checkout-body {
+      padding: 40px 0 80px;
+    }
+
+    /* Left Form Card */
+    .checkout-form-card {
+      background: #fff;
+      border-radius: var(--radius-lg);
+      padding: 36px 40px;
+      border: 1px solid var(--border);
+    }
+
+    .checkout-section-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--charcoal);
+      margin-bottom: 24px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* Express Checkout */
+    .express-divider {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      font-size: .78rem;
+      font-weight: 500;
+      color: var(--muted);
+      margin-bottom: 28px;
+    }
+
+    .express-divider::before,
+    .express-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .express-btn {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      background: #111;
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 14px 20px;
+      font-size: .95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity var(--t);
+    }
+
+    .express-btn:hover {
+      opacity: 0.85;
+    }
+
+    .express-btn .pay-logo {
+      font-size: 1.1rem;
+    }
+
+    .or-divider {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      font-size: .78rem;
+      font-weight: 600;
+      color: var(--muted);
+      letter-spacing: .06em;
+      margin: 24px 0 32px;
+    }
+
+    .or-divider::before,
+    .or-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* Form fields */
+    .co-label {
+      font-size: .82rem;
+      font-weight: 600;
+      color: var(--charcoal);
+      margin-bottom: 6px;
+    }
+
+    .co-input {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xs);
+      padding: 11px 14px;
+      font-size: .9rem;
+      font-family: inherit;
+      color: var(--charcoal);
+      background: #fff;
+      outline: none;
+      transition: border-color var(--t), box-shadow var(--t);
+    }
+
+    .co-input:focus {
+      border-color: var(--coral);
+      box-shadow: 0 0 0 3px rgba(0, 122, 255, .1);
+    }
+
+    .co-input.is-invalid {
+      border-color: #ef4444;
+    }
+
+    select.co-input {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%236e7681' d='M6 8L0 0h12z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      padding-right: 36px;
+    }
+
+    .field-error {
+      font-size: .75rem;
+      color: #ef4444;
+      margin-top: 4px;
+      display: none;
+    }
+
+    /* Right Sidebar */
+    .checkout-sidebar {
+      position: sticky;
+      top: 24px;
+    }
+
+    .sidebar-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 28px;
+      margin-bottom: 16px;
+    }
+
+    .sidebar-card-title {
+      font-size: .95rem;
+      font-weight: 700;
+      color: var(--charcoal);
+      margin-bottom: 20px;
+    }
+
+    .coupon-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .coupon-input {
+      flex: 1;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xs);
+      padding: 10px 14px;
+      font-size: .88rem;
+      font-family: inherit;
+      outline: none;
+      transition: border-color var(--t);
+    }
+
+    .coupon-input:focus {
+      border-color: var(--coral);
+    }
+
+    .coupon-apply-btn {
+      background: var(--coral);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-xs);
+      padding: 10px 18px;
+      font-size: .88rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background var(--t);
+      white-space: nowrap;
+    }
+
+    .coupon-apply-btn:hover {
+      background: var(--coral-dark);
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 9px 0;
+      font-size: .88rem;
+    }
+
+    .summary-row .label {
+      color: var(--muted);
+    }
+
+    .summary-row .val {
+      font-weight: 600;
+      color: var(--charcoal);
+    }
+
+    .summary-row.total-row {
+      border-top: 1px solid var(--border);
+      margin-top: 8px;
+      padding-top: 16px;
+      font-size: 1.05rem;
+    }
+
+    .summary-row.total-row .label {
+      font-weight: 700;
+      color: var(--charcoal);
+    }
+
+    .summary-row.total-row .val {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--charcoal);
+    }
+
+    /* Order items in sidebar */
+    .summary-items {
+      margin-bottom: 16px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .summary-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 0;
+    }
+
+    .summary-item-img {
+      width: 48px;
+      height: 48px;
+      object-fit: contain;
+      border-radius: var(--radius-xs);
+      background: var(--bg-soft);
+      padding: 4px;
+      flex-shrink: 0;
+      position: relative;
+    }
+
+    .summary-item-badge {
+      position: absolute;
+      top: -6px;
+      right: -6px;
+      background: var(--muted);
+      color: #fff;
+      border-radius: 50%;
+      width: 18px;
+      height: 18px;
+      font-size: .65rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .summary-item-img-wrap {
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .summary-item-name {
+      flex: 1;
+      font-size: .83rem;
+      font-weight: 500;
+      color: var(--charcoal);
+      line-height: 1.3;
+    }
+
+    .summary-item-price {
+      font-size: .88rem;
+      font-weight: 700;
+      color: var(--charcoal);
+      white-space: nowrap;
+    }
+
+    /* Place order button */
+    .place-order-btn {
+      width: 100%;
+      background: var(--coral);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 15px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background var(--t), transform var(--t);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-family: inherit;
+    }
+
+    .place-order-btn:hover {
+      background: var(--coral-dark);
+      transform: translateY(-1px);
+    }
+
+    .place-order-btn:disabled {
+      opacity: 0.7;
+      transform: none;
+    }
+
+    .trust-row {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-top: 14px;
+      font-size: .72rem;
+      color: var(--muted);
+    }
+
+    .trust-row span {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+  </style>
+</head>
+<body class="checkout-wrap">
+
+<!-- ── CHECKOUT HEADER ─────────────────────── -->
+<header class="checkout-header">
+  <div class="container">
+    <a href="index.html" class="site-logo">
+      <img src="images/logo-brand.png" alt="ElectroHub" style="height: 38px;">
+    </a>
+    <div class="checkout-steps">
+      <span class="step"><a href="cart.html" style="color:var(--muted);text-decoration:none;">Cart</a></span>
+      <span class="step-arrow"><i class="fas fa-chevron-right"></i></span>
+      <span class="step active">Checkout</span>
+      <span class="step-arrow"><i class="fas fa-chevron-right"></i></span>
+      <span class="step">Confirmation</span>
+    </div>
+    <div style="width:140px;display:flex;justify-content:flex-end;">
+      <span style="font-size:.78rem;color:var(--muted);display:flex;align-items:center;gap:6px;">
+        <i class="fas fa-lock" style="color:var(--coral);"></i> Secure Checkout
+      </span>
+    </div>
+  </div>
+</header>
+
+<!-- ── CHECKOUT BODY ───────────────────────── -->
+<div class="checkout-body">
+  <div class="container">
+    <div class="row g-4 align-items-start">
+
+      <!-- ── LEFT: FORM ──────────────────────── -->
+      <div class="col-lg-7">
+
+        <div class="checkout-form-card mb-4">
+          <!-- Express Checkout -->
+          <div class="express-divider">Express checkout</div>
+          <div class="d-flex gap-3 mb-3">
+            <button class="express-btn" onclick="showToast('Google Pay is not available in your region.', 'error')">
+              <svg style="width:20px;height:20px;" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+              </svg>
+              Pay
+            </button>
+            <button class="express-btn" onclick="showToast('Apple Pay is not available in your region.', 'error')">
+              <i class="fab fa-apple pay-logo"></i> Pay
+            </button>
+          </div>
+
+          <div class="or-divider">OR</div>
+
+          <!-- Shipping Address -->
+          <div class="checkout-section-title"><i class="fas fa-map-marker-alt me-2" style="color:var(--coral);"></i>Shipping Address</div>
+
+          <div class="mb-3">
+            <label class="co-label">Country / Region</label>
+            <select class="co-input" id="co-country">
+              <option value="">Select country…</option>
+              <option value="Lebanon" selected>Lebanon</option>
+              <option value="United Arab Emirates">United Arab Emirates</option>
+              <option value="Saudi Arabia">Saudi Arabia</option>
+              <option value="Kuwait">Kuwait</option>
+              <option value="Qatar">Qatar</option>
+              <option value="Bahrain">Bahrain</option>
+              <option value="Jordan">Jordan</option>
+              <option value="Egypt">Egypt</option>
+              <option value="United States">United States</option>
+              <option value="United Kingdom">United Kingdom</option>
+              <option value="Germany">Germany</option>
+              <option value="France">France</option>
+              <option value="Other">Other</option>
+            </select>
+            <div class="field-error" id="err-country">Please select a country.</div>
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-sm-6">
+              <label class="co-label">First Name</label>
+              <input type="text" class="co-input" id="co-fname" placeholder="Ali">
+              <div class="field-error" id="err-fname">First name is required.</div>
+            </div>
+            <div class="col-sm-6">
+              <label class="co-label">Last Name</label>
+              <input type="text" class="co-input" id="co-lname" placeholder="Ghandour">
+              <div class="field-error" id="err-lname">Last name is required.</div>
+            </div>
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-sm-6">
+              <label class="co-label">Address</label>
+              <input type="text" class="co-input" id="co-address" placeholder="Street name & number">
+              <div class="field-error" id="err-address">Address is required.</div>
+            </div>
+            <div class="col-sm-6">
+              <label class="co-label">Apartment, suite, etc. <span style="color:var(--muted);font-weight:400;">(optional)</span></label>
+              <input type="text" class="co-input" id="co-apt" placeholder="Floor, apartment…">
+            </div>
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-sm-4">
+              <label class="co-label">City</label>
+              <input type="text" class="co-input" id="co-city" placeholder="Nabatiye">
+              <div class="field-error" id="err-city">City is required.</div>
+            </div>
+            <div class="col-sm-4">
+              <label class="co-label">State / Region</label>
+              <input type="text" class="co-input" id="co-state" placeholder="South Lebanon">
+            </div>
+            <div class="col-sm-4">
+              <label class="co-label">ZIP / Postal Code</label>
+              <input type="text" class="co-input" id="co-zip" placeholder="00000">
+            </div>
+          </div>
+        </div>
+
+        <!-- Contact Information -->
+        <div class="checkout-form-card">
+          <div class="checkout-section-title"><i class="fas fa-address-book me-2" style="color:var(--coral);"></i>Contact Information</div>
+
+          <div class="row g-3">
+            <div class="col-sm-6">
+              <label class="co-label">Phone Number</label>
+              <input type="tel" class="co-input" id="co-phone" placeholder="+961 79 30 79 04">
+              <div class="field-error" id="err-phone">Phone number is required.</div>
+            </div>
+            <div class="col-sm-6">
+              <label class="co-label">Email Address</label>
+              <input type="email" class="co-input" id="co-email" placeholder="you@example.com">
+              <div class="field-error" id="err-email">Valid email is required.</div>
+            </div>
+          </div>
+
+          <div class="form-check mt-4">
+            <input class="form-check-input" type="checkbox" id="co-save" checked>
+            <label class="form-check-label" for="co-save" style="font-size:.85rem;color:var(--muted);">
+              Save this information for next time
+            </label>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ── RIGHT: SIDEBAR ──────────────────── -->
+      <div class="col-lg-5">
+        <div class="checkout-sidebar">
+
+          <!-- Coupon Code -->
+          <div class="sidebar-card">
+            <div class="sidebar-card-title">Coupon Code</div>
+            <div class="coupon-row">
+              <input type="text" class="coupon-input" id="coupon-input" placeholder="Voucher Code">
+              <button class="coupon-apply-btn" id="coupon-apply-btn">Apply</button>
+            </div>
+            <div id="coupon-msg" class="mt-2" style="font-size:.78rem;"></div>
+          </div>
+
+          <!-- Order Summary -->
+          <div class="sidebar-card">
+            <div class="sidebar-card-title">Order Summary</div>
+
+            <!-- Items list -->
+            <div class="summary-items" id="summary-items-list">
+              <div class="text-center py-3">
+                <div class="spinner-border spinner-border-sm" style="color:var(--coral);"></div>
+              </div>
+            </div>
+
+            <!-- Totals -->
+            <div class="summary-row">
+              <span class="label">Items</span>
+              <span class="val" id="co-items-total">—</span>
+            </div>
+            <div class="summary-row">
+              <span class="label">Shipping</span>
+              <span class="val" id="co-shipping" style="color:#16a34a;">Free</span>
+            </div>
+            <div class="summary-row">
+              <span class="label">Total Before Tax</span>
+              <span class="val" id="co-before-tax">—</span>
+            </div>
+            <div class="summary-row">
+              <span class="label">Estimated Tax (8%)</span>
+              <span class="val" id="co-tax">—</span>
+            </div>
+            <div class="summary-row total-row">
+              <span class="label">Total</span>
+              <span class="val" id="co-total">—</span>
+            </div>
+
+            <!-- Place Order Button -->
+            <button class="place-order-btn mt-4" id="place-order-btn">
+              <i class="fas fa-lock"></i> Place Order
+            </button>
+
+            <!-- Trust Badges -->
+            <div class="trust-row">
+              <span><i class="fas fa-shield-alt" style="color:var(--coral);"></i> Secure</span>
+              <span><i class="fas fa-truck" style="color:var(--coral);"></i> Free Shipping</span>
+              <span><i class="fas fa-undo" style="color:var(--coral);"></i> Easy Returns</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ── TOAST ──────────────────────────────── -->
+<div class="toast-wrap" id="toast-wrap"></div>
+
+<!-- ── SCRIPTS ─────────────────────────────── -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/app.js"></script>
+<script>
+$(document).ready(function () {
+  const SHIPPING_COST = 0;
+  const TAX_RATE = 0.08;
+  let cartSubtotal = 0;
+
+  // Load cart for sidebar
+  function loadOrderSummary() {
+    $.get('/api/cart').done(function (res) {
+      if (!res.items || res.items.length === 0) {
+        $('#summary-items-list').html('<p class="text-muted" style="font-size:.85rem;">Your cart is empty. <a href="shop.html">Shop now</a></p>');
+        updateTotals(0);
+        return;
+      }
+
+      let html = '';
+      res.items.forEach(item => {
+        html += `
+        <div class="summary-item">
+          <div class="summary-item-img-wrap">
+            <img src="/images/${item.image_path}" class="summary-item-img" alt="${item.name}">
+            <span class="summary-item-badge">${item.quantity}</span>
+          </div>
+          <div class="summary-item-name">${item.name}</div>
+          <div class="summary-item-price">$${(item.price * item.quantity).toFixed(2)}</div>
+        </div>`;
+      });
+      $('#summary-items-list').html(html);
+
+      cartSubtotal = parseFloat(res.subtotal) || 0;
+      updateTotals(cartSubtotal);
+    }).fail(function () {
+      $('#summary-items-list').html('<p class="text-muted" style="font-size:.85rem;">Could not load cart.</p>');
+    });
+  }
+
+  function updateTotals(subtotal) {
+    const discount = parseFloat($('#coupon-input').data('discount') || 0);
+    const afterDiscount = Math.max(0, subtotal - discount);
+    const tax = afterDiscount * TAX_RATE;
+    const total = afterDiscount + tax + SHIPPING_COST;
+
+    $('#co-items-total').text('$' + subtotal.toFixed(2));
+    $('#co-before-tax').text('$' + afterDiscount.toFixed(2));
+    $('#co-tax').text('$' + tax.toFixed(2));
+    $('#co-total').text('$' + total.toFixed(2));
+
+    if (SHIPPING_COST === 0) {
+      $('#co-shipping').text('Free').css('color', '#16a34a');
+    } else {
+      $('#co-shipping').text('$' + SHIPPING_COST.toFixed(2)).css('color', 'var(--charcoal)');
+    }
+  }
+
+  // Coupon apply (demo)
+  $('#coupon-apply-btn').on('click', function () {
+    const code = $('#coupon-input').val().trim().toUpperCase();
+    const msg = $('#coupon-msg');
+
+    const coupons = { 'ELECTROHUB10': 50, 'WELCOME20': 100, 'SAVE15': 75 };
+    if (coupons[code]) {
+      const disc = coupons[code];
+      $('#coupon-input').data('discount', disc);
+      msg.html(`<span style="color:#16a34a;font-weight:600;"><i class="fas fa-check-circle me-1"></i>Code applied! -$${disc.toFixed(2)} off</span>`);
+      updateTotals(cartSubtotal);
+    } else if (!code) {
+      msg.html('<span style="color:#ef4444;">Please enter a coupon code.</span>');
+    } else {
+      msg.html('<span style="color:#ef4444;">Invalid coupon code.</span>');
+    }
+  });
+
+  // Validate form
+  function validate() {
+    let valid = true;
+
+    const required = [
+      { id: 'co-country', errId: 'err-country' },
+      { id: 'co-fname', errId: 'err-fname' },
+      { id: 'co-lname', errId: 'err-lname' },
+      { id: 'co-address', errId: 'err-address' },
+      { id: 'co-city', errId: 'err-city' },
+      { id: 'co-phone', errId: 'err-phone' },
+      { id: 'co-email', errId: 'err-email' },
+    ];
+
+    required.forEach(f => {
+      const val = $('#' + f.id).val().trim();
+      if (!val) {
+        $('#' + f.id).addClass('is-invalid');
+        $('#' + f.errId).show();
+        valid = false;
+      } else {
+        $('#' + f.id).removeClass('is-invalid');
+        $('#' + f.errId).hide();
+      }
+    });
+
+    // Email format check
+    const email = $('#co-email').val().trim();
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      $('#co-email').addClass('is-invalid');
+      $('#err-email').show();
+      valid = false;
+    }
+
+    return valid;
+  }
+
+  // Build shipping address string from form
+  function buildAddress() {
+    const parts = [
+      $('#co-fname').val().trim() + ' ' + $('#co-lname').val().trim(),
+      $('#co-address').val().trim(),
+      $('#co-apt').val().trim(),
+      $('#co-city').val().trim(),
+      $('#co-state').val().trim(),
+      $('#co-zip').val().trim(),
+      $('#co-country').val().trim(),
+    ].filter(Boolean);
+    return parts.join(', ');
+  }
+
+  // Clear error on input
+  $('.co-input').on('input change', function () {
+    $(this).removeClass('is-invalid');
+    const id = $(this).attr('id').replace('co-', 'err-');
+    $('#' + id).hide();
+  });
+
+  // Place Order
+  $('#place-order-btn').on('click', function () {
+    if (!validate()) {
+      showToast('Please fill in all required fields.', 'error');
+      return;
+    }
+
+    const shippingAddress = buildAddress();
+    $(this).prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i> Processing…');
+
+    $.ajax({
+      url: '/api/cart/checkout',
+      type: 'POST',
+      contentType: 'application/json',
+      data: JSON.stringify({ shipping_address: shippingAddress }),
+      success: function (res) {
+        showToast('Order #' + res.orderId + ' placed successfully! 🎉', 'success');
+        setTimeout(() => window.location.href = '/profile.html', 2000);
+      },
+      error: function (err) {
+        const msg = err.responseJSON?.error || 'Checkout failed. Please try again.';
+        showToast(msg, 'error');
+        if (err.status === 401) {
+          showToast('Please log in to place an order.', 'error');
+          setTimeout(() => window.location.href = '/login.html', 1500);
+        }
+        $('#place-order-btn').prop('disabled', false).html('<i class="fas fa-lock"></i> Place Order');
+      }
+    });
+  });
+
+  loadOrderSummary();
+  checkAuthState();
+});
+</script>
+</body>
+</html>

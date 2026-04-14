@@ -267,7 +267,8 @@ textarea {
   font-size: .9rem;
   font-weight: 500;
   color: var(--muted);
-  transition: all var(--t);
+  transition: all 0.2s ease;
+  transform: scale(1);
 }
 
 .site-nav a:hover,
@@ -276,9 +277,57 @@ textarea {
   background: var(--bg-soft);
 }
 
+.site-nav a:hover {
+  transform: scale(1.03);
+}
+
 .site-nav a.active {
   color: var(--bg);
   background: var(--charcoal);
+}
+
+/* ── Nav Dropdown ── */
+.site-nav .dropdown-menu {
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border);
+  padding: 8px 0;
+  margin-top: 8px;
+  overflow: hidden;
+}
+
+@keyframes dropdownFadeSlideDown {
+  0% {
+    opacity: 0;
+    translate: 0 -12px;
+  }
+  100% {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+.site-nav .dropdown-menu.show {
+  animation: dropdownFadeSlideDown 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.site-nav .dropdown-menu a.dropdown-item {
+  border-radius: 0;
+  padding: 8px 24px;
+  background: transparent;
+  color: var(--charcoal);
+  width: 100%;
+  text-align: left;
+  font-size: .95rem;
+  font-weight: 500;
+  transition: padding-left 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), color 0.2s ease, background 0.2s ease;
+}
+
+.site-nav .dropdown-menu a.dropdown-item:hover,
+.site-nav .dropdown-menu a.dropdown-item:focus {
+  color: var(--coral);
+  background: var(--bg-soft);
+  padding-left: 28px;
 }
 
 .header-actions {
@@ -413,6 +462,12 @@ textarea {
   letter-spacing: .12em;
   text-transform: uppercase;
   white-space: nowrap;
+  transition: color var(--t);
+  cursor: default;
+}
+
+.ticker-inner span:hover {
+  color: var(--charcoal);
 }
 
 @keyframes ticker {
@@ -1091,6 +1146,7 @@ textarea {
 }
 
 .featured-cat-card.dark::before   { background: #222; }
+.featured-cat-card.blue::before   { background: #1d4ed8; }
 .featured-cat-card.yellow::before { background: #ffcb30; }
 .featured-cat-card.red::before    { background: #f73646; } /* Adjusted punchy red */
 
@@ -1129,6 +1185,7 @@ textarea {
 .featured-cat-card:hover .btn-browse { transform: scale(1.05); }
 
 .featured-cat-card.dark .btn-browse { background: #f73646; color: #fff; } 
+.featured-cat-card.blue .btn-browse { color: #1d4ed8; } 
 .featured-cat-card.yellow .btn-browse { color: #d0a200; } 
 .featured-cat-card.red .btn-browse { color: #f73646; } 
 
@@ -1147,7 +1204,18 @@ textarea {
 .featured-cat-card.dark img.cat-img {
   width: 90%; height: auto;
   top: -10%; right: -15%;
+  z-index: 15; /* Moves above the title (z-index 10) */
   filter: drop-shadow(0 20px 30px rgba(0,0,0,0.5));
+}
+.featured-cat-card.blue.watch img.cat-img {
+  width: 72%; height: auto;
+  top: -5%; right: -12%;
+  filter: drop-shadow(0 20px 30px rgba(0,0,0,0.25));
+}
+.featured-cat-card.blue.accessories img.cat-img {
+  width: 92%; height: auto;
+  top: -10%; right: -20%;
+  filter: drop-shadow(0 25px 40px rgba(0,0,0,0.4));
 }
 .featured-cat-card.yellow img.cat-img {
   width: 80%; height: auto;
@@ -1614,4 +1682,54 @@ body.drawer-open {
   .features-row {
     grid-template-columns: 1fr;
   }
+}
+
+/* ── SWIPER PAGINATION FIX ────────────────── */
+.swiper-pagination {
+  position: relative !important;
+  bottom: 0 !important;
+  margin-top: 30px !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  z-index: 10 !important;
+}
+
+.swiper-pagination-bullet {
+  background: var(--muted-lt) !important;
+  opacity: 0.5 !important;
+  margin: 0 8px !important;
+  cursor: pointer !important;
+  pointer-events: auto !important;
+}
+
+.swiper-pagination-bullet-active {
+  background: var(--coral) !important;
+  opacity: 1 !important;
+}
+
+/* ── TESTIMONIAL CARDS UNIFORMITY ────────── */
+.testimonials-swiper {
+  display: flex;
+  flex-direction: column;
+}
+
+.testimonials-swiper .swiper-wrapper {
+  display: flex !important;
+  align-items: stretch !important;
+}
+
+.testimonials-swiper .swiper-slide {
+  height: auto !important; /* Allow slides to stretch to tallest in row */
+  display: flex;
+}
+
+.testimonials-swiper .review-card {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.testimonials-swiper .review-card p {
+  flex: 1; /* Pushes the author info to the bottom of the card */
 }

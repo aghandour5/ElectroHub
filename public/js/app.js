@@ -66,6 +66,83 @@ $(document).on('click', '.quick-view-btn', function () {
     $('#qv-desc').text(p.description || 'Premium device crafted for performance and longevity.');
     $('#qv-stock').text(p.stock > 0 ? p.stock + ' in stock' : 'Out of stock');
     $('#qv-add-btn').data('id', p.id).prop('disabled', p.stock === 0);
+
+    // Render Specs
+    const specsContainer = $('#qv-specs-container');
+    const specsGrid = $('#qv-specs-grid');
+    if (p.specs && Object.keys(p.specs).length > 0) {
+      let specsHtml = '';
+      for (const [key, value] of Object.entries(p.specs)) {
+        specsHtml += `
+          <div class="spec-item">
+            <span style="display:block;color:var(--muted);font-size:.7rem;font-weight:600;text-transform:uppercase;">${key}</span>
+            <span style="color:var(--charcoal);font-weight:500;">${value}</span>
+          </div>`;
+      }
+      specsGrid.html(specsHtml);
+      specsContainer.show();
+    } else {
+      specsContainer.hide();
+    }
+
+    // Render Product-Specific Reviews
+    const reviewsContainer = $('#qv-reviews-container');
+    const reviewsList = $('#qv-reviews-list');
+    const toggleBtn = $('#qv-toggle-reviews');
+    const qvRatingStars = $('#qv-rating-stars');
+    
+    reviewsContainer.hide(); // Reset view
+    
+    if (p.reviews_data && p.reviews_data.length > 0) {
+      // Calculate Average Rating
+      const avgRating = p.reviews_data.reduce((sum, rev) => sum + rev.rating, 0) / p.reviews_data.length;
+      let globalStars = '';
+      for (let i = 1; i <= 5; i++) {
+        if (i <= Math.floor(avgRating)) {
+          globalStars += '<i class="fas fa-star" style="color:#f59e0b;"></i>';
+        } else if (i === Math.ceil(avgRating) && avgRating % 1 !== 0) {
+          globalStars += '<i class="fas fa-star-half-alt" style="color:#f59e0b;"></i>';
+        } else {
+          globalStars += '<i class="far fa-star" style="color:#f59e0b;"></i>';
+        }
+      }
+      qvRatingStars.html(globalStars);
+      toggleBtn.text(`(${p.reviews_data.length} reviews)`).show();
+
+      let reviewsHtml = '';
+      p.reviews_data.forEach(rev => {
+        let stars = '';
+        for(let i=1; i<=5; i++) {
+          stars += `<i class="${i <= rev.rating ? 'fas' : 'far'} fa-star" style="color:var(--coral); font-size:.7rem;"></i>`;
+        }
+        reviewsHtml += `
+          <div class="mb-3 border-bottom pb-2">
+            <div class="d-flex justify-content-between mb-1">
+              <strong style="font-size:.85rem;">${rev.author}</strong>
+              <div class="stars-mini">${stars}</div>
+            </div>
+            <p class="text-muted mb-0" style="font-size:.8rem; line-height:1.4;">${rev.text}</p>
+          </div>
+        `;
+      });
+      reviewsList.html(reviewsHtml);
+    } else {
+      qvRatingStars.html('<i class="far fa-star" style="color:var(--muted);"></i>'.repeat(5));
+      toggleBtn.hide();
+    }
+
+    // Toggle Reviews Logic
+    toggleBtn.off('click').on('click', function() {
+      if (reviewsContainer.is(':visible')) {
+        reviewsContainer.slideUp();
+      } else {
+        reviewsContainer.slideDown();
+        setTimeout(() => {
+          reviewsContainer[0].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }, 300);
+      }
+    });
+
     $('#quickViewModal').modal('show');
   }).fail(() => showToast('Could not load product details.', 'error'));
 });
@@ -142,7 +219,7 @@ function loadFeaturedProducts() {
           </div>
           <div class="product-body">
             <div class="product-header">
-              <div class="product-name" title="${p.name}"><a href="#">${p.name}</a></div>
+              <div class="product-name" title="${p.name}"><a href="javascript:void(0)" class="quick-view-btn" data-id="${p.id}" style="text-decoration:none;">${p.name}</a></div>
               <div class="product-price">$${parseFloat(p.price).toFixed(2)}</div>
             </div>
             <div class="product-footer">
@@ -160,7 +237,7 @@ function loadFeaturedProducts() {
       spaceBetween: 20,
       allowTouchMove: false,   // disable drag/swipe
       simulateTouch: false,    // prevent mouse-drag simulation
-      pagination: { el: '.swiper-pagination', clickable: true, dynamicBullets: true },
+      pagination: { el: '.featured-pagination', clickable: true, dynamicBullets: true },
       autoplay: { delay: 4000, disableOnInteraction: false },
       breakpoints: {
         576: { slidesPerView: 2 },
@@ -224,6 +301,16 @@ function loadCategories() {
       });
       footerCats.html(footerHtml);
     }
+
+    // 4. Fill navbar dropdown
+    const navDropdown = $('#nav-shop-dropdown');
+    if (navDropdown.length) {
+      let navHtml = '<li><a class="dropdown-item" href="shop.html">All Products</a></li><li><hr class="dropdown-divider"></li>';
+      categories.forEach(cat => {
+        navHtml += `<li><a class="dropdown-item" href="shop.html?category=${cat.slug}">${cat.name}</a></li>`;
+      });
+      navDropdown.html(navHtml);
+    }
   });
 }
 window.loadCategories = loadCategories;
@@ -284,12 +371,77 @@ function initBurgerMenu() {
   overlay.addEventListener('click', closeDrawer);
 }
 
+// ── TESTIMONIALS ──────────────────────────────
+function loadTestimonials() {
+  const testimonialsWrap = $('#testimonials-wrap');
+  if (!testimonialsWrap.length) return;
+
+  $.get('/api/products/testimonials/all').done(function (data) {
+    let html = '';
+    data.forEach(t => {
+      let stars = '';
+      for (let i = 1; i <= 5; i++) {
+        stars += `<i class="${i <= t.rating ? 'fas' : 'far'} fa-star"></i>`;
+      }
+      html += `
+        <div class="swiper-slide">
+          <div class="review-card" style="position:relative; background: #fff; padding: 36px 32px; border-radius: 16px; height: 100%;">
+            <i class="fas fa-quote-right" style="position:absolute; top: 32px; right: 32px; font-size: 1.8rem; color: var(--coral);"></i>
+            <div class="reviewer-avatar mb-4" style="background:#e0f2fe; color: var(--coral); width:56px; height:56px; display:flex; align-items:center; justify-content:center; border-radius:50%; font-weight:600;">${t.avatar}</div>
+            <p style="color:var(--charcoal); margin-bottom:32px; font-size:.95rem; line-height:1.6; font-weight: 500;">
+              ${t.text}
+            </p>
+            <div style="font-weight:600; color:var(--charcoal); font-size:.95rem;">${t.name}</div>
+            <div style="font-size:.8rem; color:var(--muted); margin-bottom: 8px;">${t.role}</div>
+            <div class="review-stars text-coral" style="font-size: .85rem;">
+              ${stars}
+            </div>
+          </div>
+        </div>`;
+    });
+    testimonialsWrap.html(html);
+
+    // Init Testimonials Swiper
+    new Swiper('.testimonials-swiper', {
+      slidesPerView: 1,
+      spaceBetween: 30,
+      loop: true,
+      autoplay: {
+        delay: 5000,
+        disableOnInteraction: false,
+      },
+      speed: 700,
+      loop: true,
+      pagination: {
+        el: '.testimonials-pagination',
+        clickable: true,
+        dynamicBullets: true,
+      },
+      slidesPerGroup: 4,
+      loopedSlides: 4,
+      loopPreventsSliding: false,
+      observer: true,
+      observeParents: true,
+      watchSlidesProgress: true,
+      breakpoints: {
+        768: {
+          slidesPerView: 2,
+        },
+        1024: {
+          slidesPerView: 4,
+        },
+      },
+    });
+  }).fail(() => console.error('Failed to load testimonials.'));
+}
+
 // ── INIT ──────────────────────────────────────
 $(document).ready(function () {
   checkAuthState();
   updateCartBadge();
   loadFeaturedProducts();
   loadCategories();
+  loadTestimonials();
   initBackToTop();
   updateCopyrightYear();
   initBurgerMenu();

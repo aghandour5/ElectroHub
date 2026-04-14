@@ -37,12 +37,12 @@ router.get('/dashboard', async (req, res) => {
 // @route   POST /api/admin/products
 // @desc    Add new product
 router.post('/products', async (req, res) => {
-  const { category_id, name, description, price, stock, image_path, is_featured } = req.body;
+  const { category_id, name, description, price, stock, image_path, is_featured, specs, reviews_data } = req.body;
   try {
     await db.query(
-      `INSERT INTO products (category_id, name, description, price, stock, image_path, is_featured) 
-       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-      [category_id || 1, name, description, price, stock, image_path || 'hero.png', is_featured || false]
+      `INSERT INTO products (category_id, name, description, price, stock, image_path, is_featured, specs, reviews_data) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+      [category_id || 1, name, description, price, stock, image_path || 'hero.png', is_featured || false, specs || {}, reviews_data || []]
     );
     res.status(201).json({ message: 'Product created successfully' });
   } catch (error) {
@@ -54,11 +54,11 @@ router.post('/products', async (req, res) => {
 // @route   PUT /api/admin/products/:id
 // @desc    Update product
 router.put('/products/:id', async (req, res) => {
-  const { name, price, stock, is_new } = req.body;
+  const { name, price, stock, is_new, specs, reviews_data } = req.body;
   try {
     await db.query(
-      `UPDATE products SET name = $1, price = $2, stock = $3, is_new = $4 WHERE id = $5`,
-      [name, price, stock, is_new !== undefined ? is_new : false, req.params.id]
+      `UPDATE products SET name = $1, price = $2, stock = $3, is_new = $4, specs = $5, reviews_data = $6 WHERE id = $7`,
+      [name, price, stock, is_new !== undefined ? is_new : false, specs || {}, reviews_data || [], req.params.id]
     );
     res.json({ message: 'Product updated' });
   } catch (error) {

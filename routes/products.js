@@ -43,6 +43,18 @@ router.get('/categories/all', async (req, res) => {
   }
 });
 
+// @route   GET /api/products/testimonials/all
+// @desc    Get all testimonials for homepage sliders
+router.get('/testimonials/all', async (req, res) => {
+  try {
+    const result = await db.query('SELECT * FROM testimonials ORDER BY created_at DESC');
+    res.json(result.rows);
+  } catch (e) {
+    console.error('Testimonials fetch error:', e);
+    res.status(500).json({ error: 'Server error fetching testimonials.' });
+  }
+});
+
 // @route   GET /api/products/:id
 router.get('/:id', async (req, res) => {
   try {

@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ElectroHub Operator Dashboard</title>
+    <link rel="icon" href="images/favicon-brand.png">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -77,6 +78,16 @@
                             <input type="checkbox" name="is_new" class="form-check-input" id="new-check">
                             <label class="form-check-label" for="new-check">Mark as NEW</label>
                         </div>
+                        <div class="mb-2">
+                            <label>Specifications (JSON)</label>
+                            <textarea name="specs" class="form-control" rows="3" placeholder='{"Processor": "i9", "RAM": "32GB"}'></textarea>
+                            <small class="text-muted">Enter as a valid JSON object.</small>
+                        </div>
+                        <div class="mb-2">
+                            <label>Reviews (JSON)</label>
+                            <textarea name="reviews_data" class="form-control" rows="3" placeholder='[{"author": "Jane", "text": "Loved it!", "rating": 5}]'></textarea>
+                            <small class="text-muted">Enter as a JSON array of objects.</small>
+                        </div>
                         <button type="submit" class="btn btn-primary w-100 mt-3">Commit to Database</button>
                     </form>
                 </div>
@@ -134,11 +145,24 @@
 
             $('#add-product-form').submit(function(e) {
                 e.preventDefault();
+                let specs = {}, reviews_data = [];
+                try {
+                    const specsVal = $('textarea[name="specs"]').val();
+                    if (specsVal) specs = JSON.parse(specsVal);
+                    const reviewsVal = $('textarea[name="reviews_data"]').val();
+                    if (reviewsVal) reviews_data = JSON.parse(reviewsVal);
+                } catch(e) {
+                    alert('Invalid JSON in Specifications or Reviews field.');
+                    return;
+                }
+
                 const payload = {
                     name: $('input[name="name"]').val(),
                     price: $('input[name="price"]').val(),
                     stock: $('input[name="stock"]').val(),
-                    is_new: $('input[name="is_new"]').is(':checked')
+                    is_new: $('input[name="is_new"]').is(':checked'),
+                    specs: specs,
+                    reviews_data: reviews_data
                 };
                 $.ajax({
                     url: '/api/admin/products', type: 'POST', contentType: 'application/json',
@@ -192,3 +216,4 @@
     </script>
 </body>
 </html>
+

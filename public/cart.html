@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Your Cart | ElectroHub</title>
+  <link rel="icon" href="images/favicon-brand.png">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="css/style.css">
@@ -12,12 +13,20 @@
 
 <header class="site-header">
   <div class="container header-inner">
-    <a href="index.html" class="site-logo">Electro<span>Hub</span></a>
-    <nav class="site-nav">
-      <a href="index.html">Home</a>
-      <a href="shop.html">Shop</a>
-      <a href="index.html#categories">Categories</a>
-    </nav>
+    <a href="index.html" class="site-logo">
+      <img src="images/logo-brand.png" alt="ElectroHub" style="height: 38px;">
+    </a>
+    <nav class="site-nav align-items-center">
+        <a href="index.html" class="">Home</a>
+        <div class="dropdown d-inline-block">
+          <a href="#" class="dropdown-toggle " data-bs-toggle="dropdown" aria-expanded="false" style="text-decoration:none;">Shop</a>
+          <ul class="dropdown-menu shadow border-0" id="nav-shop-dropdown">
+            <!-- Categories injected here -->
+          </ul>
+        </div>
+        <a href="index.html#reviews">Reviews</a>
+        <a href="contact.html" class="">Contact</a>
+      </nav>
     <div class="header-actions">
       <a href="cart.html" class="icon-btn active" title="Cart"><i class="fas fa-shopping-cart" style="color:var(--coral);"></i></a>
       <a href="login.html" class="icon-btn filled" id="nav-account" title="Account"><i class="fas fa-user"></i></a>
@@ -32,11 +41,13 @@
   </div>
 </header>
 
-<!-- ── MOBILE DRAWER ──────────────────────────────── -->
+<!-- â”€â”€ MOBILE DRAWER â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
 <div class="mobile-drawer" id="mobile-drawer">
   <div class="mobile-drawer-inner">
     <div class="mobile-drawer-header">
-      <a href="index.html" class="site-logo">Electro<span>Hub</span></a>
+      <a href="index.html" class="site-logo">
+        <img src="images/logo-brand.png" alt="ElectroHub" style="height: 32px;">
+      </a>
       <button class="drawer-close-btn" id="drawer-close-btn" aria-label="Close menu">&times;</button>
     </div>
     <div class="mobile-search">
@@ -48,7 +59,6 @@
     <nav class="mobile-nav">
       <a href="index.html"><i class="fas fa-home"></i> Home</a>
       <a href="shop.html"><i class="fas fa-store"></i> Shop</a>
-      <a href="index.html#categories"><i class="fas fa-th-large"></i> Categories</a>
       <a href="index.html#reviews"><i class="fas fa-star"></i> Reviews</a>
       <a href="contact.html"><i class="fas fa-envelope"></i> Contact</a>
     </nav>
@@ -103,15 +113,9 @@
             <span class="fw-700" style="font-weight:700;color:var(--coral);" id="summary-total">$0.00</span>
           </div>
 
-          <!-- Shipping Address -->
-          <div class="mb-4">
-            <label class="form-label" style="font-size:.85rem;font-weight:600;">Shipping Address</label>
-            <textarea id="checkout-address" class="form-control" rows="3" placeholder="Enter full delivery address, city, country…" style="border-radius:var(--radius-sm);border-color:var(--border);font-size:.9rem;resize:none;"></textarea>
-          </div>
-
-          <button class="btn-coral w-100 mb-3" id="checkout-btn" style="padding:14px;border-radius:var(--radius-sm);font-size:1rem;">
-            <i class="fas fa-lock me-2"></i> Secure Checkout
-          </button>
+          <a href="checkout.html" class="btn-coral w-100 mb-3" id="checkout-btn" style="padding:14px;border-radius:var(--radius-sm);font-size:1rem;text-align:center;display:flex;align-items:center;justify-content:center;gap:8px;">
+            <i class="fas fa-lock"></i> Proceed to Checkout
+          </a>
           <a href="shop.html" class="btn-outline-coral w-100 text-center" style="padding:12px;border-radius:var(--radius-sm);font-size:.9rem;">
             <i class="fas fa-arrow-left me-2"></i> Continue Shopping
           </a>
@@ -136,7 +140,7 @@
   <div class="container">
     <div class="footer-bottom">
       <span>© 2025 ElectroHub · Ali Ghandour. All rights reserved.</span>
-      <span>📍 Nabatiye, Lebanon</span>
+      <span><a href="https://maps.google.com/?q=Nabatiye,Lebanon" target="_blank" style="color:inherit;text-decoration:none;">📍 Nabatiye, Lebanon</a></span>
     </div>
   </div>
 </footer>
@@ -235,7 +239,7 @@ $(document).ready(function () {
       url: '/api/cart/checkout', type: 'POST', contentType: 'application/json',
       data: JSON.stringify({ shipping_address: addr }),
       success: function (res) {
-        showToast('Order #' + res.orderId + ' placed successfully! 🎉', 'success');
+        showToast('Order #' + res.orderId + ' placed successfully! ðŸŽ‰', 'success');
         setTimeout(() => window.location.href = '/profile.html', 2000);
       },
       error: function (err) {
@@ -253,3 +257,5 @@ $(document).ready(function () {
 </script>
 </body>
 </html>
+
+

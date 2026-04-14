@@ -57,6 +57,7 @@ async function initializeDatabase() {
       image_path VARCHAR(255),
       rating NUMERIC(2, 1) DEFAULT 0.0,
       is_featured BOOLEAN DEFAULT false,
+      specs JSONB,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
 
@@ -116,11 +117,11 @@ async function initializeDatabase() {
 
       // Insert dummy products matching the front-end
       await pool.query(`
-        INSERT INTO products (category_id, name, description, price, stock, image_path, rating, is_featured) VALUES 
-        ((SELECT id FROM categories WHERE slug='computing'), 'Quantum Book X1 Elite', 'Premium 14-inch computing companion with dedicated AI chips.', 1999.00, 50, 'laptop.png', 4.8, true),
-        ((SELECT id FROM categories WHERE slug='acoustics'), 'Vortex Sound Pro', 'Next-gen noise-cancelling headphones.', 299.00, 200, 'headphones.png', 4.9, true),
-        ((SELECT id FROM categories WHERE slug='mobile'), 'Aether Phone Zeta', 'A seamless mobile device.', 1199.00, 120, 'laptop.png', 4.5, true),
-        ((SELECT id FROM categories WHERE slug='wearables'), 'Horizon Smart Wear', 'The smart wearable for the future.', 449.00, 300, 'hero.png', 4.7, true)
+        INSERT INTO products (category_id, name, description, price, stock, image_path, rating, is_featured, specs) VALUES 
+        ((SELECT id FROM categories WHERE slug='computing'), 'Quantum Book X1 Elite', 'Premium 14-inch computing companion with dedicated AI chips.', 1999.00, 50, 'laptop.png', 4.8, true, '{"Processor": "Aura M3 Ultra", "Memory": "32GB Unified", "Storage": "1TB SSD", "Display": "14.2\\" Liquid Retina"}'),
+        ((SELECT id FROM categories WHERE slug='acoustics'), 'Vortex Sound Pro', 'Next-gen noise-cancelling headphones.', 299.00, 200, 'headphones.png', 4.9, true, '{"Type": "Over-Ear", "Battery": "Up to 40 hours", "Noise Cancellation": "Active Hybrid", "Drivers": "40mm Beryllium"}'),
+        ((SELECT id FROM categories WHERE slug='mobile'), 'Aether Phone Zeta', 'A seamless mobile device.', 1199.00, 120, 'laptop.png', 4.5, true, '{"Processor": "Zeta A15 Bionic", "Display": "6.7\\" OLED 120Hz", "Camera": "Pro 48MP Triple", "Battery": "5000mAh"}'),
+        ((SELECT id FROM categories WHERE slug='wearables'), 'Horizon Smart Wear', 'The smart wearable for the future.', 449.00, 300, 'hero.png', 4.7, true, '{"Sensors": "Heart Rate, SpO2, ECG", "Water Resistance": "50m", "Battery": "7 Days", "Compatibility": "iOS & Android"}')
       `);
       console.log('Database seeded with standard categories and products.');
     } else {
