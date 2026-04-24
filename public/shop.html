@@ -30,13 +30,20 @@
 
     <!-- Right Actions -->
     <div class="header-right-actions" style="display:flex; align-items:center; justify-content:flex-end; gap:20px;">
-      <a href="login.html" style="font-size:0.95rem; font-weight:500; color:var(--charcoal); text-decoration:none;">Login / SignUp</a>
-      <div style="width:1px; height:16px; background:#e2e8f0;"></div>
-      <a href="javascript:void(0)" class="wishlist-toggle" style="font-size:1.3rem; color:var(--charcoal); text-decoration:none; margin-right:4px;"><i class="far fa-heart"></i></a>
+      <a href="login.html" id="nav-account" class="btn btn-dark rounded-pill px-4" style="font-size:0.9rem; font-weight:600; color:#fff !important; text-decoration:none;">Login / Sign Up</a>
+      <div class="header-divider" style="width:1px; height:16px; background:#e2e8f0;"></div>
+      <a href="wishlist.html" style="font-size:1.3rem; color:var(--charcoal); text-decoration:none; margin-right:12px; position:relative; display:flex; align-items:center;">
+        <i class="far fa-heart"></i>
+        <span class="badge" id="nav-wishlist-count" style="position:absolute; top:-5px; right:-12px; background:#ef4444; color:#fff; font-size:0.65rem; font-weight:700; padding:2px 6px; min-width:20px; height:20px; border-radius:12px; display:none; align-items:center; justify-content:center;">0</span>
+      </a>
       <a href="cart.html" style="font-size:1.3rem; color:var(--charcoal); text-decoration:none; position:relative; display:flex; align-items:center;">
         <i class="fas fa-shopping-bag"></i>
-        <span class="badge" id="nav-cart-count" style="position:absolute; top:-5px; right:-12px; background:#ef4444; color:#fff; font-size:0.65rem; font-weight:700; padding:2px 6px; min-width:20px; height:20px; border-radius:12px; display:flex; align-items:center; justify-content:center;">01</span>
+        <span class="badge" id="nav-cart-count" style="position:absolute; top:-5px; right:-12px; background:#ef4444; color:#fff; font-size:0.65rem; font-weight:700; padding:2px 6px; min-width:20px; height:20px; border-radius:12px; display:flex; align-items:center; justify-content:center;">0</span>
       </a>
+      <!-- Hamburger button: only visible on mobile -->
+      <button class="burger-btn" id="burger-btn" aria-label="Open menu">
+        <span></span><span></span><span></span>
+      </button>
     </div>
   </div>
 
@@ -51,16 +58,11 @@
             <!-- Categories injected here -->
           </ul>
         </div>
+        <a href="about.html" class="">About</a>
         <a href="contact.html" class="">Contact</a>
       </nav>
     </div>
   </div>
-
-      <!-- Hamburger button: only visible on mobile -->
-      <button class="burger-btn" id="burger-btn" aria-label="Open menu">
-        <span></span><span></span><span></span>
-      </button>
-    </div>
   </div>
 </header>
 
@@ -82,6 +84,7 @@
     <nav class="mobile-nav">
       <a href="index.html"><i class="fas fa-home"></i> Home</a>
       <a href="shop.html"><i class="fas fa-store"></i> Shop</a>
+      <a href="about.html"><i class="fas fa-info-circle"></i> About</a>
       <a href="index.html#reviews"><i class="fas fa-star"></i> Reviews</a>
       <a href="contact.html"><i class="fas fa-envelope"></i> Contact</a>
     </nav>
@@ -94,27 +97,28 @@
 <div class="mobile-drawer-overlay" id="mobile-drawer-overlay"></div>
 
 <!-- PAGE HEADER -->
-<div class="bg-soft py-5">
+<div class="bg-white py-4 py-lg-5 border-bottom">
   <div class="container">
     <nav aria-label="breadcrumb" class="mb-3">
       <ol class="breadcrumb" style="font-size:.85rem;">
-        <li class="breadcrumb-item"><a href="index.html" class="text-muted">Home</a></li>
+        <li class="breadcrumb-item"><a href="index.html" class="text-muted text-decoration-none">Home</a></li>
         <li class="breadcrumb-item active text-muted">Shop</li>
       </ol>
     </nav>
-    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
-      <div>
-        <h1 class="section-title mb-1">All Products</h1>
-        <p class="text-muted mb-0" id="result-count">Loading products…</p>
+    <div class="row align-items-center">
+      <div class="col-lg-6">
+        <h1 class="fw-bold mb-2">All Products</h1>
+        <p class="text-muted mb-0">Discover our complete range of premium electronics.</p>
       </div>
-      <div class="d-flex gap-2 align-items-center">
-        <label class="text-muted" style="font-size:.88rem;white-space:nowrap;">Sort by:</label>
-        <select id="sort-select" class="form-select form-select-sm" style="width:160px;border-radius:var(--radius-pill);">
-          <option value="default">Default</option>
-          <option value="price_asc">Price: Low → High</option>
-          <option value="price_desc">Price: High → Low</option>
-          <option value="name_asc">Name A → Z</option>
-        </select>
+      <div class="col-lg-6 d-none d-lg-block">
+        <div class="d-flex align-items-center justify-content-between p-4" style="background:#f8f9fa; border-radius:16px;">
+          <div>
+            <h5 class="fw-bold mb-1">New Arrivals</h5>
+            <p class="text-muted mb-3" style="font-size:0.85rem;">Fresh tech, endless possibilities.</p>
+            <a href="shop.html?sort=newest" class="btn btn-light bg-white border fw-bold text-dark px-4 shadow-sm" style="border-radius:8px; font-size:0.85rem;">Explore New</a>
+          </div>
+          <img src="images/headphones-trans.png" style="width:120px; object-fit:contain;" alt="New Arrivals">
+        </div>
       </div>
     </div>
   </div>
@@ -125,48 +129,113 @@
   <div class="container">
     <div class="row g-5">
 
+      <!-- MOBILE FILTER OVERLAY -->
+      <div class="mobile-filter-overlay" id="mobile-filter-overlay"></div>
+
       <!-- SIDEBAR -->
       <div class="col-lg-3">
-        <div class="filter-sidebar">
-          <!-- Search -->
-          <div class="filter-block">
-            <div class="filter-title">Search</div>
-            <div class="input-group input-group-sm">
-              <input type="text" id="shop-search" class="form-control" placeholder="Product name…">
-              <button class="btn btn-coral" style="padding:6px 14px;border-radius:0 var(--radius-sm) var(--radius-sm) 0;"><i class="fas fa-search"></i></button>
+        <div class="filter-sidebar" id="filter-sidebar">
+          <div class="d-flex justify-content-between align-items-center mb-4 filter-sidebar-close">
+            <h5 class="fw-bold m-0">Filters</h5>
+            <button class="btn-close shadow-none" id="close-filter-btn" aria-label="Close"></button>
+          </div>
+
+          <div class="filter-block mb-4">
+            <h6 class="fw-bold mb-3">Search products</h6>
+            <div class="input-group">
+              <input type="text" id="shop-search" class="form-control bg-light border-0 shadow-none" placeholder="Search products..." style="padding:10px 16px; border-radius:8px 0 0 8px;">
+              <button class="btn bg-light border-0 text-muted" style="border-radius:0 8px 8px 0;"><i class="fas fa-search"></i></button>
             </div>
           </div>
 
-          <!-- Categories -->
-          <div class="filter-block">
-            <div class="filter-title">Categories</div>
-            <div class="d-flex flex-column gap-2" id="sidebar-categories">
-              <!-- Categories loaded via AJAX in app.js -->
-              <div class="form-check">
-                <input class="form-check-input cat-filter" type="checkbox" id="cat-all" value="" checked>
-                <label class="form-check-label d-flex justify-content-between" for="cat-all">All <span class="filter-count">—</span></label>
+          <hr class="text-muted opacity-25 mb-4">
+
+          <div class="filter-block mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h6 class="fw-bold mb-0">Categories</h6>
+              <i class="fas fa-minus text-muted" style="font-size:0.8rem;"></i>
+            </div>
+            <div class="d-flex flex-column gap-2" id="sidebar-categories" style="font-size:0.9rem;">
+              <div class="form-check d-flex justify-content-between align-items-center">
+                <div>
+                  <input class="form-check-input shadow-none cat-filter" type="checkbox" id="cat-all" value="" checked>
+                  <label class="form-check-label ms-1 text-dark" for="cat-all">All Categories</label>
+                </div>
+                <span class="text-muted" style="font-size:0.8rem;">—</span>
               </div>
+              <!-- Categories dynamically added -->
             </div>
           </div>
 
-          <!-- Price Range -->
-          <div class="filter-block">
-            <div class="filter-title">Max Price: <span id="price-label" class="text-coral" style="font-weight:700;">$2000</span></div>
-            <input type="range" class="form-range" id="price-range" min="0" max="2000" value="2000" step="50">
-            <div class="d-flex justify-content-between mt-1" style="font-size:.78rem;color:var(--muted);">
-              <span>$0</span><span>$2000</span>
+          <hr class="text-muted opacity-25 mb-4">
+
+          <div class="filter-block mb-4">
+            <h6 class="fw-bold mb-3">Brands</h6>
+            <div class="d-flex flex-wrap gap-2">
+              <span class="badge bg-primary px-3 py-2" style="border-radius:16px; font-weight:normal; background:#0062FF !important;">All Brands</span>
+              <span class="badge bg-light text-dark px-3 py-2 border" style="border-radius:16px; font-weight:normal;">Apple</span>
+              <span class="badge bg-light text-dark px-3 py-2 border" style="border-radius:16px; font-weight:normal;">Sony</span>
+              <span class="badge bg-light text-dark px-3 py-2 border" style="border-radius:16px; font-weight:normal;">Dell</span>
+              <span class="badge bg-light text-dark px-3 py-2 border" style="border-radius:16px; font-weight:normal;">Samsung</span>
+              <span class="badge bg-light text-dark px-3 py-2 border" style="border-radius:16px; font-weight:normal;">Bose</span>
             </div>
           </div>
 
-          <!-- Reset -->
-          <button class="btn-outline-coral w-100" id="reset-filters" style="padding:10px;border-radius:var(--radius-sm);">
+          <hr class="text-muted opacity-25 mb-4">
+
+          <div class="filter-block mb-4">
+            <h6 class="fw-bold mb-3">Price Range</h6>
+            <div class="d-flex justify-content-between text-muted mb-2" style="font-size:0.8rem;">
+              <span>$0</span><span>$<span id="price-label">2500</span>+</span>
+            </div>
+            <input type="range" class="form-range" id="price-range" min="0" max="2500" value="2500" step="50">
+            <div class="d-flex flex-wrap gap-2 mt-3">
+              <span class="badge bg-light text-dark px-3 py-2 border" style="border-radius:16px; font-weight:normal;">Under $100</span>
+              <span class="badge bg-light text-dark px-3 py-2 border" style="border-radius:16px; font-weight:normal;">$100 - $500</span>
+              <span class="badge bg-light text-dark px-3 py-2 border" style="border-radius:16px; font-weight:normal;">$500 - $1000</span>
+              <span class="badge bg-light text-dark px-3 py-2 border" style="border-radius:16px; font-weight:normal;">Over $1000</span>
+            </div>
+          </div>
+
+          <button class="btn btn-light w-100 fw-bold border bg-white text-dark shadow-none" id="reset-filters" style="padding:10px; border-radius:8px; font-size:0.9rem;">
             <i class="fas fa-undo me-2"></i> Reset Filters
           </button>
         </div>
       </div>
 
-      <!-- PRODUCT GRID -->
+      <!-- PRODUCTS GRID -->
       <div class="col-lg-9">
+        
+        <!-- Mobile Filter Toggle (hidden on desktop) -->
+        <button class="btn btn-dark-pill mobile-filter-btn w-100 mb-4 justify-content-center" id="mobile-filter-btn">
+          <i class="fas fa-sliders-h me-2"></i> Filters & Sorting
+        </button>
+
+        <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom shop-header-row">
+          <span class="text-muted" id="result-count" style="font-size:0.9rem;">Showing products</span>
+          <div class="d-flex align-items-center gap-4">
+            <div class="d-flex align-items-center gap-2">
+              <span class="text-muted" style="font-size:0.9rem;">Sort by:</span>
+              <select id="sort-select" class="form-select form-select-sm border-0 bg-transparent shadow-none fw-bold text-dark" style="width:auto; cursor:pointer;">
+                <option value="default">Best Selling</option>
+                <option value="price_asc">Price: Low to High</option>
+                <option value="price_desc">Price: High to Low</option>
+                <option value="name_asc">Name A to Z</option>
+              </select>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+              <span class="text-muted" style="font-size:0.9rem;">View:</span>
+              <button class="btn btn-sm btn-primary shadow-none border-0 view-toggle-btn active" id="grid-view-btn" style="background:#0062FF; border-radius:4px;" title="Grid view"><i class="fas fa-th"></i></button>
+              <button class="btn btn-sm btn-light bg-white border shadow-none view-toggle-btn" id="list-view-btn" style="border-radius:4px;" title="List view"><i class="fas fa-list"></i></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Active filters -->
+        <div class="d-flex flex-wrap gap-2 mb-4 align-items-center" id="active-filters">
+          <!-- Populated by JS -->
+        </div>
+
         <div class="row g-4" id="shop-grid">
           <!-- Injected via AJAX -->
         </div>
@@ -178,17 +247,27 @@
 
 <!-- QUICK VIEW MODAL -->
 <div class="modal fade" id="quickViewModal" tabindex="-1">
-  <div class="modal-dialog modal-lg modal-dialog-centered">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
     <div class="modal-content border-0" style="border-radius:var(--radius-xl);overflow:hidden;">
-      <button type="button" class="btn-close position-absolute top-0 end-0 m-3 z-3" data-bs-dismiss="modal" style="background-color:#fff;border-radius:50%;padding:8px;box-shadow:var(--shadow-sm);"></button>
-      <div class="modal-body p-0">
-        <div class="row g-0">
-          <div class="col-md-5 qv-img-wrap"><img src="" id="qv-img" alt="Product"></div>
-          <div class="col-md-7 p-5 d-flex flex-column justify-content-center">
-            <span class="badge text-bg-secondary rounded-pill align-self-start mb-2" id="qv-cat" style="font-size:.75rem;"></span>
-            <h3 class="fw-700 mb-1" id="qv-name" style="font-size:1.5rem;font-weight:700;"></h3>
-            <div class="rating-stars mb-2">
-              <span id="qv-rating-stars"></span>
+      <div class="modal-body p-0" style="position:relative; min-height: 400px;">
+        <!-- Loader Overlay -->
+        <div class="qv-loader" id="qv-loader">
+          <div class="spinner-border text-primary" role="status"></div>
+        </div>
+        
+        <div class="row g-0 qv-content-animate" id="qv-content-wrap">
+          <div class="col-md-6 d-flex align-items-center justify-content-center p-4 bg-white" style="min-height:300px;">
+            <img src="" id="qv-img" alt="Product" style="max-width:100%; max-height:400px; object-fit:contain;">
+          </div>
+          <div class="col-md-6 p-4 p-lg-5">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <span id="qv-cat" class="text-uppercase tracking-wider text-muted" style="font-size:0.75rem; font-weight:700;"></span>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <h2 class="fw-bold mb-3" id="qv-name" style="font-size:2rem; letter-spacing:-0.02em;"></h2>
+            
+            <div class="d-flex align-items-center mb-4">
+              <div id="qv-rating-stars" class="d-flex gap-1"></div>
               <a href="javascript:void(0)" id="qv-toggle-reviews" style="font-size:.8rem;color:var(--muted);text-decoration:none;margin-left:8px;transition:color .2s;" onmouseover="this.style.color='var(--coral)'" onmouseout="this.style.color='var(--muted)'"></a>
             </div>
             <div class="mb-3" style="font-size:1.8rem;font-weight:800;color:var(--coral);" id="qv-price"></div>
@@ -202,7 +281,7 @@
               </div>
               <span id="qv-stock" style="font-size:.8rem;color:var(--muted);"></span>
             </div>
-
+            
             <!-- Specifications Section -->
             <div id="qv-specs-container" class="mt-2 mb-4" style="display:none;">
               <h6 style="font-size:.85rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:12px;">Technical Specifications</h6>
@@ -211,19 +290,32 @@
               </div>
             </div>
 
-            <!-- Product Reviews Section -->
-            <div id="qv-reviews-container" class="mt-2 mb-4" style="display:none; border-top:1px solid var(--border); padding-top:20px;">
-              <h6 style="font-size:.85rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:12px;">Customer Feedback</h6>
-              <div id="qv-reviews-list" style="max-height:200px; overflow-y:auto; padding-right:8px;">
-                <!-- Reviews injected here -->
+            <!-- Review Form (Hidden by default, shown if eligible) -->
+            <div id="qv-review-form-container" class="mt-2 mb-4 p-3 bg-light rounded" style="display:none; border: 1px dashed var(--border);">
+              <h6 class="fw-bold mb-2" style="font-size:0.9rem;">Share your experience</h6>
+              <div class="d-flex gap-1 mb-3 text-warning" id="qv-review-stars-input" style="cursor:pointer; font-size:1.1rem;">
+                <i class="fas fa-star qv-review-star-input" data-val="1" style="cursor:pointer; padding:2px;"></i>
+                <i class="fas fa-star qv-review-star-input" data-val="2" style="cursor:pointer; padding:2px;"></i>
+                <i class="fas fa-star qv-review-star-input" data-val="3" style="cursor:pointer; padding:2px;"></i>
+                <i class="fas fa-star qv-review-star-input" data-val="4" style="cursor:pointer; padding:2px;"></i>
+                <i class="fas fa-star qv-review-star-input" data-val="5" style="cursor:pointer; padding:2px;"></i>
               </div>
+              <textarea id="qv-review-text" class="form-control mb-2" rows="2" placeholder="What did you think of this product?" style="font-size:0.85rem;"></textarea>
+              <button class="btn btn-dark btn-sm w-100 fw-bold" id="qv-submit-review">Submit Review</button>
             </div>
 
             <div class="d-flex gap-3">
-              <button class="btn-coral flex-grow-1" id="qv-add-btn"><i class="fas fa-shopping-cart me-2"></i>Add to Cart</button>
+              <div id="qv-cart-btn-wrapper" class="d-flex gap-3 flex-grow-1">
+                <button class="btn-coral flex-grow-1" id="qv-add-btn"><i class="fas fa-shopping-cart me-2"></i>Add to Cart</button>
+              </div>
               <button class="icon-btn" id="qv-wishlist-btn" style="border:1px solid var(--border);width:48px;height:48px;border-radius:var(--radius-sm);" title="Wishlist"><i class="far fa-heart"></i></button>
             </div>
           </div>
+        </div>
+        <!-- Reviews Section -->
+        <div id="qv-reviews-container" style="display:none; padding: 0 40px 40px;">
+          <hr class="my-0">
+          <div id="qv-reviews-list" class="pt-3" style="max-height:280px; overflow-y:auto;"></div>
         </div>
       </div>
     </div>
@@ -257,27 +349,34 @@ $(document).ready(function () {
     $('#result-count').text(products.length + ' product' + (products.length !== 1 ? 's' : '') + ' found');
     let html = '';
     products.forEach(p => {
-      const badge = (p.is_new || p.is_featured) ? '<span class="product-badge">NEW</span>' : '';
-      const stockBadge = p.stock < 5 ? `<span class="product-badge sale" style="left:auto;right:12px;">Low Stock</span>` : '';
+      const badge = (p.is_new || p.is_featured) ? '<span class="product-badge text-bg-primary" style="background:#0062FF !important; border-radius:4px; padding:4px 8px; font-size:0.7rem; font-weight:bold; position:absolute; top:16px; left:16px; z-index:2; color:#fff;">NEW</span>' : '';
+      const stockBadge = p.stock < 5 ? `<span class="product-badge text-bg-danger" style="background:#ef4444 !important; border-radius:4px; padding:4px 8px; font-size:0.7rem; font-weight:bold; position:absolute; top:16px; right:16px; z-index:2; color:#fff;">Low Stock</span>` : '';
       html += `
-      <div class="col-sm-6 col-xl-4">
-        <div class="product-card h-100">
-          <div class="product-img-box">
+      <div class="col-6 col-md-6 col-xl-4 px-2 px-md-3">
+        <div class="product-card h-100 bg-white" style="border:1px solid var(--border); border-radius:16px; overflow:hidden;">
+          <div class="product-img-box" style="padding:24px; position:relative; background:#fff;">
             ${badge}${stockBadge}
-            <img src="/images/${p.image_path}" alt="${p.name}">
+            <button class="wishlist-toggle icon-btn shadow-none ${JSON.parse(localStorage.getItem('electrohub_wishlist') || '[]').includes(p.id) ? 'active' : ''}" data-id="${p.id}" style="position:absolute; top:8px; right:8px; background:transparent; border:none; z-index:2; font-size:1.2rem; color:var(--muted); width:40px; height:40px; display:flex; align-items:center; justify-content:center;">
+              <i class="${JSON.parse(localStorage.getItem('electrohub_wishlist') || '[]').includes(p.id) ? 'fas' : 'far'} fa-heart"></i>
+            </button>
+            <img src="${getImageUrl(p.image_path)}" alt="${p.name}" draggable="false" style="width:100%; height:200px; object-fit:contain; transition:transform 0.3s ease;">
             <div class="product-hover-actions">
-              <button class="prod-act-btn add-to-cart-btn" data-id="${p.id}" title="Add to cart"><i class="fas fa-shopping-cart"></i></button>
-              <button class="prod-act-btn quick-view-btn" data-id="${p.id}" title="Quick view"><i class="fas fa-arrow-right" style="transform:rotate(-45deg);"></i></button>
+              <button class="btn btn-light rounded-pill px-3 py-2 fw-bold quick-view-btn shadow-sm text-dark" data-id="${p.id}" title="Quick view" style="font-size:0.85rem;"><i class="fas fa-search me-1"></i> Quick View</button>
             </div>
           </div>
-          <div class="product-body">
-            <div class="product-header">
-              <div class="product-name" title="${p.name}"><a href="javascript:void(0)" class="quick-view-btn" data-id="${p.id}" style="text-decoration:none;">${p.name}</a></div>
-              <div class="product-price">$${parseFloat(p.price).toFixed(2)}</div>
+          <div class="product-body p-4 pt-2 d-flex flex-column" style="text-align:left;">
+            <div class="product-category text-muted mb-1" style="font-size:0.85rem;">${p.category_name || 'Electronics'}</div>
+            <div class="product-name fw-bold mb-2" title="${p.name}" style="font-size:1.1rem; line-height:1.3; color:var(--charcoal);">
+              <a href="javascript:void(0)" class="quick-view-btn text-dark text-decoration-none" data-id="${p.id}">${p.name}</a>
             </div>
-            <div class="product-footer">
-              <div class="product-category">${p.category_name || ''}</div>
-              <div class="product-swatches"><i class="fas fa-circle"></i> <i class="fas fa-circle" style="color:var(--muted-lt);"></i> <i class="far fa-circle" style="color:var(--muted-lt);"></i></div>
+            <div class="d-flex align-items-center mb-3 quick-view-btn" data-id="${p.id}" data-show-reviews="true" style="font-size:0.8rem; color:#f59e0b; cursor:pointer;">
+              ${getRatingHtml(p.reviews_data)}
+            </div>
+            <div class="d-flex justify-content-between align-items-center mt-auto pt-2">
+              <div class="product-price fw-bold" style="font-size:1.25rem;">$${parseFloat(p.price).toFixed(2)}</div>
+              <div class="cart-btn-wrapper">
+                ${getCartButtonHtml(p.id)}
+              </div>
             </div>
           </div>
         </div>
@@ -313,6 +412,16 @@ $(document).ready(function () {
     applyFilters();
   });
 
+  $(document).on('cartUpdated', function() {
+    // Patches only the buttons instead of full re-render
+    $('.cart-btn-wrapper').each(function() {
+      const id = $(this).closest('.product-card').find('.add-to-cart-btn, .qty-ctrl-mini').data('id');
+      if (id) {
+        $(this).html(getCartButtonHtml(id));
+      }
+    });
+  });
+
   // Events
   let debounce;
   $('#shop-search').on('keyup', () => { clearTimeout(debounce); debounce = setTimeout(applyFilters, 300); });
@@ -338,29 +447,43 @@ $(document).ready(function () {
     allProducts = [];
     $.get('/api/products').done(function (products) { allProducts = products; applyFilters(); });
   });
+
+  // Init mobile filter drawer
+  if (typeof initShopFilterDrawer === 'function') {
+    initShopFilterDrawer();
+  }
+
+  // View Toggle logic
+  $('.view-toggle-btn').on('click', function() {
+    $('.view-toggle-btn').removeClass('btn-primary active').addClass('btn-light bg-white border').css('background', 'transparent').css('color', 'var(--charcoal)');
+    $(this).addClass('btn-primary active').removeClass('btn-light bg-white border').css('background', '#0062FF').css('color', '#fff');
+    
+    if ($(this).attr('id') === 'list-view-btn') {
+      $('#shop-grid').addClass('list-view');
+    } else {
+      $('#shop-grid').removeClass('list-view');
+    }
+  });
 });
 </script>
 
 <!-- Footer -->
-<footer class="site-footer mt-5">
+<footer class="site-footer">
   <div class="container">
-    <div class="row g-4">
+    <div class="row g-5">
       <div class="col-lg-4">
         <div class="footer-logo">
           <img src="images/logo-brand.png" alt="ElectroHub" style="height: 38px; filter: brightness(0) invert(1);">
         </div>
-        <p class="footer-desc">Premium electronics delivered fast and securely to your door.</p>
-        <div class="footer-social">
-          <a href="javascript:void(0)" class="social-btn"><i class="fab fa-instagram"></i></a>
-          <a href="javascript:void(0)" class="social-btn"><i class="fab fa-twitter"></i></a>
-          <a href="javascript:void(0)" class="social-btn"><i class="fab fa-facebook-f"></i></a>
-        </div>
+        <p class="footer-desc">Your trusted destination for premium electronics. Fast shipping, secure checkout, and real support.</p>
       </div>
       <div class="col-6 col-lg-2">
         <div class="footer-col">
-          <h6>Shop</h6>
-          <ul id="footer-categories">
-            <li><a href="shop.html">All Products</a></li>
+          <h6>Company</h6>
+          <ul>
+            <li><a href="about.html">About Us</a></li>
+            <li><a href="contact.html">Contact</a></li>
+            <li><a href="shop.html">Shop</a></li>
           </ul>
         </div>
       </div>
@@ -372,13 +495,18 @@ $(document).ready(function () {
             <li><a href="profile.html">My Orders</a></li>
             <li><a href="cart.html">Cart</a></li>
           </ul>
-          <p style="font-size:.78rem;color:rgba(255,255,255,.3);margin-top:10px;margin-bottom:0;"><i class="fa-solid fa-location-dot" style="color:#007aff;"></i> <a href="https://maps.google.com/?q=Nabatiye,Lebanon" target="_blank" style="color:rgba(255,255,255,.3);text-decoration:none;">Nabatiye, Lebanon</a> &nbsp;|&nbsp; <i class="fa-solid fa-phone" style="color:#007aff;"></i> <a href="tel:+96179307904" style="color:rgba(255,255,255,.3);text-decoration:none;">+961 79 30 79 04</a></p>
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <div class="footer-col">
+          <h6>Locations</h6>
+          <p style="font-size:.88rem;margin-bottom:14px;"><i class="fa-solid fa-location-dot" style="color:var(--coral);"></i> <a href="https://maps.google.com/?q=Nabatiye,Lebanon" target="_blank" style="color:rgba(255,255,255,.5);text-decoration:none;">Nabatiye, Lebanon</a></p>
+          <p style="font-size:.88rem;"><i class="fa-solid fa-phone" style="color:var(--coral);"></i> <a href="tel:+96179307904" style="color:rgba(255,255,255,.5);text-decoration:none;">+961 79 30 79 04</a></p>
         </div>
       </div>
     </div>
     <div class="footer-bottom">
-      <span>© 2025 ElectroHub Â· Ali Ghandour. All rights reserved.</span>
-      <span>Built with <i class="fa-solid fa-heart" style="color:#ef4444;"></i> in Lebanon</span>
+      <span>© 2025 ElectroHub · Ali Ghandour. All rights reserved.</span>
     </div>
   </div>
 </footer>

@@ -12,31 +12,53 @@
 <body>
 
 <header class="site-header">
-  <div class="container header-inner">
-    <a href="index.html" class="site-logo">
-      <img src="images/logo-brand.png" alt="ElectroHub" style="height: 38px;">
-    </a>
-    <nav class="site-nav align-items-center">
-        <a href="index.html" class="">Home</a>
+  <div class="container header-inner" style="display:grid; grid-template-columns: 1fr auto 1fr; align-items:center; height:80px; gap:24px;">
+    <!-- Logo Left -->
+    <div style="display:flex; align-items:center;">
+      <a href="index.html" class="site-logo">
+        <img src="images/logo-brand.png" alt="ElectroHub" style="height: 38px;">
+      </a>
+    </div>
+    
+    <!-- New Search Bar Layout (Dead Center) -->
+    <div class="header-search-bar" style="display:flex; align-items:center; width:600px; border:1px solid #e2e8f0; border-radius:4px; overflow:hidden; height:46px;">
+      <input type="text" id="global-search" placeholder="Search Products" style="flex:1; height:100%; border:none; padding:0 16px; margin:0; outline:none; font-size:0.95rem; background:#fff;" aria-label="Search">
+      <button onclick="window.location.href='shop.html?search='+document.getElementById('global-search').value" class="search-btn" style="height:100%; background:#111; color:#fff; border:none; width:52px; display:flex; align-items:center; justify-content:center; cursor:pointer;"><i class="fas fa-search"></i></button>
+    </div>
+
+    <!-- Right Actions -->
+    <div class="header-right-actions" style="display:flex; align-items:center; justify-content:flex-end; gap:20px;">
+      <a href="login.html" id="nav-account" class="btn btn-dark rounded-pill px-4" style="font-size:0.9rem; font-weight:600; color:#fff !important; text-decoration:none;">Login / Sign Up</a>
+      <div class="header-divider" style="width:1px; height:16px; background:#e2e8f0;"></div>
+      <a href="wishlist.html" style="font-size:1.3rem; color:var(--charcoal); text-decoration:none; margin-right:12px; position:relative; display:flex; align-items:center;">
+        <i class="far fa-heart"></i>
+        <span class="badge" id="nav-wishlist-count" style="position:absolute; top:-5px; right:-12px; background:#ef4444; color:#fff; font-size:0.65rem; font-weight:700; padding:2px 6px; min-width:20px; height:20px; border-radius:12px; display:none; align-items:center; justify-content:center;">0</span>
+      </a>
+      <a href="cart.html" style="font-size:1.3rem; color:var(--charcoal); text-decoration:none; position:relative; display:flex; align-items:center;">
+        <i class="fas fa-shopping-bag"></i>
+        <span class="badge" id="nav-cart-count" style="position:absolute; top:-5px; right:-12px; background:#ef4444; color:#fff; font-size:0.65rem; font-weight:700; padding:2px 6px; min-width:20px; height:20px; border-radius:12px; display:flex; align-items:center; justify-content:center;">0</span>
+      </a>
+      <!-- Hamburger button: only visible on mobile -->
+      <button class="burger-btn" id="burger-btn" aria-label="Open menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Navigation moved below -->
+  <div class="nav-bottom-bar" style="border-top:1px solid #e2e8f0; background:#fff;">
+    <div class="container d-flex justify-content-center" style="padding:12px 0;">
+      <nav class="site-nav align-items-center">
+        <a href="index.html">Home</a>
         <div class="dropdown d-inline-block">
           <a href="#" class="dropdown-toggle " data-bs-toggle="dropdown" aria-expanded="false" style="text-decoration:none;">Shop</a>
           <ul class="dropdown-menu shadow border-0" id="nav-shop-dropdown">
             <!-- Categories injected here -->
           </ul>
         </div>
-        <a href="index.html#reviews">Reviews</a>
-        <a href="contact.html" class="">Contact</a>
+        <a href="about.html">About</a>
+        <a href="contact.html">Contact</a>
       </nav>
-    <div class="header-actions">
-      <a href="cart.html" class="icon-btn active" title="Cart"><i class="fas fa-shopping-cart" style="color:var(--coral);"></i></a>
-      <a href="login.html" class="icon-btn filled" id="nav-account" title="Account"><i class="fas fa-user"></i></a>
-    </div>
-  </div>
-
-      <!-- Hamburger button: only visible on mobile -->
-      <button class="burger-btn" id="burger-btn" aria-label="Open menu">
-        <span></span><span></span><span></span>
-      </button>
     </div>
   </div>
 </header>
@@ -59,6 +81,7 @@
     <nav class="mobile-nav">
       <a href="index.html"><i class="fas fa-home"></i> Home</a>
       <a href="shop.html"><i class="fas fa-store"></i> Shop</a>
+      <a href="about.html"><i class="fas fa-info-circle"></i> About</a>
       <a href="index.html#reviews"><i class="fas fa-star"></i> Reviews</a>
       <a href="contact.html"><i class="fas fa-envelope"></i> Contact</a>
     </nav>
@@ -70,61 +93,92 @@
 </div>
 <div class="mobile-drawer-overlay" id="mobile-drawer-overlay"></div>
 
-<div class="bg-soft py-4">
-  <div class="container">
-    <nav aria-label="breadcrumb" style="font-size:.85rem;">
-      <ol class="breadcrumb mb-0">
-        <li class="breadcrumb-item"><a href="index.html" class="text-muted">Home</a></li>
-        <li class="breadcrumb-item active text-muted">Shopping Cart</li>
-      </ol>
-    </nav>
-  </div>
+<div class="container mt-5 mb-4">
+  <nav aria-label="breadcrumb" style="font-size:.85rem;">
+    <ol class="breadcrumb mb-0">
+      <li class="breadcrumb-item"><a href="index.html" class="text-muted text-decoration-none">Home</a></li>
+      <li class="breadcrumb-item active">Shopping Cart</li>
+    </ol>
+  </nav>
 </div>
 
-<section class="section-gap">
+<section class="mb-5 pb-5">
   <div class="container">
-    <h1 class="section-title mb-5">Shopping Cart</h1>
+    <h1 class="fw-bold mb-2">Your Shopping Cart <span id="cart-qty-count" style="color:var(--muted); font-size: 1.5rem; font-weight: normal;">(0)</span></h1>
+    <p class="text-muted mb-5">Review your items and proceed to secure checkout.</p>
     <div class="row g-5">
 
       <!-- Cart Items -->
-      <div class="col-lg-8" id="cart-items-wrap">
+      <div class="col-lg-8">
+        <div id="cart-items-wrap">
         <div class="text-center py-5 text-muted">
           <div class="spinner-border" style="color:var(--coral);" role="status"></div>
           <p class="mt-3">Loading your cart…</p>
+        </div>
+        </div>
+        
+        <!-- Free shipping progress -->
+        <div class="mt-4 p-4 bg-white" id="free-shipping-container" style="border-radius:16px; border:1px solid var(--border);">
+          <div class="d-flex align-items-center gap-3 mb-2">
+            <div style="width:48px; height:48px; border-radius:50%; background:#eff6ff; display:flex; align-items:center; justify-content:center;">
+              <i class="fas fa-truck fs-5 text-primary"></i>
+            </div>
+            <div class="flex-grow-1">
+              <h6 class="fw-bold mb-1" id="free-shipping-title">You're eligible for free shipping!</h6>
+              <p class="text-muted mb-0" id="free-shipping-subtitle" style="font-size:.9rem;">Add $0.01 more to get free shipping on your order.</p>
+            </div>
+            <div class="fw-bold text-primary fs-5">$99+</div>
+          </div>
+          <div class="progress mt-3" style="height:4px; border-radius:2px;">
+            <div class="progress-bar bg-primary" id="free-shipping-bar" role="progressbar" style="width: 100%;"></div>
+          </div>
+        </div>
+        
+        <div class="mt-4" id="continue-shopping-container">
+          <a href="shop.html" class="btn btn-light fw-bold px-4 py-2 text-dark" style="border:1px solid var(--border); border-radius:8px; font-size:.9rem; background:#fff;"><i class="fas fa-arrow-left me-2"></i> Continue Shopping</a>
         </div>
       </div>
 
       <!-- Order Summary -->
       <div class="col-lg-4">
-        <div class="order-summary-card">
-          <h5 class="fw-700 mb-4" style="font-weight:700;">Order Summary</h5>
+        <div class="order-summary-card" style="background:#fff; border:1px solid var(--border); border-radius:16px; padding:32px;">
+          <h5 class="fw-bold mb-4" style="font-size:1.15rem;">Order Summary</h5>
 
-          <div class="d-flex justify-content-between mb-3" style="font-size:.9rem;">
-            <span class="text-muted">Subtotal</span>
-            <span id="summary-subtotal" class="fw-600" style="font-weight:600;">$0.00</span>
+          <div class="d-flex justify-content-between mb-3" style="font-size:.95rem;">
+            <span class="text-muted" id="summary-items-text">Subtotal</span>
+            <span id="summary-subtotal" class="fw-bold">$0.00</span>
           </div>
-          <div class="d-flex justify-content-between mb-3" style="font-size:.9rem;">
+          <div class="d-flex justify-content-between mb-4" style="font-size:.95rem;">
             <span class="text-muted">Shipping</span>
-            <span class="fw-600" style="font-weight:600;color:#16a34a;">Free</span>
+            <span class="fw-bold" id="summary-shipping" style="color:#16a34a;">Free</span>
           </div>
-          <hr>
-          <div class="d-flex justify-content-between mb-5" style="font-size:1.1rem;">
-            <span class="fw-700" style="font-weight:700;">Total</span>
-            <span class="fw-700" style="font-weight:700;color:var(--coral);" id="summary-total">$0.00</span>
+          <div class="text-muted mb-2" style="font-size:.85rem;">Free shipping on orders over $99</div>
+          
+          <hr class="my-4" style="border-top-color:var(--border);">
+          
+          <div class="mb-4">
+            <span class="text-muted" style="font-size:.85rem;">Have a promo code?</span>
+            <div class="d-flex mt-2 gap-2">
+              <input type="text" class="form-control shadow-none" placeholder="Enter code" style="padding:10px 16px; border-radius:8px; font-size:.9rem; border:1px solid var(--border);">
+              <button class="btn btn-outline-primary fw-bold" style="border-radius:8px; padding:10px 20px;">Apply</button>
+            </div>
           </div>
 
-          <a href="checkout.html" class="btn-coral w-100 mb-3" id="checkout-btn" style="padding:14px;border-radius:var(--radius-sm);font-size:1rem;text-align:center;display:flex;align-items:center;justify-content:center;gap:8px;">
+          <div class="d-flex justify-content-between align-items-center mb-1" style="font-size:1.1rem;">
+            <span class="fw-bold text-dark fs-5">Estimated Total</span>
+            <span class="fw-bold text-primary fs-3" id="summary-total">$0.00</span>
+          </div>
+          <div class="text-muted mb-4" style="font-size:.8rem;">Taxes calculated at checkout</div>
+
+          <a href="checkout.html" class="btn btn-primary w-100 mb-3 fw-bold shadow-none" id="checkout-btn" style="padding:16px;border-radius:8px;font-size:1rem;display:flex;align-items:center;justify-content:center;gap:8px;">
             <i class="fas fa-lock"></i> Proceed to Checkout
-          </a>
-          <a href="shop.html" class="btn-outline-coral w-100 text-center" style="padding:12px;border-radius:var(--radius-sm);font-size:.9rem;">
-            <i class="fas fa-arrow-left me-2"></i> Continue Shopping
           </a>
 
           <!-- Trust badges -->
-          <div class="d-flex justify-content-center gap-3 mt-4" style="font-size:.75rem;color:var(--muted);">
-            <span><i class="fas fa-shield-alt me-1"></i> Secure</span>
-            <span><i class="fas fa-truck me-1"></i> Free Shipping</span>
-            <span><i class="fas fa-undo me-1"></i> Easy Returns</span>
+          <div class="d-flex justify-content-around mt-4 pt-3 text-center" style="font-size:.7rem;color:var(--muted); border-top:1px solid var(--border);">
+            <div><i class="fas fa-shield-alt text-primary mb-2 fs-5"></i><br><span class="fw-bold text-dark">Secure<br>Checkout</span></div>
+            <div><i class="fas fa-truck text-primary mb-2 fs-5"></i><br><span class="fw-bold text-dark">Free Shipping</span><br><span style="font-size:0.65rem;">on orders over $99</span></div>
+            <div><i class="fas fa-undo text-primary mb-2 fs-5"></i><br><span class="fw-bold text-dark">Easy Returns</span><br><span style="font-size:0.65rem;">30-day returns</span></div>
           </div>
         </div>
       </div>
@@ -136,11 +190,45 @@
 <div class="toast-wrap" id="toast-wrap"></div>
 
 <!-- Footer -->
-<footer class="site-footer mt-5">
+<footer class="site-footer">
   <div class="container">
+    <div class="row g-5">
+      <div class="col-lg-4">
+        <div class="footer-logo">
+          <img src="images/logo-brand.png" alt="ElectroHub" style="height: 38px; filter: brightness(0) invert(1);">
+        </div>
+        <p class="footer-desc">Your trusted destination for premium electronics. Fast shipping, secure checkout, and real support.</p>
+      </div>
+      <div class="col-6 col-lg-2">
+        <div class="footer-col">
+          <h6>Company</h6>
+          <ul>
+            <li><a href="about.html">About Us</a></li>
+            <li><a href="contact.html">Contact</a></li>
+            <li><a href="shop.html">Shop</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="col-6 col-lg-2">
+        <div class="footer-col">
+          <h6>Account</h6>
+          <ul>
+            <li><a href="login.html">Login</a></li>
+            <li><a href="profile.html">My Orders</a></li>
+            <li><a href="cart.html">Cart</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <div class="footer-col">
+          <h6>Locations</h6>
+          <p style="font-size:.88rem;margin-bottom:14px;"><i class="fa-solid fa-location-dot" style="color:var(--coral);"></i> <a href="https://maps.google.com/?q=Nabatiye,Lebanon" target="_blank" style="color:rgba(255,255,255,.5);text-decoration:none;">Nabatiye, Lebanon</a></p>
+          <p style="font-size:.88rem;"><i class="fa-solid fa-phone" style="color:var(--coral);"></i> <a href="tel:+96179307904" style="color:rgba(255,255,255,.5);text-decoration:none;">+961 79 30 79 04</a></p>
+        </div>
+      </div>
+    </div>
     <div class="footer-bottom">
       <span>© 2025 ElectroHub · Ali Ghandour. All rights reserved.</span>
-      <span><a href="https://maps.google.com/?q=Nabatiye,Lebanon" target="_blank" style="color:inherit;text-decoration:none;">📍 Nabatiye, Lebanon</a></span>
     </div>
   </div>
 </footer>
@@ -159,38 +247,81 @@ $(document).ready(function () {
             <i class="fas fa-shopping-cart fa-4x mb-4" style="color:var(--border);"></i>
             <h4 class="fw-600" style="font-weight:600;">Your cart is empty</h4>
             <p class="text-muted mb-4">Looks like you haven't added anything yet.</p>
-            <a href="shop.html" class="btn-coral" style="padding:12px 28px;border-radius:var(--radius-sm);">Start Shopping</a>
+            <a href="shop.html" class="btn btn-primary px-4 py-2 fw-bold" style="background:#0062FF; border-radius:8px; border:none;">Start Shopping</a>
           </div>`);
         $('#summary-subtotal, #summary-total').text('$0.00');
+        $('#summary-shipping').text('$0.00').css('color', 'var(--charcoal)');
+        $('#cart-qty-count').text('(0)');
+        $('#free-shipping-container').hide();
+        $('#continue-shopping-container').hide();
+        $('#checkout-btn').prop('disabled', true).addClass('opacity-50');
         return;
       }
+
+      $('#free-shipping-container').show();
+      $('#continue-shopping-container').show();
+      $('#checkout-btn').prop('disabled', false).removeClass('opacity-50');
 
       let html = '';
       res.items.forEach(item => {
         html += `
-        <div class="cart-item-card d-flex align-items-center gap-4" id="cart-row-${item.product_id}">
-          <img src="/${item.image_path}" class="cart-item-img" alt="${item.name}">
-          <div class="flex-grow-1">
-            <div class="product-category mb-1">${item.category_name || ''}</div>
-            <div style="font-weight:600;font-size:1rem;">${item.name}</div>
-            <div style="color:var(--coral);font-weight:700;margin-top:4px;">$${parseFloat(item.price).toFixed(2)}</div>
+        <div class="cart-item-card d-flex flex-column flex-md-row align-items-start align-items-md-center gap-3 gap-md-4 mb-3 p-3 p-md-4 bg-white" id="cart-row-${item.product_id}" style="border:1px solid var(--border); border-radius:16px;">
+          <div class="d-flex gap-3 align-items-start w-100">
+            <img src="${getImageUrl(item.image_path)}" class="cart-item-img flex-shrink-0" alt="${item.name}" style="width:100px; height:100px; object-fit:contain;">
+            <div class="flex-grow-1">
+              <div style="font-weight:700;font-size:1.1rem; color:var(--charcoal);">${item.name}</div>
+              <div class="text-muted mb-2" style="font-size:.85rem;">${item.category_name || 'Electronics'}</div>
+              <div style="font-size:.8rem; color:#16a34a; font-weight:600;"><i class="fas fa-check me-1"></i> In Stock</div>
+              <div class="mt-2 d-none d-md-block" style="font-size:.85rem; color:var(--charcoal);"><strong>Color:</strong> <span class="d-inline-block rounded-circle" style="width:12px; height:12px; background:#111; margin-left:4px; vertical-align:middle;"></span></div>
+            </div>
           </div>
-          <div class="qty-ctrl">
-            <button class="qty-btn cart-qty-minus" data-id="${item.product_id}" data-qty="${item.quantity}">−</button>
-            <span style="min-width:24px;text-align:center;font-weight:600;">${item.quantity}</span>
-            <button class="qty-btn cart-qty-plus" data-id="${item.product_id}" data-qty="${item.quantity}">+</button>
-          </div>
-          <div class="text-end">
-            <div style="font-weight:700;font-size:1.05rem;">$${(item.price * item.quantity).toFixed(2)}</div>
-            <button class="btn btn-link text-danger p-0 mt-1 cart-remove-btn" data-id="${item.product_id}" style="font-size:.8rem;">
-              <i class="fas fa-trash me-1"></i> Remove
-            </button>
+          
+          <div class="d-flex flex-md-column align-items-center align-items-md-end justify-content-between w-100" style="min-height: 100%;">
+            <div class="d-md-none" style="font-size:.85rem; color:var(--charcoal);"><strong>Color:</strong> <span class="d-inline-block rounded-circle" style="width:12px; height:12px; background:#111; margin-left:4px; vertical-align:middle;"></span></div>
+            <div class="d-none d-md-block" style="font-weight:700;font-size:1.15rem; color:var(--charcoal); margin-bottom: auto;">$${parseFloat(item.price).toFixed(2)}</div>
+            <div class="d-flex align-items-center gap-3 mt-md-4 w-100 justify-content-end">
+              <div class="d-md-none" style="font-weight:700;font-size:1.15rem; color:var(--charcoal); margin-right:auto;">$${parseFloat(item.price).toFixed(2)}</div>
+              <div class="qty-ctrl d-flex align-items-center" style="border:1px solid var(--border); border-radius:8px; padding:4px 10px; gap:12px;">
+                <button class="cart-qty-minus text-muted" data-id="${item.product_id}" data-qty="${item.quantity}" style="background:transparent; border:none; padding:0; cursor:pointer;">−</button>
+                <span class="fw-bold" style="font-size:.95rem;">${item.quantity}</span>
+                <button class="cart-qty-plus text-muted" data-id="${item.product_id}" data-qty="${item.quantity}" style="background:transparent; border:none; padding:0; cursor:pointer;">+</button>
+              </div>
+              <button class="btn btn-link text-muted p-0 text-decoration-none cart-remove-btn" data-id="${item.product_id}" style="font-size:.85rem; font-weight:500;">
+                <i class="fas fa-trash-alt d-md-none"></i><span class="d-none d-md-inline"><i class="fas fa-times me-1"></i> Remove</span>
+              </button>
+            </div>
           </div>
         </div>`;
       });
       $('#cart-items-wrap').html(html);
       const subtotal = parseFloat(res.subtotal) || 0;
-      $('#summary-subtotal, #summary-total').text('$' + subtotal.toFixed(2));
+      let totalQty = res.items.reduce((acc, curr) => acc + curr.quantity, 0);
+      $('#cart-qty-count').text('(' + totalQty + ')');
+      $('#summary-items-text').text('Subtotal (' + totalQty + ' items)');
+      
+      const threshold = 99;
+      let shippingCost = 0;
+      if (subtotal > 0 && subtotal < threshold) {
+        shippingCost = 10.00; // Flat rate
+        $('#summary-shipping').text('$' + shippingCost.toFixed(2)).css('color', 'var(--charcoal)');
+      } else {
+        $('#summary-shipping').text('Free').css('color', '#16a34a');
+      }
+
+      const finalTotal = subtotal + shippingCost;
+      $('#summary-subtotal').text('$' + subtotal.toFixed(2));
+      $('#summary-total').text('$' + finalTotal.toFixed(2));
+
+      let percent = Math.min((subtotal / threshold) * 100, 100);
+      $('#free-shipping-bar').css('width', percent + '%');
+      if (subtotal >= threshold) {
+        $('#free-shipping-title').text("You're eligible for free shipping!");
+        $('#free-shipping-subtitle').html("Great news! Your order qualifies for <strong>free shipping</strong>.");
+      } else {
+        const remaining = (threshold - subtotal).toFixed(2);
+        $('#free-shipping-title').text("Almost there!");
+        $('#free-shipping-subtitle').html(`Add <strong>$${remaining}</strong> more to get free shipping on your order.`);
+      }
     }).fail(function() {
       $('#cart-items-wrap').html('<div class="alert alert-danger">Failed to load cart. Please refresh.</div>');
     });

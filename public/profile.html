@@ -12,31 +12,53 @@
 <body>
 
 <header class="site-header">
-  <div class="container header-inner">
-    <a href="index.html" class="site-logo">
-      <img src="images/logo-brand.png" alt="ElectroHub" style="height: 38px;">
-    </a>
-    <nav class="site-nav align-items-center">
-        <a href="index.html" class="">Home</a>
-        <div class="dropdown d-inline-block">
-          <a href="#" class="dropdown-toggle " data-bs-toggle="dropdown" aria-expanded="false" style="text-decoration:none;">Shop</a>
-          <ul class="dropdown-menu shadow border-0" id="nav-shop-dropdown">
-            <!-- Categories injected here -->
-          </ul>
-        </div>
-        <a href="index.html#reviews">Reviews</a>
-        <a href="contact.html" class="">Contact</a>
-      </nav>
-    <div class="header-actions">
-      <a href="cart.html" class="icon-btn" title="Cart"><i class="fas fa-shopping-cart"></i><span class="cart-count-badge" id="nav-cart-count">0</span></a>
-      <a href="#" class="icon-btn filled" id="nav-account" title="Account"><i class="fas fa-user"></i></a>
+  <div class="container header-inner" style="display:grid; grid-template-columns: 1fr auto 1fr; align-items:center; height:80px; gap:24px;">
+    <!-- Logo Left -->
+    <div style="display:flex; align-items:center;">
+      <a href="index.html" class="site-logo">
+        <img src="images/logo-brand.png" alt="ElectroHub" style="height: 38px;">
+      </a>
     </div>
-  </div>
+    
+    <!-- New Search Bar Layout (Dead Center) -->
+    <div class="header-search-bar" style="display:flex; align-items:center; width:600px; border:1px solid #e2e8f0; border-radius:4px; overflow:hidden; height:46px;">
+      <input type="text" id="global-search" placeholder="Search Products" style="flex:1; height:100%; border:none; padding:0 16px; margin:0; outline:none; font-size:0.95rem; background:#fff;" aria-label="Search">
+      <button onclick="window.location.href='shop.html?search='+document.getElementById('global-search').value" class="search-btn" style="height:100%; background:#111; color:#fff; border:none; width:52px; display:flex; align-items:center; justify-content:center; cursor:pointer;"><i class="fas fa-search"></i></button>
+    </div>
 
+    <!-- Right Actions -->
+    <div class="header-right-actions" style="display:flex; align-items:center; justify-content:flex-end; gap:20px;">
+      <a href="login.html" id="nav-account" class="btn btn-dark rounded-pill px-4" style="font-size:0.9rem; font-weight:600; color:#fff !important; text-decoration:none;">Login / Sign Up</a>
+      <div class="header-divider" style="width:1px; height:16px; background:#e2e8f0;"></div>
+      <a href="wishlist.html" style="font-size:1.3rem; color:var(--charcoal); text-decoration:none; margin-right:12px; position:relative; display:flex; align-items:center;">
+        <i class="far fa-heart"></i>
+        <span class="badge" id="nav-wishlist-count" style="position:absolute; top:-5px; right:-12px; background:#ef4444; color:#fff; font-size:0.65rem; font-weight:700; padding:2px 6px; min-width:20px; height:20px; border-radius:12px; display:none; align-items:center; justify-content:center;">0</span>
+      </a>
+      <a href="cart.html" style="font-size:1.3rem; color:var(--charcoal); text-decoration:none; position:relative; display:flex; align-items:center;">
+        <i class="fas fa-shopping-bag"></i>
+        <span class="badge" id="nav-cart-count" style="position:absolute; top:-5px; right:-12px; background:#ef4444; color:#fff; font-size:0.65rem; font-weight:700; padding:2px 6px; min-width:20px; height:20px; border-radius:12px; display:flex; align-items:center; justify-content:center;">0</span>
+      </a>
       <!-- Hamburger button: only visible on mobile -->
       <button class="burger-btn" id="burger-btn" aria-label="Open menu">
         <span></span><span></span><span></span>
       </button>
+    </div>
+  </div>
+
+  <!-- Main Navigation moved below -->
+  <div class="nav-bottom-bar" style="border-top:1px solid #e2e8f0; background:#fff;">
+    <div class="container d-flex justify-content-center" style="padding:12px 0;">
+      <nav class="site-nav align-items-center">
+        <a href="index.html">Home</a>
+        <div class="dropdown d-inline-block">
+          <a href="#" class="dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" style="text-decoration:none;">Shop</a>
+          <ul class="dropdown-menu shadow border-0" id="nav-shop-dropdown">
+            <!-- Categories injected here -->
+          </ul>
+        </div>
+        <a href="about.html">About</a>
+        <a href="contact.html">Contact</a>
+      </nav>
     </div>
   </div>
 </header>
@@ -59,6 +81,7 @@
     <nav class="mobile-nav">
       <a href="index.html"><i class="fas fa-home"></i> Home</a>
       <a href="shop.html"><i class="fas fa-store"></i> Shop</a>
+      <a href="about.html"><i class="fas fa-info-circle"></i> About</a>
       <a href="index.html#reviews"><i class="fas fa-star"></i> Reviews</a>
       <a href="contact.html"><i class="fas fa-envelope"></i> Contact</a>
     </nav>
@@ -142,14 +165,34 @@
             </div>
             <div class="mb-4">
               <label class="form-label" style="font-size:.85rem;font-weight:600;">Email</label>
-              <input type="email" id="settings-email" class="form-control" style="border-radius:var(--radius-sm);padding:12px 16px;border-color:var(--border);" readonly>
-              <div style="font-size:.75rem;color:var(--muted);margin-top:4px;">Email cannot be changed.</div>
+              <input type="email" id="settings-email" class="form-control" style="border-radius:var(--radius-sm);padding:12px 16px;border-color:var(--border);">
             </div>
             <div class="mb-4">
               <label class="form-label" style="font-size:.85rem;font-weight:600;">Phone</label>
               <input type="tel" id="settings-phone" class="form-control" placeholder="+961 79 30 79 04" style="border-radius:var(--radius-sm);padding:12px 16px;border-color:var(--border);">
             </div>
-            <button class="btn-coral" style="padding:12px 28px;border-radius:var(--radius-sm);">Save Changes</button>
+            <div class="mb-4">
+              <label class="form-label" style="font-size:.85rem;font-weight:600;">Address</label>
+              <textarea id="settings-address" class="form-control" placeholder="123 Main St, Beirut, Lebanon" rows="3" style="border-radius:var(--radius-sm);padding:12px 16px;border-color:var(--border);"></textarea>
+            </div>
+            <button onclick="saveProfile()" class="btn-coral" style="padding:12px 28px;border-radius:var(--radius-sm);border:none;color:#fff;">Save Profile</button>
+            
+            <hr class="my-5" style="border-color:var(--border);">
+            
+            <h3 class="section-title mb-4" style="font-size:1.3rem;">Change Password</h3>
+            <div class="mb-3">
+              <label class="form-label" style="font-size:.85rem;font-weight:600;">Current Password</label>
+              <input type="password" id="settings-old-pw" class="form-control" style="border-radius:var(--radius-sm);padding:12px 16px;border-color:var(--border);">
+            </div>
+            <div class="mb-3">
+              <label class="form-label" style="font-size:.85rem;font-weight:600;">New Password</label>
+              <input type="password" id="settings-new-pw" class="form-control" style="border-radius:var(--radius-sm);padding:12px 16px;border-color:var(--border);">
+            </div>
+            <div class="mb-4">
+              <label class="form-label" style="font-size:.85rem;font-weight:600;">Confirm New Password</label>
+              <input type="password" id="settings-confirm-pw" class="form-control" style="border-radius:var(--radius-sm);padding:12px 16px;border-color:var(--border);">
+            </div>
+            <button onclick="changePassword()" class="btn-dark" style="padding:12px 28px;border-radius:var(--radius-sm);background:#111;color:#fff;border:none;">Change Password</button>
           </div>
         </div>
 
@@ -158,12 +201,108 @@
   </div>
 </section>
 
+<!-- QUICK VIEW MODAL (Required for Rating) -->
+<div class="modal fade" id="quickViewModal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content border-0" style="border-radius:var(--radius-xl);overflow:hidden;">
+      <button type="button" class="btn-close position-absolute top-0 end-0 m-3 z-3" data-bs-dismiss="modal" style="background-color:#fff;border-radius:50%;padding:8px;box-shadow:var(--shadow-sm);"></button>
+      <div class="modal-body p-0">
+        <div class="row g-0">
+          <div class="col-md-5 qv-img-wrap"><img src="" id="qv-img" alt="Product"></div>
+          <div class="col-md-7 p-5 d-flex flex-column justify-content-center">
+            <span class="badge text-bg-secondary rounded-pill align-self-start mb-2" id="qv-cat" style="font-size:.75rem;"></span>
+            <h3 class="fw-700 mb-1" id="qv-name" style="font-size:1.5rem;font-weight:700;"></h3>
+            <div class="rating-stars mb-2">
+              <span id="qv-rating-stars"></span>
+              <a href="javascript:void(0)" id="qv-toggle-reviews" style="font-size:.8rem;color:var(--muted);text-decoration:none;margin-left:8px;transition:color .2s;" onmouseover="this.style.color='var(--coral)'" onmouseout="this.style.color='var(--muted)'"></a>
+            </div>
+            <div class="mb-3" style="font-size:1.8rem;font-weight:800;color:var(--coral);" id="qv-price"></div>
+            <p class="text-muted mb-4" id="qv-desc" style="font-size:.9rem;line-height:1.7;"></p>
+            <div class="d-flex align-items-center gap-3 mb-4">
+              <label style="font-size:.85rem;font-weight:600;">Qty:</label>
+              <div class="qty-ctrl">
+                <button class="qty-btn" id="qv-qty-minus">−</button>
+                <span id="qv-qty" style="font-weight:600;min-width:24px;text-align:center;">1</span>
+                <button class="qty-btn" id="qv-qty-plus">+</button>
+              </div>
+              <span id="qv-stock" style="font-size:.8rem;color:var(--muted);"></span>
+            </div>
+            
+            <!-- Review Form (Hidden by default, shown if eligible) -->
+            <div id="qv-review-form-container" class="mt-2 mb-4 p-3 bg-light rounded" style="display:none; border: 1px dashed var(--border);">
+              <h6 class="fw-bold mb-2" style="font-size:0.9rem;">Share your experience</h6>
+              <div class="d-flex gap-1 mb-3 text-warning" id="qv-review-stars-input" style="cursor:pointer; font-size:1.1rem;">
+                <i class="fas fa-star qv-review-star-input" data-val="1" style="cursor:pointer; padding:2px;"></i>
+                <i class="fas fa-star qv-review-star-input" data-val="2" style="cursor:pointer; padding:2px;"></i>
+                <i class="fas fa-star qv-review-star-input" data-val="3" style="cursor:pointer; padding:2px;"></i>
+                <i class="fas fa-star qv-review-star-input" data-val="4" style="cursor:pointer; padding:2px;"></i>
+                <i class="fas fa-star qv-review-star-input" data-val="5" style="cursor:pointer; padding:2px;"></i>
+              </div>
+              <textarea id="qv-review-text" class="form-control mb-2" rows="2" placeholder="What did you think of this product?" style="font-size:0.85rem;"></textarea>
+              <button class="btn btn-dark btn-sm w-100 fw-bold" id="qv-submit-review">Submit Review</button>
+            </div>
+
+            <div class="d-flex gap-3">
+            <div id="qv-cart-btn-wrapper" class="d-flex gap-3 flex-grow-1">
+              <button class="btn-coral flex-grow-1" id="qv-add-btn"><i class="fas fa-shopping-cart"></i> Add to Cart</button>
+            </div>
+              <button class="icon-btn" id="qv-wishlist-btn" style="border:1px solid var(--border);width:48px;height:48px;border-radius:var(--radius-sm);" title="Wishlist">
+                <i class="far fa-heart"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+        <!-- Reviews Section -->
+        <div id="qv-reviews-container" style="display:none; padding: 0 40px 40px;">
+          <hr class="my-0">
+          <div id="qv-reviews-list" class="pt-3" style="max-height:280px; overflow-y:auto;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="toast-wrap" id="toast-wrap"></div>
 
-<footer class="site-footer mt-5">
+<footer class="site-footer">
   <div class="container">
+    <div class="row g-5">
+      <div class="col-lg-4">
+        <div class="footer-logo">
+          <img src="images/logo-brand.png" alt="ElectroHub" style="height: 38px; filter: brightness(0) invert(1);">
+        </div>
+        <p class="footer-desc">Your trusted destination for premium electronics. Fast shipping, secure checkout, and real support.</p>
+      </div>
+      <div class="col-6 col-lg-2">
+        <div class="footer-col">
+          <h6>Company</h6>
+          <ul>
+            <li><a href="about.html">About Us</a></li>
+            <li><a href="contact.html">Contact</a></li>
+            <li><a href="shop.html">Shop</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="col-6 col-lg-2">
+        <div class="footer-col">
+          <h6>Account</h6>
+          <ul>
+            <li><a href="login.html">Login</a></li>
+            <li><a href="profile.html">My Orders</a></li>
+            <li><a href="cart.html">Cart</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <div class="footer-col">
+          <h6>Locations</h6>
+          <p style="font-size:.88rem;margin-bottom:14px;"><i class="fa-solid fa-location-dot" style="color:var(--coral);"></i> <a href="https://maps.google.com/?q=Nabatiye,Lebanon" target="_blank" style="color:rgba(255,255,255,.5);text-decoration:none;">Nabatiye, Lebanon</a></p>
+          <p style="font-size:.88rem;"><i class="fa-solid fa-phone" style="color:var(--coral);"></i> <a href="tel:+96179307904" style="color:rgba(255,255,255,.5);text-decoration:none;">+961 79 30 79 04</a></p>
+        </div>
+      </div>
+    </div>
     <div class="footer-bottom">
-      <span>© 2025 ElectroHub Â· Ali Ghandour. All rights reserved.</span>
+      <span>© 2025 ElectroHub · Ali Ghandour. All rights reserved.</span>
     </div>
   </div>
 </footer>
@@ -188,11 +327,8 @@ $(document).ready(function () {
     $('#profile-email').text('Member since your first order');
     $('#settings-name').val(user.name);
     $('#settings-email').val(user.email || '');
-    $('#nav-account').html('<i class="fas fa-user"></i>');
-
-    if (user.role === 'admin') {
-      $('<a href="/admin.html" class="icon-btn" title="Admin"><i class="fas fa-tachometer-alt"></i></a>').insertBefore('#nav-account');
-    }
+    $('#settings-phone').val(user.phone || '');
+    $('#settings-address').val(user.address || '');
 
     loadOrders();
     updateCartBadge();
@@ -215,13 +351,34 @@ $(document).ready(function () {
       orders.forEach(o => {
         totalSpent += parseFloat(o.total_amount);
         const date = new Date(o.created_at).toLocaleDateString('en-US', { year:'numeric', month:'short', day:'numeric' });
-        const statusColor = { pending:'#f59e0b', shipped:'#3b82f6', delivered:'#16a34a' }[o.status] || '#888';
+        const statusColor = { pending:'#f59e0b', processing:'#8b5cf6', shipped:'#3b82f6', delivered:'#16a34a', cancelled:'#ef4444' }[o.status] || '#888';
+        
+        let itemsHtml = '';
+        if (o.items && o.items.length) {
+          itemsHtml = '<div class="mt-3 pt-3 border-top d-flex flex-column gap-2">';
+          o.items.forEach(item => {
+            const canRate = (o.status === 'delivered' || o.status === 'completed');
+            itemsHtml += `
+            <div class="d-flex align-items-center justify-content-between">
+              <div class="d-flex align-items-center gap-3">
+                <img src="${getImageUrl(item.image_path)}" style="width:40px;height:40px;object-fit:contain;background:#fff;border-radius:8px;border:1px solid #eee;">
+                <div>
+                  <div style="font-size:0.85rem;font-weight:600;">${item.name || 'Product'}</div>
+                  <div style="font-size:0.75rem;color:var(--muted);">Qty: ${item.quantity} · $${parseFloat(item.price).toFixed(2)}</div>
+                </div>
+              </div>
+              ${canRate ? `<button class="btn btn-sm btn-outline-dark fw-bold px-3 quick-view-btn" data-id="${item.product_id}" style="font-size:0.75rem;border-radius:8px;">Rate Product</button>` : ''}
+            </div>`;
+          });
+          itemsHtml += '</div>';
+        }
+
         html += `
-        <div class="cart-item-card" style="cursor:default;">
+        <div class="cart-item-card mb-4" style="cursor:default; background:#fff; border:1px solid var(--border); border-radius:16px; padding:24px;">
           <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
             <div>
               <div style="font-size:.75rem;color:var(--muted);margin-bottom:4px;">${date}</div>
-              <div style="font-weight:700;font-size:1.05rem;">Order #${o.id}</div>
+              <div style="font-weight:700;font-size:1.05rem;">${formatOrderId(o.id)}</div>
               <div style="font-size:.85rem;color:var(--muted);margin-top:4px;">
                 <i class="fas fa-map-marker-alt me-1"></i> ${o.shipping_address || 'No address provided'}
               </div>
@@ -235,6 +392,7 @@ $(document).ready(function () {
               </div>
             </div>
           </div>
+          ${itemsHtml}
         </div>`;
       });
       $('#orders-list').html(html);
@@ -245,12 +403,66 @@ $(document).ready(function () {
     });
   }
 
-  window.switchProfileTab = function (tab) {
-    if (tab === 'orders') { $('#tab-orders').show(); $('#tab-settings').hide(); }
-    else { $('#tab-orders').hide(); $('#tab-settings').show(); }
+  window.switchProfileTab = function(tab) {
+    if (tab === 'orders') {
+      $('#tab-orders').show();
+      $('#tab-settings').hide();
+    } else {
+      $('#tab-orders').hide();
+      $('#tab-settings').show();
+    }
     $('.profile-tab-btn').css({ background:'transparent', color:'var(--muted)' });
     $('[data-tab="' + tab + '"]').css({ background:'var(--charcoal)', color:'#fff' });
   };
+
+  window.saveProfile = function() {
+    const data = {
+      name: $('#settings-name').val(),
+      email: $('#settings-email').val(),
+      phone: $('#settings-phone').val(),
+      address: $('#settings-address').val()
+    };
+    
+    $.ajax({
+      url: '/api/auth/profile',
+      method: 'PUT',
+      contentType: 'application/json',
+      data: JSON.stringify(data),
+      success: function(res) {
+        showToast(res.message, 'success');
+        $('#profile-name').text(data.name);
+      },
+      error: function(err) {
+        showToast(err.responseJSON?.error || 'Failed to update profile', 'error');
+      }
+    });
+  }
+
+  window.changePassword = function() {
+    const oldPassword = $('#settings-old-pw').val();
+    const newPassword = $('#settings-new-pw').val();
+    const confirmPassword = $('#settings-confirm-pw').val();
+
+    if (!oldPassword || !newPassword) return showToast('Please fill all password fields', 'error');
+    if (newPassword.length < 6) return showToast('New password must be at least 6 characters', 'error');
+    if (newPassword !== confirmPassword) return showToast('New passwords do not match', 'error');
+
+    $.ajax({
+      url: '/api/auth/change-password',
+      method: 'PUT',
+      contentType: 'application/json',
+      data: JSON.stringify({ oldPassword, newPassword }),
+      success: function(res) {
+        showToast(res.message, 'success');
+        $('#settings-old-pw').val('');
+        $('#settings-new-pw').val('');
+        $('#settings-confirm-pw').val('');
+      },
+      error: function(err) {
+        showToast(err.responseJSON?.error || 'Failed to change password', 'error');
+      }
+    });
+  }
 
   window.logoutUser = function () {
     $.post('/api/auth/logout', function () { window.location.href = '/index.html'; });

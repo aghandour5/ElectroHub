@@ -7,65 +7,201 @@
 // ── TOAST UTILITY ────────────────────────────
 function showToast(message, type = 'success') {
   const icon = type === 'success'
-    ? '<i class="fas fa-check-circle" style="color:#4ade80;"></i>'
+    ? '<i class="fas fa-check-circle" style="color:#10b981;"></i>'
     : '<i class="fas fa-exclamation-circle" style="color:var(--coral);"></i>';
-  const toast = $(`<div class="toast-msg ${type}">${icon} ${message}</div>`);
+    
+  const toastHtml = `
+    <div class="toast-msg ${type}">
+      <div class="toast-content">
+        ${icon}
+        <span>${message}</span>
+      </div>
+      <i class="fas fa-times toast-close"></i>
+    </div>
+  `;
+  
+  const toast = $(toastHtml);
   $('#toast-wrap').append(toast);
-  setTimeout(() => toast.remove(), 3500);
+
+  // Close button functionality
+  toast.find('.toast-close').on('click', function() {
+    toast.addClass('hiding');
+    setTimeout(() => toast.remove(), 400);
+  });
+
+  // Auto-remove after 4 seconds
+  setTimeout(() => {
+    if (toast.parent().length) {
+      toast.addClass('hiding');
+      setTimeout(() => toast.remove(), 400);
+    }
+  }, 4000);
 }
 window.showToast = showToast;
+
+// ── IMAGE UTILITY ─────────────────────────────
+function getImageUrl(path) {
+  if (!path) return '/images/placeholder.png';
+  if (path.startsWith('http')) return path;
+  return '/images/' + path;
+}
+window.getImageUrl = getImageUrl;
+
+function getRatingHtml(reviewsData) {
+  let html = '';
+  const reviews = reviewsData || [];
+  const count = reviews.length;
+  if (count > 0) {
+    const avg = reviews.reduce((s, r) => s + r.rating, 0) / count;
+    for (let i = 1; i <= 5; i++) {
+      if (i <= Math.floor(avg)) html += '<i class="fas fa-star"></i>';
+      else if (i === Math.ceil(avg) && avg % 1 !== 0) html += '<i class="fas fa-star-half-alt"></i>';
+      else html += '<i class="far fa-star"></i>';
+    }
+    html += `<span class="text-muted ms-2">(${count})</span>`;
+  } else {
+    for (let i = 1; i <= 5; i++) html += '<i class="far fa-star"></i>';
+    html += `<span class="text-muted ms-2">(0)</span>`;
+  }
+  return html;
+}
+window.getRatingHtml = getRatingHtml;
+
+function formatOrderId(id) {
+  return 'ORD-' + String(id).padStart(4, '0');
+}
+window.formatOrderId = formatOrderId;
 
 // ── AUTH STATE ────────────────────────────────
 function checkAuthState() {
   $.get('/api/auth/me').done(function (res) {
+    const accountLink = $('#nav-account, .header-login-link');
+
+    // Remove any existing admin buttons first to be safe
+    $('#admin-nav-btn').remove();
+
     if (res.isAuthenticated) {
       const user = res.user;
-      const initials = user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
-      $('#nav-account')
+
+      accountLink
         .attr('href', '/profile.html')
         .attr('title', 'My Account — ' + user.name)
-        .html('<i class="fas fa-user"></i>');
+        .removeClass('header-login-link')
+        .addClass('icon-btn filled')
+        .html('<i class="fas fa-user"></i>')
+        .css({
+          'display': 'flex',
+          'align-items': 'center',
+          'justify-content': 'center',
+          'width': '40px',
+          'height': '40px',
+          'border-radius': '50%',
+          'background': '#111',
+          'color': '#fff',
+          'font-size': '1.1rem',
+          'text-decoration': 'none'
+        });
 
       if (user.role === 'admin') {
-        if ($('#admin-nav-btn').length === 0) {
-          const adminBtn = $('<a href="/admin.html" class="icon-btn" id="admin-nav-btn" title="Admin Dashboard" style="color:var(--coral);"><i class="fas fa-tachometer-alt"></i></a>');
-          $('#nav-account').before(adminBtn);
-        }
+        const adminBtn = $('<a href="/admin.html" class="icon-btn" id="admin-nav-btn" title="Admin Dashboard" style="font-size:1.3rem; color:var(--coral); text-decoration:none; display:flex; align-items:center; justify-content:center; width:40px; height:40px; margin-right:8px;"><i class="fas fa-tachometer-alt"></i></a>');
+        accountLink.before(adminBtn);
       }
     } else {
-      $('#nav-account').attr('href', '/login.html').attr('title', 'Sign In');
+      accountLink
+        .attr('href', '/login.html')
+        .attr('title', 'Sign In')
+        .removeClass('icon-btn filled')
+        .addClass('btn btn-dark rounded-pill px-4')
+        .text('Login / Sign Up')
+        .removeAttr('style')
+        .css({
+          'font-size': '0.9rem',
+          'font-weight': '600',
+          'color': '#fff',
+          'text-decoration': 'none'
+        });
     }
   });
 }
 window.checkAuthState = checkAuthState;
 
-// ── CART BADGE ────────────────────────────────
+// ── CART STATE & SYNC ─────────────────────────
+window.globalCart = [];
+
 function updateCartBadge() {
   $.get('/api/cart').done(function (res) {
-    const count = res.items ? res.items.length : 0;
-    $('#nav-cart-count').text(count > 0 ? count : '');
+    window.globalCart = res.items || [];
+    const count = window.globalCart.length;
+    $('#nav-cart-count').text(count).css('display', 'flex');
+    
+    // Trigger a global event so other components (like shop grid) can re-render if needed
+    $(document).trigger('cartUpdated', [window.globalCart]);
   });
 }
 window.updateCartBadge = updateCartBadge;
+
+function getCartButtonHtml(productId) {
+  const item = window.globalCart.find(i => i.product_id === parseInt(productId));
+  if (item) {
+    return `
+      <div class="qty-ctrl-mini" data-id="${productId}" style="display:flex; align-items:center; background:var(--bg-soft); border-radius:30px; padding:4px; gap:12px; border:1px solid var(--border);">
+        <button class="btn-qty-mini minus" style="width:32px; height:32px; border-radius:50%; border:none; background:#fff; color:var(--charcoal); display:flex; align-items:center; justify-content:center; font-weight:bold; box-shadow:var(--shadow-sm);"><i class="fas fa-minus" style="font-size:0.7rem;"></i></button>
+        <span class="qty-val" style="font-weight:700; font-size:0.95rem; min-width:14px; text-align:center;">${item.quantity}</span>
+        <button class="btn-qty-mini plus" style="width:32px; height:32px; border-radius:50%; border:none; background:#0062FF; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:bold; box-shadow:var(--shadow-sm);"><i class="fas fa-plus" style="font-size:0.7rem;"></i></button>
+      </div>`;
+  }
+  return `
+    <button class="btn btn-primary rounded-circle shadow-none add-to-cart-btn" data-id="${productId}" style="width:44px; height:44px; display:flex; align-items:center; justify-content:center; background:#0062FF; border:none;">
+        <i class="fas fa-shopping-cart"></i>
+    </button>`;
+}
+window.getCartButtonHtml = getCartButtonHtml;
 
 // ── QUICK VIEW ────────────────────────────────
 let currentQvProductId = null;
 let currentQvQty = 1;
 
 $(document).on('click', '.quick-view-btn', function () {
-  const id = $(this).data('id');
+  // Walk up to the nearest element carrying data-id (handles clicks on child <i> stars)
+  const $trigger = $(this).closest('[data-id]').length ? $(this).closest('[data-id]') : $(this);
+  const id = $trigger.data('id');
+  const showReviewsOnOpen = $trigger.data('show-reviews') === true || String($trigger.data('show-reviews')) === 'true';
+  if (!id) return; // guard: nothing to open
   currentQvProductId = id;
   currentQvQty = 1;
   $('#qv-qty').text(1);
+  
+  // Show modal immediately with loader
+  const modal = $('#quickViewModal');
+  const loader = $('#qv-loader');
+  const content = $('#qv-content-wrap');
+  
+  loader.removeClass('hidden');
+  content.removeClass('visible');
+  modal.modal('show');
+
+  // Store flag for use inside the $.get callback
+  $(document).data('qv-show-reviews', showReviewsOnOpen);
 
   $.get('/api/products/' + id).done(function (p) {
-    $('#qv-img').attr('src', '/images/' + p.image_path);
+    $('#qv-img').attr('src', getImageUrl(p.image_path));
     $('#qv-cat').text(p.category_name || '');
     $('#qv-name').text(p.name);
     $('#qv-price').text('$' + parseFloat(p.price).toFixed(2));
     $('#qv-desc').text(p.description || 'Premium device crafted for performance and longevity.');
     $('#qv-stock').text(p.stock > 0 ? p.stock + ' in stock' : 'Out of stock');
-    $('#qv-add-btn').data('id', p.id).prop('disabled', p.stock === 0);
+    
+    // Quantity controls in modal
+    const cartWrapper = $('#qv-cart-btn-wrapper');
+    if (cartWrapper.length) {
+      cartWrapper.html(getCartButtonHtml(p.id));
+    }
+    
+    // Initialize Wishlist Button
+    const w = JSON.parse(localStorage.getItem('electrohub_wishlist') || '[]');
+    const isWished = w.includes(String(p.id)) || w.includes(Number(p.id));
+    $('#qv-wishlist-btn').data('id', p.id).toggleClass('active', isWished);
+    $('#qv-wishlist-btn i').attr('class', isWished ? 'fas fa-heart' : 'far fa-heart');
 
     // Render Specs
     const specsContainer = $('#qv-specs-container');
@@ -90,9 +226,9 @@ $(document).on('click', '.quick-view-btn', function () {
     const reviewsList = $('#qv-reviews-list');
     const toggleBtn = $('#qv-toggle-reviews');
     const qvRatingStars = $('#qv-rating-stars');
-    
+
     reviewsContainer.hide(); // Reset view
-    
+
     if (p.reviews_data && p.reviews_data.length > 0) {
       // Calculate Average Rating
       const avgRating = p.reviews_data.reduce((sum, rev) => sum + rev.rating, 0) / p.reviews_data.length;
@@ -112,7 +248,7 @@ $(document).on('click', '.quick-view-btn', function () {
       let reviewsHtml = '';
       p.reviews_data.forEach(rev => {
         let stars = '';
-        for(let i=1; i<=5; i++) {
+        for (let i = 1; i <= 5; i++) {
           stars += `<i class="${i <= rev.rating ? 'fas' : 'far'} fa-star" style="color:var(--coral); font-size:.7rem;"></i>`;
         }
         reviewsHtml += `
@@ -131,30 +267,173 @@ $(document).on('click', '.quick-view-btn', function () {
       toggleBtn.hide();
     }
 
-    // Toggle Reviews Logic
-    toggleBtn.off('click').on('click', function() {
-      if (reviewsContainer.is(':visible')) {
-        reviewsContainer.slideUp();
-      } else {
+    // Toggle Reviews Section
+    const showReviews = function () {
+      if (!reviewsContainer.is(':visible')) {
         reviewsContainer.slideDown();
         setTimeout(() => {
           reviewsContainer[0].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }, 300);
       }
+    };
+
+    toggleBtn.off('click').on('click', showReviews);
+    $('#qv-rating-stars').css('cursor', 'pointer').off('click').on('click', showReviews);
+
+    // Auto-show reviews if triggered from star click on product card
+    if ($(document).data('qv-show-reviews')) {
+      $(document).data('qv-show-reviews', false);
+      setTimeout(showReviews, 600);
+    }
+
+    // Check Review Eligibility
+    const reviewFormContainer = $('#qv-review-form-container');
+    reviewFormContainer.hide();
+
+    $.get(`/api/products/${id}/review-eligibility`).done(function (res) {
+      if (res.canReview) {
+        reviewFormContainer.fadeIn();
+        initReviewForm(id);
+      }
     });
 
-    $('#quickViewModal').modal('show');
-  }).fail(() => showToast('Could not load product details.', 'error'));
+    // Data ready: Hide loader, Show content
+    setTimeout(() => {
+      loader.addClass('hidden');
+      content.addClass('visible');
+    }, 100);
+
+  }).fail(() => {
+    modal.modal('hide');
+    showToast('Could not load product details.', 'error');
+  });
 });
 
-$(document).on('click', '#qv-qty-plus',  function () { if (currentQvQty < 99) { currentQvQty++; $('#qv-qty').text(currentQvQty); } });
-$(document).on('click', '#qv-qty-minus', function () { if (currentQvQty > 1)  { currentQvQty--; $('#qv-qty').text(currentQvQty); } });
+// Global Review Rating State
+let selectedReviewRating = 5;
+
+$(document).on('mouseover', '.qv-review-star-input', function () {
+  const val = parseInt($(this).attr('data-val'));
+  $('.qv-review-star-input').each(function () {
+    const starVal = parseInt($(this).attr('data-val'));
+    if (starVal <= val) {
+      $(this).addClass('fas').removeClass('far');
+    } else {
+      $(this).addClass('far').removeClass('fas');
+    }
+  });
+});
+
+$(document).on('mouseout', '.qv-review-star-input', function () {
+  $('.qv-review-star-input').each(function () {
+    const starVal = parseInt($(this).attr('data-val'));
+    if (starVal <= selectedReviewRating) {
+      $(this).addClass('fas').removeClass('far');
+    } else {
+      $(this).addClass('far').removeClass('fas');
+    }
+  });
+});
+
+$(document).on('click', '.qv-review-star-input', function () {
+  selectedReviewRating = $(this).data('val');
+  showToast(`Rating set to ${selectedReviewRating} stars`);
+});
+
+function initReviewForm(productId) {
+  selectedReviewRating = 5; // Reset to default
+  $('.qv-review-star-input').each(function () {
+    $(this).toggleClass('fas', $(this).data('val') <= 5).toggleClass('far', $(this).data('val') > 5);
+  });
+
+  $('#qv-submit-review').off('click').on('click', function () {
+    const text = $('#qv-review-text').val().trim();
+    if (!text) return showToast('Please write a comment.', 'error');
+
+    const btn = $(this);
+    btn.prop('disabled', true).text('Submitting...');
+
+    $.ajax({
+      url: `/api/products/${productId}/review`,
+      type: 'POST',
+      contentType: 'application/json',
+      data: JSON.stringify({ rating: selectedReviewRating, text }),
+      success: function (res) {
+        showToast('Thank you for your review! ⭐');
+        // Permanently hide the review form
+        $('#qv-review-form-container').fadeOut(400, function () {
+          $('#qv-review-text').val('');
+          $(this).remove(); // Remove from DOM so it can't reappear
+        });
+        // Reload just the reviews list for this product without re-opening modal
+        setTimeout(() => {
+          $.get('/api/products/' + productId).done(function (p) {
+            if (!p || !p.reviews_data || !p.reviews_data.length) return;
+            let rHtml = '';
+            p.reviews_data.forEach(rev => {
+              let stars = '';
+              for (let i = 1; i <= 5; i++) {
+                stars += `<i class="${i <= rev.rating ? 'fas' : 'far'} fa-star" style="color:var(--coral); font-size:.7rem;"></i>`;
+              }
+              rHtml += `
+                <div class="mb-3 border-bottom pb-2">
+                  <div class="d-flex justify-content-between mb-1">
+                    <strong style="font-size:.85rem;">${rev.author}</strong>
+                    <div class="stars-mini">${stars}</div>
+                  </div>
+                  <p class="text-muted mb-0" style="font-size:.8rem; line-height:1.4;">${rev.text}</p>
+                </div>`;
+            });
+            $('#qv-reviews-list').html(rHtml);
+            $('#qv-toggle-reviews').text(`(${p.reviews_data.length} reviews)`).show();
+            // Auto-show the reviews section
+            $('#qv-reviews-container').slideDown();
+          });
+        }, 600);
+      },
+      error: function (err) {
+        showToast(err.responseJSON?.error || 'Failed to submit review.', 'error');
+      },
+      complete: function () {
+        btn.prop('disabled', false).text('Submit Review');
+      }
+    });
+  });
+}
+
+$(document).on('click', '#qv-qty-plus', function () { if (currentQvQty < 99) { currentQvQty++; $('#qv-qty').text(currentQvQty); } });
+$(document).on('click', '#qv-qty-minus', function () { if (currentQvQty > 1) { currentQvQty--; $('#qv-qty').text(currentQvQty); } });
 
 $(document).on('click', '#qv-add-btn', function () {
   const id = $(this).data('id') || currentQvProductId;
   addToCart(id, currentQvQty, function () {
     $('#quickViewModal').modal('hide');
   });
+});
+
+// ── GLOBAL MODAL SCROLL LOCK ──────────────────
+$(document).on('show.bs.modal', '.modal', function () {
+  const scrollY = window.scrollY;
+  document.body.style.top = `-${scrollY}px`;
+  document.body.classList.add('modal-open-lock');
+});
+
+$(document).on('hidden.bs.modal', '.modal', function () {
+  const scrollY = parseInt(document.body.style.top || '0') * -1;
+  document.body.classList.remove('modal-open-lock');
+  document.body.style.top = '';
+
+  // Disable smooth scrolling temporarily to prevent "jumping"
+  const html = document.documentElement;
+  const originalScroll = html.style.scrollBehavior;
+  html.style.scrollBehavior = 'auto';
+
+  window.scrollTo(0, scrollY);
+
+  // Restore original behavior
+  setTimeout(() => {
+    html.style.scrollBehavior = originalScroll;
+  }, 10);
 });
 
 // ── ADD TO CART ───────────────────────────────
@@ -177,19 +456,97 @@ window.addToCart = addToCart;
 $(document).on('click', '.add-to-cart-btn', function (e) {
   e.stopPropagation();
   const id = $(this).data('id');
-  if (id) addToCart(id, 1);
+  if (id) {
+    addToCart(id, 1, () => {
+      // Re-render the container of this button
+      const parent = $(this).parent();
+      parent.html(getCartButtonHtml(id));
+    });
+  }
+});
+
+$(document).on('click', '.btn-qty-mini', function(e) {
+  e.stopPropagation();
+  const ctrl = $(this).closest('.qty-ctrl-mini');
+  const id = ctrl.data('id');
+  const valSpan = ctrl.find('.qty-val');
+  let currentQty = parseInt(valSpan.text());
+  
+  if ($(this).hasClass('plus')) {
+    currentQty++;
+  } else {
+    currentQty--;
+  }
+  
+  $.ajax({
+    url: '/api/cart/update',
+    type: 'POST',
+    contentType: 'application/json',
+    data: JSON.stringify({ product_id: id, quantity: currentQty }),
+    success: function() {
+      updateCartBadge();
+      if (currentQty <= 0) {
+        ctrl.parent().html(getCartButtonHtml(id));
+      } else {
+        valSpan.text(currentQty);
+      }
+    }
+  });
 });
 
 // ── WISHLIST TOGGLE ───────────────────────────
+function updateWishlistBadge() {
+  let w = JSON.parse(localStorage.getItem('electrohub_wishlist') || '[]');
+  const badge = $('#nav-wishlist-count');
+  badge.text(w.length).css('display', 'flex');
+}
+window.updateWishlistBadge = updateWishlistBadge;
+
 $(document).on('click', '.wishlist-toggle, #qv-wishlist-btn', function (e) {
   e.stopPropagation();
   const btn = $(this);
+  const id = btn.data('id');
+  if (!id) return; // Prevent errors if id is missing
+
+  let w = JSON.parse(localStorage.getItem('electrohub_wishlist') || '[]');
   const icon = btn.find('i');
-  const isActive = icon.hasClass('fas');
-  icon.toggleClass('far fas');
-  btn.toggleClass('active');
-  showToast(isActive ? 'Removed from wishlist.' : 'Added to wishlist! ❤️', isActive ? 'error' : 'success');
+  const isActive = w.includes(id);
+
+  if (isActive) {
+    w = w.filter(item => item !== id);
+    icon.removeClass('fas').addClass('far');
+    btn.removeClass('active');
+    showToast('Removed from wishlist.', 'error');
+  } else {
+    w.push(id);
+    icon.removeClass('far').addClass('fas');
+    btn.addClass('active');
+    showToast('Added to wishlist! ❤️', 'success');
+  }
+  localStorage.setItem('electrohub_wishlist', JSON.stringify(w));
+  updateWishlistBadge();
 });
+
+// ── UTILS ─────────────────────────────────────
+function getRatingHtml(reviews) {
+  const reviewsArr = reviews || [];
+  const count = reviewsArr.length;
+  let ratingHtml = '';
+  if (count > 0) {
+    const avg = reviewsArr.reduce((s, r) => s + r.rating, 0) / count;
+    for (let i = 1; i <= 5; i++) {
+      if (i <= Math.floor(avg)) ratingHtml += '<i class="fas fa-star"></i>';
+      else if (i === Math.ceil(avg) && avg % 1 !== 0) ratingHtml += '<i class="fas fa-star-half-alt"></i>';
+      else ratingHtml += '<i class="far fa-star"></i>';
+    }
+    ratingHtml += `<span class="text-muted ms-2">(${count})</span>`;
+  } else {
+    for (let i = 1; i <= 5; i++) ratingHtml += '<i class="far fa-star"></i>';
+    ratingHtml += `<span class="text-muted ms-2">(0)</span>`;
+  }
+  return ratingHtml;
+}
+window.getRatingHtml = getRatingHtml;
 
 // ── FEATURED PRODUCTS (Homepage Swiper) ───────
 function loadFeaturedProducts() {
@@ -205,44 +562,52 @@ function loadFeaturedProducts() {
     }
     let html = '';
     products.slice(0, 8).forEach(p => {
-      const badge = (p.is_new || p.is_featured) ? '<span class="product-badge">NEW</span>' : '';
       html += `
-      <div class="swiper-slide">
-        <div class="product-card h-100">
-          <div class="product-img-box">
-            ${badge}
-            <img src="/images/${p.image_path}" alt="${p.name}" draggable="false">
-            <div class="product-hover-actions">
-              <button class="prod-act-btn add-to-cart-btn" data-id="${p.id}" title="Add to cart"><i class="fas fa-shopping-cart"></i></button>
-              <button class="prod-act-btn quick-view-btn" data-id="${p.id}" title="Quick view"><i class="fas fa-arrow-right" style="transform:rotate(-45deg);"></i></button>
-            </div>
-          </div>
-          <div class="product-body">
-            <div class="product-header">
-              <div class="product-name" title="${p.name}"><a href="javascript:void(0)" class="quick-view-btn" data-id="${p.id}" style="text-decoration:none;">${p.name}</a></div>
-              <div class="product-price">$${parseFloat(p.price).toFixed(2)}</div>
-            </div>
-            <div class="product-footer">
-              <div class="product-category">${p.category_name || ''}</div>
-              <div class="product-swatches"><i class="fas fa-circle"></i> <i class="fas fa-circle" style="color:var(--muted-lt);"></i> <i class="far fa-circle" style="color:var(--muted-lt);"></i></div>
-            </div>
-          </div>
-        </div>
-      </div>`;
+            <div class="swiper-slide">
+                <div class="product-card h-100 bg-white" style="border:1px solid var(--border); border-radius:16px; overflow:hidden;">
+                <div class="product-img-box" style="padding:24px; position:relative; background:#fff;">
+                    ${(p.is_new || p.is_featured) ? '<span class="product-badge text-bg-primary" style="background:#0062FF !important; border-radius:4px; padding:4px 8px; font-size:0.7rem; font-weight:bold; position:absolute; top:16px; left:16px; z-index:2; color:#fff;">NEW</span>' : ''}
+                    <button class="wishlist-toggle icon-btn shadow-none ${JSON.parse(localStorage.getItem('electrohub_wishlist') || '[]').includes(p.id) ? 'active' : ''}" data-id="${p.id}" style="position:absolute; top:8px; right:8px; background:transparent; border:none; z-index:2; font-size:1.2rem; color:var(--muted); width:40px; height:40px; display:flex; align-items:center; justify-content:center;">
+                    <i class="${JSON.parse(localStorage.getItem('electrohub_wishlist') || '[]').includes(p.id) ? 'fas' : 'far'} fa-heart"></i>
+                    </button>
+                    <img src="${getImageUrl(p.image_path)}" alt="${p.name}" draggable="false" style="width:100%; height:200px; object-fit:contain; transition:transform 0.3s ease;">
+                    <div class="product-hover-actions">
+                    <button class="btn btn-light rounded-pill px-3 py-2 fw-bold quick-view-btn shadow-sm text-dark" data-id="${p.id}" title="Quick view" style="font-size:0.85rem;"><i class="fas fa-search me-1"></i> Quick View</button>
+                    </div>
+                </div>
+                <div class="product-body p-4 pt-2 d-flex flex-column" style="text-align:left;">
+                    <div class="product-category text-muted mb-1" style="font-size:0.85rem;">${p.category_name || 'Electronics'}</div>
+                    <div class="product-name fw-bold mb-2" title="${p.name}" style="font-size:1.1rem; line-height:1.3; color:var(--charcoal);">
+                    <a href="javascript:void(0)" class="quick-view-btn text-dark text-decoration-none" data-id="${p.id}">${p.name}</a>
+                    </div>
+                    <div class="d-flex align-items-center mb-3 quick-view-btn" data-id="${p.id}" data-show-reviews="true" style="font-size:0.8rem; color:#f59e0b; cursor:pointer;">
+                      ${getRatingHtml(p.reviews_data)}
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mt-auto pt-2">
+                    <div class="product-price fw-bold" style="font-size:1.25rem;">$${parseFloat(p.price).toFixed(2)}</div>
+                    <div class="cart-btn-wrapper">
+                      ${getCartButtonHtml(p.id)}
+                    </div>
+                    </div>
+                </div>
+                </div>
+            </div>`;
     });
     container.html(html);
 
     new Swiper('.featured-swiper', {
-      slidesPerView: 1,
-      spaceBetween: 20,
-      allowTouchMove: false,   // disable drag/swipe
-      simulateTouch: false,    // prevent mouse-drag simulation
-      pagination: { el: '.featured-pagination', clickable: true, dynamicBullets: true },
+      slidesPerView: 1.5,
+      spaceBetween: 16,
+      pagination: { el: '.featured-pagination', clickable: true },
+      navigation: {
+        nextEl: '.swiper-button-next.featured-nav-btn',
+        prevEl: '.swiper-button-prev.featured-nav-btn',
+      },
       autoplay: { delay: 4000, disableOnInteraction: false },
       breakpoints: {
-        576: { slidesPerView: 2 },
-        768: { slidesPerView: 3 },
-        1200: { slidesPerView: 4 }
+        576: { slidesPerView: 2, spaceBetween: 20 },
+        768: { slidesPerView: 3, spaceBetween: 20 },
+        1200: { slidesPerView: 4, spaceBetween: 24 }
       }
     });
   }).fail(() => {
@@ -338,10 +703,10 @@ function updateCopyrightYear() {
 
 // ── BURGER MENU ───────────────────────────────
 function initBurgerMenu() {
-  const burgerBtn   = document.getElementById('burger-btn');
-  const drawer      = document.getElementById('mobile-drawer');
-  const overlay     = document.getElementById('mobile-drawer-overlay');
-  const closeBtn    = document.getElementById('drawer-close-btn');
+  const burgerBtn = document.getElementById('burger-btn');
+  const drawer = document.getElementById('mobile-drawer');
+  const overlay = document.getElementById('mobile-drawer-overlay');
+  const closeBtn = document.getElementById('drawer-close-btn');
 
   if (!burgerBtn || !drawer) return; // not on a page with the drawer
 
@@ -371,10 +736,44 @@ function initBurgerMenu() {
   overlay.addEventListener('click', closeDrawer);
 }
 
+// ── SHOP FILTER DRAWER ───────────────────────
+function initShopFilterDrawer() {
+  const filterBtn = document.getElementById('mobile-filter-btn');
+  const sidebar = document.getElementById('filter-sidebar');
+  const overlay = document.getElementById('mobile-filter-overlay');
+  const closeBtn = document.getElementById('close-filter-btn');
+
+  if (!filterBtn || !sidebar || !overlay) return;
+
+  function openFilters() {
+    sidebar.classList.add('open');
+    overlay.classList.add('open');
+    const scrollY = window.scrollY;
+    document.body.style.top = '-' + scrollY + 'px';
+    document.body.classList.add('drawer-open');
+  }
+
+  function closeFilters() {
+    sidebar.classList.remove('open');
+    overlay.classList.remove('open');
+    const scrollY = parseInt(document.body.style.top || '0') * -1;
+    document.body.classList.remove('drawer-open');
+    document.body.style.top = '';
+    window.scrollTo(0, scrollY);
+  }
+
+  filterBtn.addEventListener('click', openFilters);
+  closeBtn.addEventListener('click', closeFilters);
+  overlay.addEventListener('click', closeFilters);
+}
+
 // ── TESTIMONIALS ──────────────────────────────
 function loadTestimonials() {
   const testimonialsWrap = $('#testimonials-wrap');
   if (!testimonialsWrap.length) return;
+
+  // Loading state
+  testimonialsWrap.html('<div class="swiper-slide text-center py-5 w-100"><div class="spinner-border" style="color:var(--coral);"></div></div>');
 
   $.get('/api/products/testimonials/all').done(function (data) {
     let html = '';
@@ -387,9 +786,9 @@ function loadTestimonials() {
         <div class="swiper-slide">
           <div class="review-card" style="position:relative; background: #fff; padding: 36px 32px; border-radius: 16px; height: 100%;">
             <i class="fas fa-quote-right" style="position:absolute; top: 32px; right: 32px; font-size: 1.8rem; color: var(--coral);"></i>
-            <div class="reviewer-avatar mb-4" style="background:#e0f2fe; color: var(--coral); width:56px; height:56px; display:flex; align-items:center; justify-content:center; border-radius:50%; font-weight:600;">${t.avatar}</div>
+            <div class="reviewer-avatar mb-4" style="background:#e0f2fe; color: var(--coral); width:56px; height:56px; display:flex; align-items:center; justify-content:center; border-radius:50%; font-weight:600;">${t.avatar_initials}</div>
             <p style="color:var(--charcoal); margin-bottom:32px; font-size:.95rem; line-height:1.6; font-weight: 500;">
-              ${t.text}
+              ${t.message}
             </p>
             <div style="font-weight:600; color:var(--charcoal); font-size:.95rem;">${t.name}</div>
             <div style="font-size:.8rem; color:var(--muted); margin-bottom: 8px;">${t.role}</div>
@@ -404,45 +803,193 @@ function loadTestimonials() {
     // Init Testimonials Swiper
     new Swiper('.testimonials-swiper', {
       slidesPerView: 1,
-      spaceBetween: 30,
+      spaceBetween: 20,
       loop: true,
-      autoplay: {
-        delay: 5000,
-        disableOnInteraction: false,
-      },
-      speed: 700,
-      loop: true,
+      autoplay: { delay: 5000, disableOnInteraction: false },
+      speed: 900,
       pagination: {
         el: '.testimonials-pagination',
         clickable: true,
-        dynamicBullets: true,
       },
-      slidesPerGroup: 4,
-      loopedSlides: 4,
-      loopPreventsSliding: false,
+      navigation: {
+        nextEl: '.swiper-button-next.testimonials-nav-btn',
+        prevEl: '.swiper-button-prev.testimonials-nav-btn',
+      },
       observer: true,
       observeParents: true,
       watchSlidesProgress: true,
       breakpoints: {
-        768: {
-          slidesPerView: 2,
-        },
-        1024: {
-          slidesPerView: 4,
-        },
+        768: { slidesPerView: 2, spaceBetween: 30 },
+        1024: { slidesPerView: 4, spaceBetween: 30 },
       },
     });
   }).fail(() => console.error('Failed to load testimonials.'));
 }
 
+// ── LIVE SEARCH ───────────────────────────────
+function initLiveSearch() {
+  const searchInputs = $('#global-search, #mobile-search-input');
+  if (!searchInputs.length) return;
+
+  // Ensure parent has relative position for dropdown alignment
+  $('.header-search-bar').css('position', 'relative').css('overflow', 'visible');
+  $('.mobile-search').css('position', 'relative');
+
+  // Inject suggestion containers if they don't exist
+  searchInputs.each(function () {
+    const input = $(this);
+    if (!input.parent().find('.search-results-dropdown').length) {
+      input.after('<div class="search-results-dropdown"></div>');
+    }
+  });
+
+  let debounceTimer;
+  searchInputs.on('input', function () {
+    const input = $(this);
+    const dropdown = input.parent().find('.search-results-dropdown');
+    const query = input.val().trim();
+
+    clearTimeout(debounceTimer);
+    if (query.length < 2) {
+      dropdown.removeClass('show').empty();
+      return;
+    }
+
+    debounceTimer = setTimeout(() => {
+      $.get('/api/products', { search: query }).done(function (products) {
+        if (!products.length) {
+          dropdown.html('<div class="p-3 text-center text-muted" style="font-size:0.85rem;">No products found for "' + query + '"</div>').addClass('show');
+          return;
+        }
+
+        let html = '';
+        products.slice(0, 6).forEach(p => {
+          html += `
+            <a href="javascript:void(0)" class="search-suggestion-item quick-view-btn" data-id="${p.id}">
+              <img src="${getImageUrl(p.image_path)}" class="ss-img">
+              <div class="ss-info">
+                <span class="ss-name">${p.name}</span>
+                 <span class="ss-price">$${parseFloat(p.price).toFixed(2)}</span>
+              </div>
+            </a>`;
+        });
+
+        html += `<a href="shop.html?search=${encodeURIComponent(query)}" class="ss-view-all">View all results <i class="fas fa-arrow-right ms-1"></i></a>`;
+
+        dropdown.html(html).addClass('show');
+      });
+    }, 300);
+  });
+
+  // Close dropdown on click outside
+  $(document).on('click', function (e) {
+    if (!$(e.target).closest('.header-search-bar, .mobile-search').length) {
+      $('.search-results-dropdown').removeClass('show');
+    }
+  });
+
+  // Re-enable Quick View for search results since they are dynamically added
+  $(document).on('click', '.search-suggestion-item', function () {
+    $('.search-results-dropdown').removeClass('show');
+  });
+}
+
+// ── NEWSLETTER ────────────────────────────────
+function initNewsletter() {
+  const form = $('.footer-newsletter');
+  if (!form.length) return;
+
+  const input = $('#newsletter-email');
+  const btn = form.find('button');
+
+  btn.on('click', function (e) {
+    e.preventDefault();
+    const email = input.val().trim();
+
+    if (!email || !email.includes('@')) {
+      showToast('Please enter a valid email address.', 'error');
+      return;
+    }
+
+    btn.prop('disabled', true).text('Subscribing...');
+
+    $.ajax({
+      url: '/api/newsletter/subscribe',
+      type: 'POST',
+      contentType: 'application/json',
+      data: JSON.stringify({ email }),
+      success: function (res) {
+        showToast(res.message, 'success');
+        input.val('');
+      },
+      error: function (err) {
+        showToast(err.responseJSON?.message || 'Failed to subscribe.', 'error');
+      },
+      complete: function () {
+        btn.prop('disabled', false).text('Subscribe');
+      }
+    });
+  });
+}
+
 // ── INIT ──────────────────────────────────────
 $(document).ready(function () {
+  $.ajaxSetup({ cache: false }); // Prevent browser from caching API GET requests
   checkAuthState();
   updateCartBadge();
+  updateWishlistBadge();
   loadFeaturedProducts();
   loadCategories();
   loadTestimonials();
+  initNewsletter();
   initBackToTop();
   updateCopyrightYear();
   initBurgerMenu();
+  initShopFilterDrawer();
+  initLiveSearch();
+  initStickyHeader();
+
+  // Global Cart Update Listeners
+  $(document).on('cartUpdated', function() {
+    // Instead of re-loading everything (which causes flicker), 
+    // just update all visible cart buttons to match the new cart state.
+    $('.cart-btn-wrapper').each(function() {
+      const id = $(this).closest('.product-card').find('.add-to-cart-btn, .qty-ctrl-mini').data('id');
+      if (id) {
+        $(this).html(getCartButtonHtml(id));
+      }
+    });
+    
+    // Update Quick View modal if it's open
+    if ($('#quickViewModal').hasClass('show') && window.currentQvProductId) {
+       $('#qv-cart-btn-wrapper').html(getCartButtonHtml(window.currentQvProductId));
+    }
+  });
 });
+
+function initStickyHeader() {
+  const header = $('.site-header');
+  if (!header.length) return;
+
+  let lastScrollY = window.scrollY;
+  let threshold = 150;
+
+  $(window).on('scroll', function() {
+    const currentScrollY = window.scrollY;
+    
+    if (currentScrollY > threshold) {
+      if (currentScrollY > lastScrollY) {
+        // Scrolling down - hide
+        header.addClass('hide').addClass('sticky');
+      } else {
+        // Scrolling up - show
+        header.removeClass('hide').addClass('sticky');
+      }
+    } else {
+      // Near top - reset
+      header.removeClass('sticky').removeClass('hide');
+    }
+    
+    lastScrollY = currentScrollY;
+  });
+}

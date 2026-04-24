@@ -31,12 +31,15 @@
 
     <!-- Right Actions -->
     <div class="header-right-actions" style="display:flex; align-items:center; justify-content:flex-end; gap:20px;">
-      <a href="login.html" class="header-login-link" style="font-size:0.95rem; font-weight:500; color:var(--charcoal); text-decoration:none;">Login / SignUp</a>
+      <a href="login.html" id="nav-account" class="btn btn-dark rounded-pill px-4" style="font-size:0.9rem; font-weight:600; color:#fff !important; text-decoration:none;">Login / Sign Up</a>
       <div class="header-divider" style="width:1px; height:16px; background:#e2e8f0;"></div>
-      <a href="javascript:void(0)" class="wishlist-toggle" style="font-size:1.3rem; color:var(--charcoal); text-decoration:none; margin-right:4px;"><i class="far fa-heart"></i></a>
+      <a href="wishlist.html" style="font-size:1.3rem; color:var(--charcoal); text-decoration:none; margin-right:12px; position:relative; display:flex; align-items:center;">
+        <i class="far fa-heart"></i>
+        <span class="badge" id="nav-wishlist-count" style="position:absolute; top:-5px; right:-12px; background:#ef4444; color:#fff; font-size:0.65rem; font-weight:700; padding:2px 6px; min-width:20px; height:20px; border-radius:12px; display:none; align-items:center; justify-content:center;">0</span>
+      </a>
       <a href="cart.html" style="font-size:1.3rem; color:var(--charcoal); text-decoration:none; position:relative; display:flex; align-items:center;">
         <i class="fas fa-shopping-bag"></i>
-        <span class="badge" id="nav-cart-count" style="position:absolute; top:-5px; right:-12px; background:#ef4444; color:#fff; font-size:0.65rem; font-weight:700; padding:2px 6px; min-width:20px; height:20px; border-radius:12px; display:flex; align-items:center; justify-content:center;">01</span>
+        <span class="badge" id="nav-cart-count" style="position:absolute; top:-5px; right:-12px; background:#ef4444; color:#fff; font-size:0.65rem; font-weight:700; padding:2px 6px; min-width:20px; height:20px; border-radius:12px; display:flex; align-items:center; justify-content:center;">0</span>
       </a>
       <!-- Hamburger button: only visible on mobile -->
       <button class="burger-btn" id="burger-btn" aria-label="Open menu">
@@ -56,6 +59,7 @@
             <!-- Categories injected here -->
           </ul>
         </div>
+        <a href="about.html" class="">About</a>
         <a href="contact.html" class="">Contact</a>
       </nav>
     </div>
@@ -83,6 +87,7 @@
     <nav class="mobile-nav">
       <a href="index.html"><i class="fas fa-home"></i> Home</a>
       <a href="shop.html"><i class="fas fa-store"></i> Shop</a>
+      <a href="about.html"><i class="fas fa-info-circle"></i> About</a>
       <a href="index.html#reviews"><i class="fas fa-star"></i> Reviews</a>
       <a href="contact.html"><i class="fas fa-envelope"></i> Contact</a>
     </nav>
@@ -97,7 +102,7 @@
 <div class="mobile-drawer-overlay" id="mobile-drawer-overlay"></div>
 
 <!-- â”€â”€ HERO SECTION â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
-<section class="hero-section" style="padding:120px 0 80px; position:relative; overflow:hidden;">
+<section class="hero-section pt-5 pb-4 pt-lg-5 pb-lg-5" style="margin-top: 40px; position:relative; overflow:hidden;">
 
   <div class="container pb-5">
     <!-- Swiper Container -->
@@ -119,7 +124,7 @@
               </div>
             </div>
             <div class="col-lg-6 text-center">
-              <div style="border-radius: var(--radius-xl); overflow: hidden; height: 460px; width: 100%; background: transparent;">
+              <div class="hero-img-wrap mx-auto" style="border-radius: var(--radius-xl); overflow: hidden; background: transparent; max-width: 500px;">
                 <img src="images/legion.png" alt="Lenovo Legion Gen 9 Laptop" style="width: 100%; height: 100%; object-fit: contain; transform: scale(1.15);">
               </div>
             </div>
@@ -142,7 +147,7 @@
               </div>
             </div>
             <div class="col-lg-6 text-center">
-              <div style="border-radius: var(--radius-xl); overflow: hidden; height: 460px; width: 100%; background: transparent;">
+              <div class="hero-img-wrap mx-auto" style="border-radius: var(--radius-xl); overflow: hidden; background: transparent; max-width: 500px;">
                 <img src="images/macbook-air-m3.webp" alt="MacBook Air M3" style="width: 100%; height: 100%; object-fit: cover;">
               </div>
             </div>
@@ -165,7 +170,7 @@
               </div>
             </div>
             <div class="col-lg-6 text-center">
-              <div style="border-radius: var(--radius-xl); overflow: hidden; height: 460px; width: 100%; background: transparent;">
+              <div class="hero-img-wrap mx-auto" style="border-radius: var(--radius-xl); overflow: hidden; background: transparent; max-width: 500px;">
                 <img src="images/s26_ultra.png" alt="Samsung Galaxy S26 Ultra" style="width: 100%; height: 100%; object-fit: contain;">
               </div>
             </div>
@@ -175,6 +180,9 @@
       </div>
       <!-- Swiper Pagination -->
       <div class="swiper-pagination hero-pagination"></div>
+      <!-- Swiper Navigation -->
+      <div class="swiper-button-next hero-nav-btn"></div>
+      <div class="swiper-button-prev hero-nav-btn"></div>
     </div>
   </div>
 </section>
@@ -193,41 +201,63 @@
   </div>
 </div>
 
-<!-- â”€â”€ FEATURED CATEGORIES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
-<section class="section-gap bg-soft" id="featured-categories">
+<section class="section-gap pb-4" id="featured-categories" style="padding-top:60px;">
   <div class="container">
-    <div class="text-center mb-5">
-      <div class="tag justify-content-center mb-3">Categories</div>
-      <h2 class="section-title">Explore Hub Connections</h2>
+    <div class="mb-5">
+      <div class="tag mb-2">Shop by Category</div>
+      <h2 class="section-title mb-0" style="font-weight: 500;">Find the perfect tech for your lifestyle.</h2>
     </div>
-    <div class="featured-cat-grid mb-0">
-      <!-- Watches -->
-      <a href="shop.html?category=wearables" class="featured-cat-card blue watch text-decoration-none">
-        <div class="card-content">
-          <h3 class="cat-title">Watches</h3>
-          <span class="btn-browse">Browse</span>
-        </div>
-        <img src="images/Apple-watch-trans.png" alt="Watches" class="cat-img">
-      </a>
-      <!-- Headphones -->
-      <a href="shop.html?category=acoustics" class="featured-cat-card dark text-decoration-none">
-        <div class="card-content">
-          <h3 class="cat-title">Headphones</h3>
-          <span class="btn-browse">Browse</span>
-        </div>
-        <img src="images/headphones-trans.png" alt="Headphones" class="cat-img">
-      </a>
-      <!-- Accessories -->
-      <a href="shop.html?category=wearables" class="featured-cat-card blue accessories text-decoration-none">
-        <div class="card-content">
-          <h3 class="cat-title">Accessories</h3>
-          <span class="btn-browse">Browse</span>
-        </div>
-        <img src="images/airpods-pro-trans.png" alt="Accessories" class="cat-img">
-      </a>
+    <div class="row g-4 flex-nowrap flex-md-wrap overflow-auto pb-3" style="scrollbar-width: none;">
+      <div class="col-10 col-md-6 col-lg-3">
+        <a href="shop.html?category=wearables" class="text-decoration-none text-dark d-flex align-items-center p-4 py-5 category-hover-card" style="background:#f4f5f6; border-radius:20px; transition:all 0.3s ease; height:100%; min-height:180px;">
+          <div class="flex-grow-1 pe-2">
+            <h4 class="fw-bold mb-2">Watches</h4>
+            <p class="text-muted mb-3" style="font-size:0.9rem; line-height:1.3;">Smart. Stylish. Connected.</p>
+            <span class="text-primary fw-bold" style="font-size:0.95rem;">Shop Now <i class="fas fa-arrow-right ms-1"></i></span>
+          </div>
+          <img src="images/Apple-watch-trans.png" alt="Watches" style="width:110px; object-fit:contain;">
+        </a>
+      </div>
+      <div class="col-10 col-md-6 col-lg-3">
+        <a href="shop.html?category=acoustics" class="text-decoration-none text-dark d-flex align-items-center p-4 py-5 category-hover-card" style="background:#f4f5f6; border-radius:20px; transition:all 0.3s ease; height:100%; min-height:180px;">
+          <div class="flex-grow-1 pe-2">
+            <h4 class="fw-bold mb-2">Audio</h4>
+            <p class="text-muted mb-3" style="font-size:0.9rem; line-height:1.3;">Sound that moves you.</p>
+            <span class="text-primary fw-bold" style="font-size:0.95rem;">Shop Now <i class="fas fa-arrow-right ms-1"></i></span>
+          </div>
+          <img src="images/headphones-trans.png" alt="Audio" style="width:110px; object-fit:contain;">
+        </a>
+      </div>
+      <div class="col-10 col-md-6 col-lg-3">
+        <a href="shop.html?category=wearables" class="text-decoration-none text-dark d-flex align-items-center p-4 py-5 category-hover-card" style="background:#f4f5f6; border-radius:20px; transition:all 0.3s ease; height:100%; min-height:180px;">
+          <div class="flex-grow-1 pe-2">
+            <h4 class="fw-bold mb-2">Accessories</h4>
+            <p class="text-muted mb-3" style="font-size:0.9rem; line-height:1.3;">Essentials that empower.</p>
+            <span class="text-primary fw-bold" style="font-size:0.95rem;">Shop Now <i class="fas fa-arrow-right ms-1"></i></span>
+          </div>
+          <img src="images/airpods-pro-trans.png" alt="Accessories" style="width:110px; object-fit:contain;">
+        </a>
+      </div>
+      <div class="col-10 col-md-6 col-lg-3">
+        <a href="shop.html?category=laptops" class="text-decoration-none text-dark d-flex align-items-center p-4 py-5 category-hover-card" style="background:#f4f5f6; border-radius:20px; transition:all 0.3s ease; height:100%; min-height:180px;">
+          <div class="flex-grow-1 pe-2">
+            <h4 class="fw-bold mb-2">Laptops</h4>
+            <p class="text-muted mb-3" style="font-size:0.9rem; line-height:1.3;">Power. Performance.</p>
+            <span class="text-primary fw-bold" style="font-size:0.95rem;">Shop Now <i class="fas fa-arrow-right ms-1"></i></span>
+          </div>
+          <img src="images/Asus-Transparent.png" alt="Laptops" style="width:110px; object-fit:contain;">
+        </a>
+      </div>
     </div>
   </div>
 </section>
+<style>
+.category-hover-card:hover {
+  background: #ebeef2 !important;
+  transform: translateY(-4px) !important;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+}
+</style>
 
 <!-- â”€â”€ FEATURED PRODUCTS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
 <section class="section-gap" id="featured">
@@ -242,6 +272,9 @@
         <!-- Injected via AJAX -->
       </div>
       <div class="swiper-pagination featured-pagination"></div>
+      <!-- Swiper Navigation -->
+      <div class="swiper-button-next featured-nav-btn"></div>
+      <div class="swiper-button-prev featured-nav-btn"></div>
     </div>
   </div>
 </section>
@@ -266,6 +299,9 @@
         <!-- Injected via AJAX in app.js -->
       </div>
       <div class="swiper-pagination testimonials-pagination"></div>
+      <!-- Swiper Navigation -->
+      <div class="swiper-button-next testimonials-nav-btn"></div>
+      <div class="swiper-button-prev testimonials-nav-btn"></div>
     </div>
   </div>
 </section>
@@ -315,13 +351,14 @@
       <p class="text-muted mb-5">Subscribe to our newsletter and be the first to know about new arrivals, flash sales, and tech news.</p>
       <div class="footer-newsletter d-flex">
         <input type="email" id="newsletter-email" placeholder="Enter your email address">
-        <button onclick="subscribeNewsletter()">Subscribe</button>
+        <button>Subscribe</button>
       </div>
     </div>
   </div>
 </section>
 
 <!-- â”€â”€ FOOTER â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+<!-- ── FOOTER ────────────────────────────────── -->
 <footer class="site-footer">
   <div class="container">
     <div class="row g-5">
@@ -330,19 +367,14 @@
           <img src="images/logo-brand.png" alt="ElectroHub" style="height: 38px; filter: brightness(0) invert(1);">
         </div>
         <p class="footer-desc">Your trusted destination for premium electronics. Fast shipping, secure checkout, and real support.</p>
-        <div class="footer-social">
-          <a href="javascript:void(0)" class="social-btn"><i class="fab fa-instagram"></i></a>
-          <a href="javascript:void(0)" class="social-btn"><i class="fab fa-twitter"></i></a>
-          <a href="javascript:void(0)" class="social-btn"><i class="fab fa-facebook-f"></i></a>
-          <a href="javascript:void(0)" class="social-btn"><i class="fab fa-youtube"></i></a>
-        </div>
       </div>
       <div class="col-6 col-lg-2">
         <div class="footer-col">
-          <h6>Shop</h6>
-          <ul id="footer-categories">
-            <li><a href="shop.html">All Products</a></li>
-            <!-- Categories loaded via AJAX in app.js -->
+          <h6>Company</h6>
+          <ul>
+            <li><a href="about.html">About Us</a></li>
+            <li><a href="contact.html">Contact</a></li>
+            <li><a href="shop.html">Shop</a></li>
           </ul>
         </div>
       </div>
@@ -351,7 +383,6 @@
           <h6>Account</h6>
           <ul>
             <li><a href="login.html">Login</a></li>
-            <li><a href="login.html#register">Register</a></li>
             <li><a href="profile.html">My Orders</a></li>
             <li><a href="cart.html">Cart</a></li>
           </ul>
@@ -359,38 +390,41 @@
       </div>
       <div class="col-lg-4">
         <div class="footer-col">
-          <h6>Newsletter</h6>
-          <p style="font-size:.88rem;color:rgba(255,255,255,.5);margin-bottom:14px;">Get deals and tech news in your inbox.</p>
-          <div class="footer-newsletter d-flex">
-            <input type="email" placeholder="you@example.com">
-            <button>Go</button>
-          </div>
-          <p style="font-size:.78rem;color:rgba(255,255,255,.3);margin-top:10px;margin-bottom:0;"><i class="fa-solid fa-location-dot" style="color:#007aff;"></i> <a href="https://maps.google.com/?q=Nabatiye,Lebanon" target="_blank" style="color:rgba(255,255,255,.3);text-decoration:none;">Nabatiye, Lebanon</a> &nbsp;|&nbsp; <i class="fa-solid fa-phone" style="color:#007aff;"></i> <a href="tel:+96179307904" style="color:rgba(255,255,255,.3);text-decoration:none;">+961 79 30 79 04</a></p>
+          <h6>Locations</h6>
+          <p style="font-size:.88rem;margin-bottom:14px;"><i class="fa-solid fa-location-dot" style="color:var(--coral);"></i> <a href="https://maps.google.com/?q=Nabatiye,Lebanon" target="_blank" style="color:rgba(255,255,255,.5);text-decoration:none;">Nabatiye, Lebanon</a></p>
+          <p style="font-size:.88rem;"><i class="fa-solid fa-phone" style="color:var(--coral);"></i> <a href="tel:+96179307904" style="color:rgba(255,255,255,.5);text-decoration:none;">+961 79 30 79 04</a></p>
         </div>
       </div>
     </div>
     <div class="footer-bottom">
-      <span>© 2025 ElectroHub Â· Ali Ghandour. All rights reserved.</span>
-      <span>Built with <i class="fa-solid fa-heart" style="color:#ef4444;"></i> in Lebanon</span>
+      <span>© 2025 ElectroHub · Ali Ghandour. All rights reserved.</span>
     </div>
   </div>
 </footer>
 
-<!-- â”€â”€ QUICK VIEW MODAL â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+<!-- ───────────────────────────────────────────────────────────── -->
 <div class="modal fade" id="quickViewModal" tabindex="-1">
-  <div class="modal-dialog modal-lg modal-dialog-centered">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
     <div class="modal-content border-0" style="border-radius:var(--radius-xl);overflow:hidden;">
-      <button type="button" class="btn-close position-absolute top-0 end-0 m-3 z-3" data-bs-dismiss="modal" style="background-color:#fff;border-radius:50%;padding:8px;box-shadow:var(--shadow-sm);"></button>
-      <div class="modal-body p-0">
-        <div class="row g-0">
-          <div class="col-md-5 qv-img-wrap">
-            <img src="" id="qv-img" alt="Product">
+      <div class="modal-body p-0" style="position:relative; min-height: 400px;">
+        <!-- Loader Overlay -->
+        <div class="qv-loader" id="qv-loader">
+          <div class="spinner-border text-primary" role="status"></div>
+        </div>
+        
+        <div class="row g-0 qv-content-animate" id="qv-content-wrap">
+          <div class="col-md-6 d-flex align-items-center justify-content-center p-4 bg-white" style="min-height:300px;">
+            <img src="" id="qv-img" alt="Product" style="max-width:100%; max-height:400px; object-fit:contain;">
           </div>
-          <div class="col-md-7 p-5 d-flex flex-column justify-content-center">
-            <span class="badge text-bg-secondary rounded-pill align-self-start mb-2" id="qv-cat" style="font-size:.75rem;"></span>
-            <h3 class="fw-700 mb-1" id="qv-name" style="font-size:1.5rem;font-weight:700;"></h3>
-            <div class="rating-stars mb-2">
-              <span id="qv-rating-stars"></span>
+          <div class="col-md-6 p-4 p-lg-5">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <span id="qv-cat" class="text-uppercase tracking-wider text-muted" style="font-size:0.75rem; font-weight:700;"></span>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <h2 class="fw-bold mb-3" id="qv-name" style="font-size:2rem; letter-spacing:-0.02em;"></h2>
+            
+            <div class="d-flex align-items-center mb-4">
+              <div id="qv-rating-stars" class="d-flex gap-1"></div>
               <a href="javascript:void(0)" id="qv-toggle-reviews" style="font-size:.8rem;color:var(--muted);text-decoration:none;margin-left:8px;transition:color .2s;" onmouseover="this.style.color='var(--coral)'" onmouseout="this.style.color='var(--muted)'"></a>
             </div>
             <div class="mb-3" style="font-size:1.8rem;font-weight:800;color:var(--coral);" id="qv-price"></div>
@@ -413,21 +447,34 @@
               </div>
             </div>
 
-            <!-- Product Reviews Section -->
-            <div id="qv-reviews-container" class="mt-2 mb-4" style="display:none; border-top:1px solid var(--border); padding-top:20px;">
-              <h6 style="font-size:.85rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:12px;">Customer Feedback</h6>
-              <div id="qv-reviews-list" style="max-height:200px; overflow-y:auto; padding-right:8px;">
-                <!-- Reviews injected here -->
+            <!-- Review Form (Hidden by default, shown if eligible) -->
+            <div id="qv-review-form-container" class="mt-2 mb-4 p-3 bg-light rounded" style="display:none; border: 1px dashed var(--border);">
+              <h6 class="fw-bold mb-2" style="font-size:0.9rem;">Share your experience</h6>
+              <div class="d-flex gap-1 mb-3 text-warning" id="qv-review-stars-input" style="cursor:pointer; font-size:1.1rem;">
+                <i class="fas fa-star qv-review-star-input" data-val="1" style="cursor:pointer; padding:2px;"></i>
+                <i class="fas fa-star qv-review-star-input" data-val="2" style="cursor:pointer; padding:2px;"></i>
+                <i class="fas fa-star qv-review-star-input" data-val="3" style="cursor:pointer; padding:2px;"></i>
+                <i class="fas fa-star qv-review-star-input" data-val="4" style="cursor:pointer; padding:2px;"></i>
+                <i class="fas fa-star qv-review-star-input" data-val="5" style="cursor:pointer; padding:2px;"></i>
               </div>
+              <textarea id="qv-review-text" class="form-control mb-2" rows="2" placeholder="What did you think of this product?" style="font-size:0.85rem;"></textarea>
+              <button class="btn btn-dark btn-sm w-100 fw-bold" id="qv-submit-review">Submit Review</button>
             </div>
 
             <div class="d-flex gap-3">
+            <div id="qv-cart-btn-wrapper" class="d-flex gap-3 flex-grow-1">
               <button class="btn-coral flex-grow-1" id="qv-add-btn"><i class="fas fa-shopping-cart"></i> Add to Cart</button>
+            </div>
               <button class="icon-btn" id="qv-wishlist-btn" style="border:1px solid var(--border);width:48px;height:48px;border-radius:var(--radius-sm);" title="Wishlist">
                 <i class="far fa-heart"></i>
               </button>
             </div>
           </div>
+        </div>
+        <!-- Reviews Section -->
+        <div id="qv-reviews-container" style="display:none; padding: 0 40px 40px;">
+          <hr class="my-0">
+          <div id="qv-reviews-list" class="pt-3" style="max-height:280px; overflow-y:auto;"></div>
         </div>
       </div>
     </div>
@@ -443,13 +490,6 @@
 <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
 <script src="js/app.js"></script>
 <script>
-  // Newsletter handler on homepage
-  function subscribeNewsletter() {
-    const email = document.getElementById('newsletter-email').value;
-    if (!email || !email.includes('@')) { showToast('Please enter a valid email.', 'error'); return; }
-    showToast('You\'ve been subscribed! Welcome to ElectroHub.', 'success');
-    document.getElementById('newsletter-email').value = '';
-  }
 
   // Init Hero Swiper (Executes immediately since it's at end of body)
   const heroSwiper = new Swiper('.hero-swiper', {
@@ -461,7 +501,10 @@
     pagination: {
       el: '.hero-pagination',
       clickable: true,
-      dynamicBullets: true,
+    },
+    navigation: {
+      nextEl: '.swiper-button-next.hero-nav-btn',
+      prevEl: '.swiper-button-prev.hero-nav-btn',
     },
   });
 </script>
