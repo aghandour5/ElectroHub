@@ -9,27 +9,11 @@ const dbConfig = {
 };
 
 async function initializeDatabase() {
-  const client = new Client(dbConfig);
-  try {
-    await client.connect();
-    
-    // Check if database exists, create if it doesn't
-    const res = await client.query(`SELECT datname FROM pg_catalog.pg_database WHERE datname = 'auratech_db'`);
-    if (res.rowCount === 0) {
-      console.log('Database does not exist. Creating auratech_db...');
-      await client.query(`CREATE DATABASE "auratech_db"`);
-      console.log('Database auratech_db created successfully.');
-    } else {
-      console.log('Database auratech_db already exists.');
-    }
-  } catch (err) {
-    console.error('Error ensuring database exists:', err);
-  } finally {
-    await client.end();
-  }
-
-  // Connect to the specific database to create tables
-  const pool = new Pool({ ...dbConfig, database: 'auratech_db' });
+  // Connect to the Supabase database to create tables
+  const pool = new Pool({ 
+    connectionString: process.env.SUPABASE_DB_URL,
+    ssl: { rejectUnauthorized: false }
+  });
 
   const createTablesSql = `
     CREATE TABLE IF NOT EXISTS users (
@@ -57,7 +41,9 @@ async function initializeDatabase() {
       image_path VARCHAR(255),
       rating NUMERIC(2, 1) DEFAULT 0.0,
       is_featured BOOLEAN DEFAULT false,
-      specs JSONB,
+      is_new BOOLEAN DEFAULT false,
+      specs JSONB DEFAULT '{}'::jsonb,
+      reviews_data JSONB DEFAULT '[]'::jsonb,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
 
