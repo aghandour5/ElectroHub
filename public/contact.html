@@ -303,18 +303,44 @@ $('#contact-form').on('submit', function (e) {
   const email = $('#c-email').val().trim();
   const subject = $('#c-subject').val();
   const message = $('#c-message').val().trim();
+
   if (!name || !email || !subject || !message) {
-    showToast('Please fill in all fields.', 'error'); return;
+    if (typeof showToast === 'function') {
+      showToast('Please fill in all fields.', 'error');
+    } else {
+      alert('Please fill in all fields.');
+    }
+    return;
   }
-  // Simulate form submission (no backend endpoint needed for demo)
+
   const btn = $(this).find('button[type="submit"]');
+  const originalText = btn.html();
   btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i> Sending…');
-  setTimeout(function () {
-    $('#contact-success').removeClass('d-none');
-    $('#contact-form')[0].reset();
-    btn.prop('disabled', false).html('<i class="fas fa-paper-plane me-2"></i> Send Message');
-    showToast('Message sent successfully!', 'success');
-  }, 1200);
+
+  $.ajax({
+    url: '/api/messages/send',
+    method: 'POST',
+    contentType: 'application/json',
+    data: JSON.stringify({ name, email, subject, message }),
+    success: function (res) {
+      $('#contact-success').removeClass('d-none');
+      $('#contact-form')[0].reset();
+      if (typeof showToast === 'function') {
+        showToast(res.message || 'Message sent successfully!', 'success');
+      }
+    },
+    error: function (xhr) {
+      const errorMsg = xhr.responseJSON ? xhr.responseJSON.message : 'Failed to send message. Please try again.';
+      if (typeof showToast === 'function') {
+        showToast(errorMsg, 'error');
+      } else {
+        alert(errorMsg);
+      }
+    },
+    complete: function () {
+      btn.prop('disabled', false).html(originalText);
+    }
+  });
 });
 </script>
 </body>

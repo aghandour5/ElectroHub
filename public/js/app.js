@@ -268,22 +268,24 @@ $(document).on('click', '.quick-view-btn', function () {
     }
 
     // Toggle Reviews Section
-    const showReviews = function () {
+    const toggleReviews = function () {
       if (!reviewsContainer.is(':visible')) {
         reviewsContainer.slideDown();
         setTimeout(() => {
           reviewsContainer[0].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }, 300);
+      } else {
+        reviewsContainer.slideUp();
       }
     };
 
-    toggleBtn.off('click').on('click', showReviews);
-    $('#qv-rating-stars').css('cursor', 'pointer').off('click').on('click', showReviews);
+    toggleBtn.off('click').on('click', toggleReviews);
+    $('#qv-rating-stars').css('cursor', 'pointer').off('click').on('click', toggleReviews);
 
     // Auto-show reviews if triggered from star click on product card
     if ($(document).data('qv-show-reviews')) {
       $(document).data('qv-show-reviews', false);
-      setTimeout(showReviews, 600);
+      setTimeout(toggleReviews, 600);
     }
 
     // Check Review Eligibility
@@ -972,24 +974,40 @@ function initStickyHeader() {
   if (!header.length) return;
 
   let lastScrollY = window.scrollY;
-  let threshold = 150;
+  let ticking = false;
 
-  $(window).on('scroll', function() {
+  function updateHeader() {
     const currentScrollY = window.scrollY;
-    
-    if (currentScrollY > threshold) {
+
+    // Toggle "scrolled" state for shadow/background
+    if (currentScrollY > 10) {
+      header.addClass('scrolled');
+    } else {
+      header.removeClass('scrolled');
+    }
+
+    // Handle show/hide on scroll direction change
+    if (currentScrollY > 150) { // Only hide after some initial scroll
       if (currentScrollY > lastScrollY) {
-        // Scrolling down - hide
-        header.addClass('hide').addClass('sticky');
+        // Scrolling down
+        header.addClass('hide');
       } else {
-        // Scrolling up - show
-        header.removeClass('hide').addClass('sticky');
+        // Scrolling up
+        header.removeClass('hide');
       }
     } else {
-      // Near top - reset
-      header.removeClass('sticky').removeClass('hide');
+      // Near top - always show
+      header.removeClass('hide');
     }
-    
+
     lastScrollY = currentScrollY;
+    ticking = false;
+  }
+
+  $(window).on('scroll', function() {
+    if (!ticking) {
+      window.requestAnimationFrame(updateHeader);
+      ticking = true;
+    }
   });
 }

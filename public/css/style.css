@@ -39,6 +39,27 @@ body {
   color: var(--charcoal);
   line-height: 1.65;
   -webkit-font-smoothing: antialiased;
+  padding-top: 145px; /* Default for fixed header */
+  
+  /* Sticky Footer Setup */
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* Auth pages have no header, so no top padding */
+body.auth-page {
+  padding-top: 0 !important;
+}
+
+/* Ensure footer stays at bottom */
+.site-footer {
+  margin-top: auto;
+  flex-shrink: 0;
+}
+
+.site-header {
+  flex-shrink: 0;
 }
 
 a {
@@ -78,6 +99,16 @@ textarea {
 
 .section-gap {
   padding: 96px 0;
+}
+
+.loading-wrap {
+  flex: 1;
+  min-height: 80vh; 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  padding: 100px 0;
 }
 
 /* Buttons */
@@ -201,18 +232,21 @@ textarea {
 
 /* ── Sticky Header ────────────────────────── */
 .site-header {
-  width: 100%;
-  z-index: 1000;
-  background: #fff;
-  transition: transform 0.4s var(--ease), box-shadow 0.4s var(--ease);
-  will-change: transform;
-}
-
-.site-header.sticky {
   position: fixed;
   top: 0;
   left: 0;
+  width: 100%;
+  z-index: 1000;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease, background 0.3s ease;
+  will-change: transform;
+}
+
+.site-header.scrolled {
   box-shadow: var(--shadow-md);
+  background: rgba(255, 255, 255, 0.98);
 }
 
 .site-header.hide {
@@ -247,15 +281,7 @@ textarea {
 }
 
 /* ── HEADER ────────────────────────────────── */
-.site-header {
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-  background: rgba(255, 255, 255, .92);
-  backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--border);
-  padding: 0;
-}
+/* Site header base styles moved above and unified */
 
 .header-inner {
   display: grid;
@@ -1789,6 +1815,18 @@ html,
 body {
   overflow-x: hidden;
   max-width: 100%;
+}
+
+@media (max-width: 991px) {
+  body:not(.auth-page) {
+    padding-top: 80px;
+  }
+}
+
+@media (max-width: 575px) {
+  body:not(.auth-page) {
+    padding-top: 64px;
+  }
 }
 
 /* Scroll lock when mobile drawer is open (works on iOS Safari) */

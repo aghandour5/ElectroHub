@@ -172,12 +172,12 @@
           <div class="filter-block mb-4">
             <h6 class="fw-bold mb-3">Brands</h6>
             <div class="d-flex flex-wrap gap-2">
-              <span class="badge bg-primary px-3 py-2" style="border-radius:16px; font-weight:normal; background:#0062FF !important;">All Brands</span>
-              <span class="badge bg-light text-dark px-3 py-2 border" style="border-radius:16px; font-weight:normal;">Apple</span>
-              <span class="badge bg-light text-dark px-3 py-2 border" style="border-radius:16px; font-weight:normal;">Sony</span>
-              <span class="badge bg-light text-dark px-3 py-2 border" style="border-radius:16px; font-weight:normal;">Dell</span>
-              <span class="badge bg-light text-dark px-3 py-2 border" style="border-radius:16px; font-weight:normal;">Samsung</span>
-              <span class="badge bg-light text-dark px-3 py-2 border" style="border-radius:16px; font-weight:normal;">Bose</span>
+              <button class="badge bg-primary text-white px-3 py-2 border-0 brand-filter active" style="border-radius:16px; font-weight:normal; background:#0062FF !important;" data-brand="">All Brands</button>
+              <button class="badge bg-light text-dark px-3 py-2 border brand-filter" style="border-radius:16px; font-weight:normal;" data-brand="Apple">Apple</button>
+              <button class="badge bg-light text-dark px-3 py-2 border brand-filter" style="border-radius:16px; font-weight:normal;" data-brand="Sony">Sony</button>
+              <button class="badge bg-light text-dark px-3 py-2 border brand-filter" style="border-radius:16px; font-weight:normal;" data-brand="Dell">Dell</button>
+              <button class="badge bg-light text-dark px-3 py-2 border brand-filter" style="border-radius:16px; font-weight:normal;" data-brand="Samsung">Samsung</button>
+              <button class="badge bg-light text-dark px-3 py-2 border brand-filter" style="border-radius:16px; font-weight:normal;" data-brand="Bose">Bose</button>
             </div>
           </div>
 
@@ -190,10 +190,10 @@
             </div>
             <input type="range" class="form-range" id="price-range" min="0" max="2500" value="2500" step="50">
             <div class="d-flex flex-wrap gap-2 mt-3">
-              <span class="badge bg-light text-dark px-3 py-2 border" style="border-radius:16px; font-weight:normal;">Under $100</span>
-              <span class="badge bg-light text-dark px-3 py-2 border" style="border-radius:16px; font-weight:normal;">$100 - $500</span>
-              <span class="badge bg-light text-dark px-3 py-2 border" style="border-radius:16px; font-weight:normal;">$500 - $1000</span>
-              <span class="badge bg-light text-dark px-3 py-2 border" style="border-radius:16px; font-weight:normal;">Over $1000</span>
+              <button class="badge bg-light text-dark px-3 py-2 border price-filter" style="border-radius:16px; font-weight:normal;" data-price="100">Under $100</button>
+              <button class="badge bg-light text-dark px-3 py-2 border price-filter" style="border-radius:16px; font-weight:normal;" data-price="500">$100 - $500</button>
+              <button class="badge bg-light text-dark px-3 py-2 border price-filter" style="border-radius:16px; font-weight:normal;" data-price="1000">$500 - $1000</button>
+              <button class="badge bg-light text-dark px-3 py-2 border price-filter" style="border-radius:16px; font-weight:normal;" data-price="2500">Over $1000</button>
             </div>
           </div>
 
@@ -385,6 +385,8 @@ $(document).ready(function () {
     $('#shop-grid').html(html);
   }
 
+  let selectedBrand = '';
+
   function applyFilters() {
     const search = $('#shop-search').val().toLowerCase().trim();
     const selectedCats = $('.cat-filter:not(#cat-all):checked').map(function() { return $(this).val(); }).get();
@@ -394,6 +396,7 @@ $(document).ready(function () {
     let filtered = allProducts.filter(p => {
       if (search && !p.name.toLowerCase().includes(search)) return false;
       if (selectedCats.length && !selectedCats.includes(p.category_slug)) return false;
+      if (selectedBrand && !p.name.toLowerCase().includes(selectedBrand.toLowerCase())) return false;
       if (parseFloat(p.price) > price) return false;
       return true;
     });
@@ -406,8 +409,9 @@ $(document).ready(function () {
   }
 
   // Load all products once
-  $('#shop-grid').html('<div class="col-12 py-5 text-center"><div class="spinner-border text-coral" style="color:var(--coral);" role="status"></div><p class="mt-3 text-muted">Loading products…</p></div>');
+  $('#shop-grid').addClass('loading-wrap').html('<div class="spinner-border text-coral" style="color:var(--coral);" role="status"></div><p class="mt-3 text-muted">Loading products…</p>');
   $.get('/api/products').done(function (products) {
+    $('#shop-grid').removeClass('loading-wrap');
     allProducts = products;
     applyFilters();
   });
@@ -438,10 +442,30 @@ $(document).ready(function () {
     applyFilters();
   });
 
+  $(document).on('click', '.brand-filter', function() {
+    $('.brand-filter').removeClass('bg-primary text-white active border-0').addClass('bg-light text-dark border');
+    $('.brand-filter').attr('style', 'border-radius:16px; font-weight:normal;');
+    $(this).removeClass('bg-light text-dark border').addClass('bg-primary text-white active border-0').attr('style', 'border-radius:16px; font-weight:normal; background:#0062FF !important;');
+    selectedBrand = $(this).data('brand');
+    applyFilters();
+  });
+
+  $(document).on('click', '.price-filter', function() {
+    const price = $(this).data('price');
+    $('#price-range').val(price);
+    $('#price-label').text('$' + price);
+    applyFilters();
+  });
+
   $('#reset-filters').on('click', function () {
     $('#shop-search').val('');
     $('.cat-filter').prop('checked', false);
     $('#cat-all').prop('checked', true);
+    
+    $('.brand-filter').removeClass('bg-primary text-white active border-0').addClass('bg-light text-dark border').attr('style', 'border-radius:16px; font-weight:normal;');
+    $('.brand-filter[data-brand=""]').removeClass('bg-light text-dark border').addClass('bg-primary text-white active border-0').attr('style', 'border-radius:16px; font-weight:normal; background:#0062FF !important;');
+    selectedBrand = '';
+
     $('#price-range').val(2000); $('#price-label').text('$2000');
     $('#sort-select').val('default');
     allProducts = [];

@@ -18,20 +18,28 @@ ElectroHub is a polished, full-stack, competition-ready e-commerce platform desi
 
 ## Installation & Local Execution
 
-### 1. Database Configuration
-1. Open your native PostgreSQL console (or pgAdmin) and ensure the PostgreSQL service is active in the background.
-2. The automatic setup script uses `793079` as the postgres password. You can adjust the credentials by modifying `.env` or `db.js`.
+### 1. Database & Notifications Configuration
+1. Open your native PostgreSQL console (or pgAdmin) and ensure the PostgreSQL service is active.
+2. The automatic setup script uses `793079` as the postgres password. Adjust credentials in `.env`.
+3. **Slack Feedback (Optional)**: If you want to receive real-time notifications for contact form submissions, create an "Incoming Webhook" on Slack and add it to your `.env` file:
+   `SLACK_WEBHOOK_URL=https://hooks.slack.com/services/T0000/B0000/XXXX`
 
 ### 2. Scaffold Database & Seed
 Move to the directory and run the initialization script to scaffold the schemas automatically:
 ```bash
-node init_db.js
+node database/scripts/init_db.js
 ```
-*This will create the `auratech_db`, inject all necessary tables, and pre-load 4 high-end featured products into the database.*
+*This will create the necessary tables and pre-load 4 high-end featured products into the database.*
+
+To load the full product catalog:
+```bash
+node database/scripts/seed.js
+```
 
 ### 3. Launch the API Server
-Start the Express application manually:
+Start the Express application:
 ```bash
+npm install
 node server.js
 ```
 
@@ -40,9 +48,8 @@ Open your browser and navigate to:
 `http://localhost:3000`
 
 ## Test Credentials
-Because `init_db.js` doesn't enforce a hardcoded admin user on setup (so it doesn't accidentally expose credentials strictly in code), you will need to register an account first.
-- **To test Admin**: Register a user normally. Then, open your PostgreSQL tool and run:
-`UPDATE users SET role = 'admin' WHERE email = 'your_email@example.com';`
+Because `init_db.js` doesn't enforce a hardcoded admin user on setup, you will need to register an account first.
+- **To test Admin**: Register a user normally. Then, use a database tool (or the provided admin promotion logic) to set `role = 'admin'` for your user.
 
 ## Project Structure Overview
 ```text
@@ -57,8 +64,12 @@ Because `init_db.js` doesn't enforce a hardcoded admin user on setup (so it does
    ├── auth.js       # Register, Login, Logout, Session check
    ├── products.js   # Dynamic DB product retrieval mappings
    ├── cart.js       # Session-bound Cart & checkout transaction
-   └── admin.js      # Protected CRUD middleware paths
+   ├── admin.js      # Protected CRUD middleware paths
+   └── messages.js   # Real-time contact form submission handling
+/config/             # Configuration files
+   └── db.js         # PostgreSQL configuration pool connector
+/database/scripts/   # Database initialization and seeding
+   ├── init_db.js    # Automation script mapping the PG schema
+   └── seed.js       # Standardized product seeding script
 /server.js           # Origin of Express instance & Server boot
-/init_db.js          # Automation script mapping the PG schema
-/db.js               # PostgreSQL configuration pool connector
 ```

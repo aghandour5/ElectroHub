@@ -29,6 +29,7 @@ const productRoutes = require('./routes/products');
 const cartRoutes = require('./routes/cart');
 const adminRoutes = require('./routes/admin');
 const newsletterRoutes = require('./routes/newsletter');
+const messageRoutes = require('./routes/messages');
 
 // Mount Routes
 app.use('/api/auth', authRoutes);
@@ -36,6 +37,7 @@ app.use('/api/products', productRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/newsletter', newsletterRoutes);
+app.use('/api/messages', messageRoutes);
 
 // Catch-all route to redirect cleanly to home page
 app.use((req, res) => {
