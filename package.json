@@ -6,9 +6,9 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
+  "author": "Ali Sallam Ghandour",
+  "license": "MIT",
+  "description": "A modern e-commerce electronics store website built with Node.js and Supabase.",
   "dependencies": {
     "@supabase/supabase-js": "^2.104.1",
     "bcryptjs": "^3.0.3",
