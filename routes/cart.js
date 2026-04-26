@@ -33,9 +33,9 @@ router.get('/', async (req, res) => {
         enhancedCart.push({
           product_id: p.id,
           name: p.name,
-          price: p.price,
+          price: p.price, // use DB price to prevent tampering
           image_path: p.image_path,
-          quantity: item.quantity,
+          quantity: item.quantity, // quantity from session
           itemTotal: itemTotal
         });
       }
@@ -59,9 +59,9 @@ router.post('/add', async (req, res) => {
   let qty = parseInt(quantity) || 1;
   const existingIndex = req.session.cart.findIndex(i => i.product_id === parseInt(product_id));
 
-  if (existingIndex > -1) {
+  if (existingIndex > -1) { // If product already in cart, increase quantity
     req.session.cart[existingIndex].quantity += qty;
-  } else {
+  } else { // Add new product to cart
     req.session.cart.push({ product_id: parseInt(product_id), quantity: qty });
   }
 
@@ -74,7 +74,7 @@ router.post('/remove', (req, res) => {
   const { product_id } = req.body;
   if (!req.session.cart) return res.status(400).json({ error: 'Cart is empty' });
 
-  req.session.cart = req.session.cart.filter(i => i.product_id !== parseInt(product_id));
+  req.session.cart = req.session.cart.filter(i => i.product_id !== parseInt(product_id)); // filter will return a new array without the removed item
   res.json({ message: 'Item removed', cartCount: req.session.cart.length });
 });
 
@@ -96,10 +96,10 @@ router.post('/checkout', async (req, res) => {
     await client.query('BEGIN');
     
     // Calculate total from DB prices
-    const productIds = req.session.cart.map(i => i.product_id);
+    const productIds = req.session.cart.map(i => i.product_id); // map will return an array of product IDs from the cart
     const dbProds = await client.query('SELECT id, price, stock FROM products WHERE id = ANY($1::int[])', [productIds]);
     
-    let prodMap = {};
+    let prodMap = {}; // dict to quickly lookup product details by ID
     dbProds.rows.forEach(p => prodMap[p.id] = p);
 
     let totalAmount = 0;
@@ -140,7 +140,7 @@ router.post('/checkout', async (req, res) => {
     res.json({ message: 'Order placed successfully!', orderId: orderId });
 
   } catch (error) {
-    await client.query('ROLLBACK');
+    await client.query('ROLLBACK'); // Undo any changes if error occurs
     console.error('Checkout error:', error);
     res.status(500).json({ error: error.message || 'Checkout failed.' });
   } finally {
@@ -155,8 +155,8 @@ router.post('/update', (req, res) => {
   if (!req.session.cart) return res.status(400).json({ error: 'Cart is empty' });
   const idx = req.session.cart.findIndex(i => i.product_id === parseInt(product_id));
   if (idx === -1) return res.status(404).json({ error: 'Item not in cart' });
-  if (quantity <= 0) {
-    req.session.cart.splice(idx, 1);
+  if (quantity <= 0) { // Remove item if quantity set to 0 or less
+    req.session.cart.splice(idx, 1); // splice will modify the original array by removing the item at index idx
   } else {
     req.session.cart[idx].quantity = parseInt(quantity);
   }

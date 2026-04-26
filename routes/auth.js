@@ -1,8 +1,8 @@
 const express = require('express');
-const router = express.Router();
-const bcrypt = require('bcryptjs');
-const crypto = require('crypto');
-const { Resend } = require('resend');
+const router = express.Router(); // Router for authentication-related routes
+const bcrypt = require('bcryptjs'); // bcrypt for hashing passwords securely
+const crypto = require('crypto'); // crypto for generating secure tokens for password reset
+const { Resend } = require('resend'); // Resend SDK for sending transactional emails (like password resets)
 const db = require('../config/db');
 const { passwordResetEmail } = require('../config/emailTemplates');
 
@@ -30,13 +30,13 @@ router.post('/register', async (req, res) => {
     }
 
     // Hash Password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+    const salt = await bcrypt.genSalt(10); // Generate salt with 10 rounds (default)
+    const hashedPassword = await bcrypt.hash(password, salt); // Hash the password with the generated salt
 
     // Save to Database
     const newUser = await db.query(
       'INSERT INTO users (name, email, password_hash) VALUES ($1, $2, $3) RETURNING id, name, email, role',
-      [name, email, hashedPassword]
+      [name, email, hashedPassword] // parameterized query to prevent SQL injection
     );
 
     // Log the user in via session
@@ -149,7 +149,7 @@ router.put('/profile', async (req, res) => {
   try {
     // Check if new email is already taken by someone else
     if (email) {
-      const emailCheck = await db.query('SELECT id FROM users WHERE email = $1 AND id != $2', [email, req.session.user.id]);
+      const emailCheck = await db.query('SELECT id FROM users WHERE email = $1 AND id != $2', [email, req.session.user.id]); // req.session.user.id is the current user's ID provided in the session, so we check if any other user has the same email.
       if (emailCheck.rows.length > 0) {
         return res.status(400).json({ error: 'Email is already in use.' });
       }

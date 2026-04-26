@@ -1,7 +1,7 @@
-const express = require('express');
-const session = require('express-session');
-const cors = require('cors');
-const path = require('path');
+const express = require('express'); // Express framework for building the server
+const session = require('express-session'); // Session management for shopping cart and authentication state
+const cors = require('cors'); // CORS middleware to allow cross-origin requests from the frontend
+const path = require('path'); // Path module for handling file paths
 require('dotenv').config();
 
 const app = express();
@@ -14,10 +14,10 @@ app.use(express.static(path.join(__dirname, 'public'))); // Serve HTML/CSS/JS
 
 // Session Config (For Shopping Cart and Authentication State)
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'auratech_secret_key_123',
-  resave: false,
+  secret: process.env.SESSION_SECRET || 'electrohub_secret_key_123', 
+  resave: false, // Don't save session if unmodified
   saveUninitialized: true,
-  cookie: { 
+  cookie: {
     secure: false, // Set to true if using HTTPS
     maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
   }
@@ -41,7 +41,7 @@ app.use('/api/messages', messageRoutes);
 
 // Catch-all route to redirect cleanly to home page
 app.use((req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  res.sendFile(path.join(__dirname, 'public', 'index.html')); // any route that is not an API route will serve the frontend's index.html, allowing React Router to handle the routing on the client side
 });
 
 // Boot Server

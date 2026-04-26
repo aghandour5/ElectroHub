@@ -4,7 +4,7 @@ const db = require('../config/db');
 const multer = require('multer');
 const { createClient } = require('@supabase/supabase-js');
 
-const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } });
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } }); // 5MB limit
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
 // Middleware to check if Admin
@@ -23,10 +23,10 @@ router.use(isAdmin);
 // @desc    Get dashboard summary statistics
 router.get('/dashboard', async (req, res) => {
   try {
-    const totalUsers = await db.query('SELECT COUNT(*) FROM users');
-    const totalProducts = await db.query('SELECT COUNT(*) FROM products');
-    const totalOrders = await db.query('SELECT COUNT(*) FROM orders');
-    const totalRevenue = await db.query("SELECT SUM(total_amount) FROM orders WHERE status != 'cancelled'");
+    const totalUsers = await db.query('SELECT COUNT(*) FROM users'); // Get total number of users in the system
+    const totalProducts = await db.query('SELECT COUNT(*) FROM products'); // Get total number of products available in the store
+    const totalOrders = await db.query('SELECT COUNT(*) FROM orders'); // Get total number of orders placed by customers
+    const totalRevenue = await db.query("SELECT SUM(total_amount) FROM orders WHERE status != 'cancelled'"); // Calculate total revenue from completed orders (excluding cancelled ones)
     
     const recentOrders = await db.query(`
       SELECT o.*, u.name as customer_name 
@@ -122,13 +122,13 @@ router.get('/categories', async (req, res) => {
 router.post('/products', upload.single('image'), async (req, res) => {
   try {
     const { category_id, name, description, price, stock, is_featured, is_new, specs, reviews_data } = req.body;
-    let image_path = req.body.image_path || 'laptop.png';
+    let image_path = req.body.image_path || 'laptop.png'; // image_path can come from body (for testing) or from file upload
 
     if (req.file) {
-      const fileName = `${Date.now()}_${req.file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+      const fileName = `${Date.now()}_${req.file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_')}`; // Sanitize filename and prepend timestamp for uniqueness
       const { data, error } = await supabase.storage.from('product-images').upload(fileName, req.file.buffer, {
-        contentType: req.file.mimetype,
-        upsert: true
+        contentType: req.file.mimetype, // Set correct content type for the uploaded file
+        upsert: true // Overwrite if file with same name exists (since we prepend timestamp, collisions are unlikely)
       });
       if (error) throw error;
       image_path = `${process.env.SUPABASE_URL}/storage/v1/object/public/product-images/${fileName}`;

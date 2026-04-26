@@ -8,7 +8,7 @@ const https = require('https');
  */
 const sendToSlack = (name, email, subject, message) => {
   const webhookUrl = process.env.SLACK_WEBHOOK_URL;
-  if (!webhookUrl || webhookUrl.includes('your_slack_webhook_url_here')) {
+  if (!webhookUrl) {
     return;
   }
 
@@ -43,12 +43,12 @@ const sendToSlack = (name, email, subject, message) => {
 
   const url = new URL(webhookUrl);
   const options = {
-    hostname: url.hostname,
-    path: url.pathname + url.search,
+    hostname: url.hostname, // url.hostname extracts the hostname from the webhook URL, e.g., hooks.slack.com
+    path: url.pathname + url.search, // url.pathname + url.search gives the full path and query string, e.g., /services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Content-Length': Buffer.byteLength(payload),
+      'Content-Length': Buffer.byteLength(payload), // Buffer.byteLength calculates the byte length of the payload string, which is necessary for the Content-Length header to ensure the server knows how much data to expect in the request body
     },
   };
 
@@ -75,7 +75,7 @@ router.post('/send', async (req, res) => {
   }
 
   // Email format validation
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // This regex checks for a basic email format: it ensures that there is some text before the '@' symbol, followed by a domain name and a top-level domain (e.g., .com, .net). It does not allow spaces and requires at least one character in each part of the email address.
   if (!emailRegex.test(email)) {
     return res.status(400).json({ 
       success: false, 

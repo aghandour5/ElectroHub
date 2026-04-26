@@ -171,13 +171,8 @@
 
           <div class="filter-block mb-4">
             <h6 class="fw-bold mb-3">Brands</h6>
-            <div class="d-flex flex-wrap gap-2">
+            <div class="d-flex flex-wrap gap-2" id="brand-filters-container">
               <button class="badge bg-primary text-white px-3 py-2 border-0 brand-filter active" style="border-radius:16px; font-weight:normal; background:#0062FF !important;" data-brand="">All Brands</button>
-              <button class="badge bg-light text-dark px-3 py-2 border brand-filter" style="border-radius:16px; font-weight:normal;" data-brand="Apple">Apple</button>
-              <button class="badge bg-light text-dark px-3 py-2 border brand-filter" style="border-radius:16px; font-weight:normal;" data-brand="Sony">Sony</button>
-              <button class="badge bg-light text-dark px-3 py-2 border brand-filter" style="border-radius:16px; font-weight:normal;" data-brand="Dell">Dell</button>
-              <button class="badge bg-light text-dark px-3 py-2 border brand-filter" style="border-radius:16px; font-weight:normal;" data-brand="Samsung">Samsung</button>
-              <button class="badge bg-light text-dark px-3 py-2 border brand-filter" style="border-radius:16px; font-weight:normal;" data-brand="Bose">Bose</button>
             </div>
           </div>
 
@@ -396,7 +391,7 @@ $(document).ready(function () {
     let filtered = allProducts.filter(p => {
       if (search && !p.name.toLowerCase().includes(search)) return false;
       if (selectedCats.length && !selectedCats.includes(p.category_slug)) return false;
-      if (selectedBrand && !p.name.toLowerCase().includes(selectedBrand.toLowerCase())) return false;
+      if (selectedBrand && p.brand !== selectedBrand) return false;
       if (parseFloat(p.price) > price) return false;
       return true;
     });
@@ -413,8 +408,28 @@ $(document).ready(function () {
   $.get('/api/products').done(function (products) {
     $('#shop-grid').removeClass('loading-wrap');
     allProducts = products;
+    renderBrandFilters();
     applyFilters();
   });
+
+  function renderBrandFilters() {
+    const brands = [...new Set(allProducts.map(p => p.brand).filter(b => b))].sort();
+    const container = $('#brand-filters-container');
+    const currentActive = selectedBrand;
+    
+    // Clear except "All Brands"
+    container.find('.brand-filter:not([data-brand=""])').remove();
+    
+    brands.forEach(brand => {
+      const isActive = brand === currentActive;
+      const btn = $(`
+        <button class="badge ${isActive ? 'bg-primary text-white border-0' : 'bg-light text-dark border'} px-3 py-2 brand-filter" 
+                style="border-radius:16px; font-weight:normal; ${isActive ? 'background:#0062FF !important;' : ''}" 
+                data-brand="${brand}">${brand}</button>
+      `);
+      container.append(btn);
+    });
+  }
 
   $(document).on('cartUpdated', function() {
     // Patches only the buttons instead of full re-render

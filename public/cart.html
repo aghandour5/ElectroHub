@@ -240,7 +240,7 @@ $(document).ready(function () {
   function loadCart() {
     $.get('/api/cart').done(function (res) {
       if (!res.items || res.items.length === 0) {
-        $('#cart-items-wrap').html(`
+        $('#cart-items-wrap').removeClass('loading-wrap').html(`
           <div class="text-center py-5">
             <i class="fas fa-shopping-cart fa-4x mb-4" style="color:var(--border);"></i>
             <h4 class="fw-600" style="font-weight:600;">Your cart is empty</h4>
@@ -291,7 +291,7 @@ $(document).ready(function () {
           </div>
         </div>`;
       });
-      $('#cart-items-wrap').html(html);
+      $('#cart-items-wrap').removeClass('loading-wrap').html(html);
       const subtotal = parseFloat(res.subtotal) || 0;
       let totalQty = res.items.reduce((acc, curr) => acc + curr.quantity, 0);
       $('#cart-qty-count').text('(' + totalQty + ')');
@@ -321,7 +321,7 @@ $(document).ready(function () {
         $('#free-shipping-subtitle').html(`Add <strong>$${remaining}</strong> more to get free shipping on your order.`);
       }
     }).fail(function() {
-      $('#cart-items-wrap').html('<div class="alert alert-danger">Failed to load cart. Please refresh.</div>');
+      $('#cart-items-wrap').removeClass('loading-wrap').html('<div class="alert alert-danger">Failed to load cart. Please refresh.</div>');
     });
   }
 

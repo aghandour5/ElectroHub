@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../config/db');
-const crypto = require('crypto');
+const crypto = require('crypto'); // For generating secure tokens for unsubscribe links
 
 const { Resend } = require('resend');
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -61,13 +61,13 @@ router.post('/send', async (req, res) => {
     const emails = subscribers.rows.map(s => s.email);
 
     // We use batch send to generate unique unsubscribe links for each recipient
-    const baseUrl = process.env.PUBLIC_URL || 'http://localhost:3000';
+    const baseUrl = process.env.PUBLIC_URL || 'http://localhost:3000'; // public url to be set in .env for generating correct unsubscribe links, defaults to localhost for testing
     const emailObjects = emails.map(email => {
       // Generate a secure HMAC token so others can't guess the unsubscribe link
       const token = crypto.createHmac('sha256', process.env.SESSION_SECRET || 'fallback_secret').update(email).digest('hex');
       const unsubLink = `${baseUrl}/api/newsletter/unsubscribe?email=${encodeURIComponent(email)}&token=${token}`;
       
-      // Print the link to the terminal so you can click it while testing locally!
+      // Print the link to the terminal so I can click it while testing locally
       console.log(`[TESTING] Unsubscribe link for ${email}: ${unsubLink}`);
       
       return {
@@ -99,7 +99,7 @@ router.post('/send', async (req, res) => {
 
     if (error) throw error;
 
-    res.status(200).json({ success: true, message: `Newsletter sent successfully to ${emails.length} subscribers!`, data });
+    res.status(200).json({ success: true, message: `Newsletter sent successfully to ${emails.length} subscriber(s)!`, data });
   } catch (error) {
     console.error('Newsletter Send Error:', error);
     res.status(500).json({ success: false, message: 'Failed to send newsletter.' });
