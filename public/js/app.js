@@ -37,12 +37,12 @@ function showToast(message, type = 'success') {
     }
   }, 4000);
 }
-window.showToast = showToast;
+window.showToast = showToast; // Expose globally for use in other scripts
 
 // ── IMAGE UTILITY ─────────────────────────────
 function getImageUrl(path) {
   if (!path) return '/images/placeholder.png';
-  if (path.startsWith('http')) return path;
+  if (path.startsWith('http')) return path; // Allow absolute URLs (e.g., from cloud storage)
   return '/images/' + path;
 }
 window.getImageUrl = getImageUrl;
@@ -52,7 +52,7 @@ function getRatingHtml(reviewsData) {
   const reviews = reviewsData || [];
   const count = reviews.length;
   if (count > 0) {
-    const avg = reviews.reduce((s, r) => s + r.rating, 0) / count;
+    const avg = reviews.reduce((s, r) => s + r.rating, 0) / count; // Calculate average rating, initially s=0, r iterates through reviews
     for (let i = 1; i <= 5; i++) {
       if (i <= Math.floor(avg)) html += '<i class="fas fa-star"></i>';
       else if (i === Math.ceil(avg) && avg % 1 !== 0) html += '<i class="fas fa-star-half-alt"></i>';
@@ -68,7 +68,7 @@ function getRatingHtml(reviewsData) {
 window.getRatingHtml = getRatingHtml;
 
 function formatOrderId(id) {
-  return 'ORD-' + String(id).padStart(4, '0');
+  return 'ORD-' + String(id).padStart(4, '0'); // Example: 23 becomes ORD-0023
 }
 window.formatOrderId = formatOrderId;
 
@@ -553,9 +553,9 @@ window.getRatingHtml = getRatingHtml;
 // ── FEATURED PRODUCTS (Homepage Swiper) ───────
 function loadFeaturedProducts() {
   const container = $('#featured-products-wrap');
-  if (!container.length) return;
+  if (!container.length) return; // Guard: No container found, likely not on homepage
 
-  container.html('<div class="swiper-slide text-center py-5"><div class="spinner-border" style="color:var(--coral);"></div></div>');
+  container.html('<div class="swiper-slide text-center py-5"><div class="spinner-border" style="color:var(--coral);"></div></div>'); // Show loader while fetching
 
   $.get('/api/products').done(function (products) {
     if (!products.length) {
@@ -563,7 +563,7 @@ function loadFeaturedProducts() {
       return;
     }
     let html = '';
-    products.slice(0, 8).forEach(p => {
+    products.slice(0, 8).forEach(p => { // Limit to 8 products for the swiper
       html += `
             <div class="swiper-slide">
                 <div class="product-card h-100 bg-white" style="border:1px solid var(--border); border-radius:16px; overflow:hidden;">

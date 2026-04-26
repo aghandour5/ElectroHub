@@ -445,7 +445,7 @@ $(document).ready(function () {
   let debounce;
   $('#shop-search').on('keyup', () => { clearTimeout(debounce); debounce = setTimeout(applyFilters, 300); });
   $('#sort-select').on('change', applyFilters);
-  $('#price-range').on('input', function () { $('#price-label').text('$' + $(this).val()); applyFilters(); });
+  $('#price-range').on('input', function () { $('#price-label').text($(this).val()); applyFilters(); });
 
   $(document).on('change', '.cat-filter', function () {
     if ($(this).attr('id') === 'cat-all') {
@@ -468,7 +468,7 @@ $(document).ready(function () {
   $(document).on('click', '.price-filter', function() {
     const price = $(this).data('price');
     $('#price-range').val(price);
-    $('#price-label').text('$' + price);
+    $('#price-label').text(price);
     applyFilters();
   });
 
@@ -481,7 +481,7 @@ $(document).ready(function () {
     $('.brand-filter[data-brand=""]').removeClass('bg-light text-dark border').addClass('bg-primary text-white active border-0').attr('style', 'border-radius:16px; font-weight:normal; background:#0062FF !important;');
     selectedBrand = '';
 
-    $('#price-range').val(2000); $('#price-label').text('$2000');
+    $('#price-range').val(2500); $('#price-label').text('2500');
     $('#sort-select').val('default');
     allProducts = [];
     $.get('/api/products').done(function (products) { allProducts = products; applyFilters(); });

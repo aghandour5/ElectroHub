@@ -629,7 +629,6 @@
 <script src="js/app.js"></script>
 <script>
 $(document).ready(function () {
-  const SHIPPING_COST = 0;
   const TAX_RATE = 0.08;
   let cartSubtotal = 0;
 
@@ -664,20 +663,27 @@ $(document).ready(function () {
   }
 
   function updateTotals(subtotal) {
+    const threshold = 99;
     const discount = parseFloat($('#coupon-input').data('discount') || 0);
     const afterDiscount = Math.max(0, subtotal - discount);
+    
+    let shippingCost = 0;
+    if (subtotal > 0 && subtotal < threshold) {
+      shippingCost = 10.00;
+    }
+
     const tax = afterDiscount * TAX_RATE;
-    const total = afterDiscount + tax + SHIPPING_COST;
+    const total = afterDiscount + tax + shippingCost;
 
     $('#co-items-total').text('$' + subtotal.toFixed(2));
     $('#co-before-tax').text('$' + afterDiscount.toFixed(2));
     $('#co-tax').text('$' + tax.toFixed(2));
     $('#co-total').text('$' + total.toFixed(2));
 
-    if (SHIPPING_COST === 0) {
+    if (shippingCost === 0) {
       $('#co-shipping').text('Free').css('color', '#16a34a');
     } else {
-      $('#co-shipping').text('$' + SHIPPING_COST.toFixed(2)).css('color', 'var(--charcoal)');
+      $('#co-shipping').text('$' + shippingCost.toFixed(2)).css('color', 'var(--charcoal)');
     }
   }
 
