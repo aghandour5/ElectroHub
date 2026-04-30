@@ -11,6 +11,9 @@
   "author": "Ali Sallam Ghandour",
   "license": "MIT",
   "description": "A modern e-commerce electronics store website built with Node.js and Supabase.",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "dependencies": {
     "@supabase/supabase-js": "^2.104.1",
     "bcryptjs": "^3.0.3",
