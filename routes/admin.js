@@ -3,6 +3,7 @@ const router = express.Router();
 const db = require('../config/db');
 const multer = require('multer');
 const { createClient } = require('@supabase/supabase-js');
+const sharp = require('sharp');
 
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } }); // 5MB limit
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
@@ -125,9 +126,19 @@ router.post('/products', upload.single('image'), async (req, res) => {
     let image_path = req.body.image_path || 'laptop.png'; // image_path can come from body (for testing) or from file upload
 
     if (req.file) {
-      const fileName = `${Date.now()}_${req.file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_')}`; // Sanitize filename and prepend timestamp for uniqueness
-      const { data, error } = await supabase.storage.from('product-images').upload(fileName, req.file.buffer, {
-        contentType: req.file.mimetype, // Set correct content type for the uploaded file
+      if (!req.file.mimetype.startsWith('image/')) {
+        return res.status(400).json({ error: 'Uploaded file must be an image.' });
+      }
+
+      const baseName = req.file.originalname.replace(/\.[^.]+$/, '').replace(/[^a-zA-Z0-9.-]/g, '_');
+      const fileName = `${Date.now()}_${baseName}.webp`; // Sanitize filename and prepend timestamp for uniqueness
+      const optimizedBuffer = await sharp(req.file.buffer)
+        .resize({ width: 1200, height: 1200, fit: 'inside', withoutEnlargement: true })
+        .webp({ quality: 82 })
+        .toBuffer();
+
+      const { error } = await supabase.storage.from('product-images').upload(fileName, optimizedBuffer, {
+        contentType: 'image/webp',
         upsert: true // Overwrite if file with same name exists (since we prepend timestamp, collisions are unlikely)
       });
       if (error) throw error;
@@ -204,7 +215,18 @@ router.delete('/products/:id', async (req, res) => {
 router.put('/orders/:id', async (req, res) => {
   const { status } = req.body;
   try {
-    await db.query(`UPDATE orders SET status = $1 WHERE id = $2`, [status, req.params.id]);
+    const validStatuses = ['pending', 'processing', 'shipped', 'delivered', 'completed', 'cancelled'];
+    if (!validStatuses.includes(status)) return res.status(400).json({ error: 'Invalid order status.' });
+
+    const orderResult = await db.query(`UPDATE orders SET status = $1 WHERE id = $2 RETURNING user_id`, [status, req.params.id]);
+    if (orderResult.rows.length === 0) return res.status(404).json({ error: 'Order not found.' });
+
+    if (orderResult.rows[0].user_id) {
+      await db.query(
+        'INSERT INTO notifications (user_id, message) VALUES ($1, $2)',
+        [orderResult.rows[0].user_id, `Order #${req.params.id} status changed to ${status}.`]
+      );
+    }
     res.json({ message: 'Order status updated' });
   } catch (err) {
     res.status(500).json({ error: 'Failed to update order status.' });
@@ -243,6 +265,10 @@ router.put('/users/:id/role', async (req, res) => {
 // @route   DELETE /api/admin/users/:id
 // @desc    Delete user
 router.delete('/users/:id', async (req, res) => {
+  // Prevent admin from deleting their own account (would break the active session)
+  if (parseInt(req.params.id) === req.session.user.id) {
+    return res.status(400).json({ error: 'You cannot delete your own admin account.' });
+  }
   try {
     await db.query(`DELETE FROM users WHERE id = $1`, [req.params.id]);
     res.json({ message: 'User deleted' });

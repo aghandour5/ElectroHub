@@ -3,23 +3,52 @@ const router = express.Router(); // Router for authentication-related routes
 const bcrypt = require('bcryptjs'); // bcrypt for hashing passwords securely
 const crypto = require('crypto'); // crypto for generating secure tokens for password reset
 const { Resend } = require('resend'); // Resend SDK for sending transactional emails (like password resets)
+const rateLimit = require('express-rate-limit'); // Rate limiting to prevent brute-force attacks
 const db = require('../config/db');
 const { passwordResetEmail } = require('../config/emailTemplates');
 
 // Initialize Resend with API key from environment
 const resend = new Resend(process.env.RESEND_API_KEY);
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function cleanString(value) {
+  return typeof value === 'string' ? value.trim() : '';
+}
+
+function isValidEmail(email) {
+  return EMAIL_REGEX.test(email);
+}
+
+// Rate limiter: max 10 auth attempts per 15 minutes per IP
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many attempts from this IP, please try again after 15 minutes.' }
+});
 
 // @route   POST /api/auth/register
 // @desc    Register a new user
-router.post('/register', async (req, res) => {
-  const { name, email, password } = req.body;
+router.post('/register', authLimiter, async (req, res) => {
+  const name = cleanString(req.body.name);
+  const email = cleanString(req.body.email).toLowerCase();
+  const password = typeof req.body.password === 'string' ? req.body.password : '';
   
   if (!name || !email || !password) {
     return res.status(400).json({ error: 'Please enter all fields.' });
   }
 
-  if (password.length < 6) {
-    return res.status(400).json({ error: 'Password must be at least 6 characters.' });
+  if (name.length < 2 || name.length > 120) {
+    return res.status(400).json({ error: 'Name must be between 2 and 120 characters.' });
+  }
+
+  if (!isValidEmail(email)) {
+    return res.status(400).json({ error: 'Please enter a valid email address.' });
+  }
+
+  if (password.length < 8) {
+    return res.status(400).json({ error: 'Password must be at least 8 characters.' });
   }
 
   try {
@@ -43,6 +72,11 @@ router.post('/register', async (req, res) => {
     const user = newUser.rows[0];
     req.session.user = { id: user.id, name: user.name, role: user.role };
 
+    await db.query(
+      'INSERT INTO notifications (user_id, message) VALUES ($1, $2)',
+      [user.id, 'Welcome to ElectroHub. Your account is ready.']
+    );
+
     res.status(201).json({ message: 'Registration successful', user: req.session.user });
 
   } catch (error) {
@@ -53,11 +87,16 @@ router.post('/register', async (req, res) => {
 
 // @route   POST /api/auth/login
 // @desc    Authenticate User & create session
-router.post('/login', async (req, res) => {
-  const { email, password } = req.body;
+router.post('/login', authLimiter, async (req, res) => {
+  const email = cleanString(req.body.email).toLowerCase();
+  const password = typeof req.body.password === 'string' ? req.body.password : '';
 
   if (!email || !password) {
     return res.status(400).json({ error: 'Please provide email and password.' });
+  }
+
+  if (!isValidEmail(email)) {
+    return res.status(400).json({ error: 'Please enter a valid email address.' });
   }
 
   try {
@@ -117,24 +156,45 @@ router.get('/me', async (req, res) => {
 router.get('/orders', async (req, res) => {
   if (!req.session.user) return res.status(401).json({ error: 'Not authenticated.' });
   try {
-    const ordersResult = await db.query(
-      'SELECT * FROM orders WHERE user_id = $1 ORDER BY created_at DESC',
-      [req.session.user.id]
-    );
+    // Single JOIN query to avoid N+1 DB calls (fetching all orders + items in one shot)
+    const result = await db.query(`
+      SELECT 
+        o.id, o.total_amount, o.status, o.shipping_address, o.created_at,
+        oi.product_id, oi.quantity, oi.price AS item_price,
+        p.name AS product_name, p.image_path
+      FROM orders o
+      LEFT JOIN order_items oi ON o.id = oi.order_id
+      LEFT JOIN products p ON oi.product_id = p.id
+      WHERE o.user_id = $1
+      ORDER BY o.created_at DESC
+    `, [req.session.user.id]);
 
-    const orders = ordersResult.rows;
+    // Group flat rows into nested orders[].items[] structure
+    const ordersMap = new Map();
+    result.rows.forEach(row => {
+      if (!ordersMap.has(row.id)) {
+        ordersMap.set(row.id, {
+          id: row.id,
+          total_amount: row.total_amount,
+          status: row.status,
+          shipping_address: row.shipping_address,
+          created_at: row.created_at,
+          items: []
+        });
+      }
+      // Only push item if there was a matching order_item row
+      if (row.product_id) {
+        ordersMap.get(row.id).items.push({
+          product_id: row.product_id,
+          name: row.product_name,
+          image_path: row.image_path,
+          quantity: row.quantity,
+          price: row.item_price
+        });
+      }
+    });
 
-    for (let order of orders) {
-      const itemsResult = await db.query(`
-        SELECT oi.*, p.name, p.image_path 
-        FROM order_items oi
-        LEFT JOIN products p ON oi.product_id = p.id
-        WHERE oi.order_id = $1
-      `, [order.id]);
-      order.items = itemsResult.rows;
-    }
-
-    res.json(orders);
+    res.json(Array.from(ordersMap.values()));
   } catch (e) {
     console.error('Order history error:', e);
     res.status(500).json({ error: 'Server error fetching orders.' });
@@ -145,7 +205,27 @@ router.get('/orders', async (req, res) => {
 // @desc    Update user profile (name, email, phone, address)
 router.put('/profile', async (req, res) => {
   if (!req.session.user) return res.status(401).json({ error: 'Not authenticated.' });
-  const { name, email, phone, address } = req.body;
+  const name = cleanString(req.body.name);
+  const email = cleanString(req.body.email).toLowerCase();
+  const phone = cleanString(req.body.phone);
+  const address = cleanString(req.body.address);
+
+  if (name.length < 2 || name.length > 120) {
+    return res.status(400).json({ error: 'Name must be between 2 and 120 characters.' });
+  }
+
+  if (!isValidEmail(email)) {
+    return res.status(400).json({ error: 'Please enter a valid email address.' });
+  }
+
+  if (phone && !/^[+\d][+\d\s().-]{6,24}$/.test(phone)) {
+    return res.status(400).json({ error: 'Please enter a valid phone number.' });
+  }
+
+  if (address.length > 500) {
+    return res.status(400).json({ error: 'Address must be 500 characters or fewer.' });
+  }
+
   try {
     // Check if new email is already taken by someone else
     if (email) {
@@ -172,9 +252,11 @@ router.put('/profile', async (req, res) => {
 // @desc    Change user password
 router.put('/change-password', async (req, res) => {
   if (!req.session.user) return res.status(401).json({ error: 'Not authenticated.' });
-  const { oldPassword, newPassword } = req.body;
+  const oldPassword = typeof req.body.oldPassword === 'string' ? req.body.oldPassword : '';
+  const newPassword = typeof req.body.newPassword === 'string' ? req.body.newPassword : '';
   if (!oldPassword || !newPassword) return res.status(400).json({ error: 'Please provide old and new password.' });
-  if (newPassword.length < 6) return res.status(400).json({ error: 'New password must be at least 6 characters.' });
+  if (newPassword.length < 8) return res.status(400).json({ error: 'New password must be at least 8 characters.' });
+  if (oldPassword === newPassword) return res.status(400).json({ error: 'New password must be different from the current password.' });
 
   try {
     const userResult = await db.query('SELECT password_hash FROM users WHERE id = $1', [req.session.user.id]);
@@ -197,8 +279,9 @@ router.put('/change-password', async (req, res) => {
 // @route   POST /api/auth/forgot-password
 // @desc    Generate password reset token and send via Resend
 router.post('/forgot-password', async (req, res) => {
-  const { email } = req.body;
+  const email = cleanString(req.body.email).toLowerCase();
   if (!email) return res.status(400).json({ error: 'Please provide an email.' });
+  if (!isValidEmail(email)) return res.status(400).json({ error: 'Please enter a valid email address.' });
 
   try {
     const userResult = await db.query('SELECT id, name FROM users WHERE email = $1', [email]);
@@ -245,7 +328,7 @@ router.post('/forgot-password', async (req, res) => {
 router.post('/reset-password', async (req, res) => {
   const { token, newPassword } = req.body;
   if (!token || !newPassword) return res.status(400).json({ error: 'Please provide token and new password.' });
-  if (newPassword.length < 6) return res.status(400).json({ error: 'Password must be at least 6 characters.' });
+  if (newPassword.length < 8) return res.status(400).json({ error: 'Password must be at least 8 characters.' });
 
   try {
     const userResult = await db.query(

@@ -1,296 +1,200 @@
-# ElectroHub E-Commerce Platform 🛒
+# ElectroHub E-Commerce Platform
 
-[![Node.js Version](https://img.shields.io/badge/node-%3E%3D16.0.0-brightgreen)](https://nodejs.org/)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15+-blue)](https://www.postgresql.org/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+ElectroHub is a full-stack electronics store built with Node.js, Express, PostgreSQL/Supabase, and a responsive HTML/CSS/Bootstrap frontend. It includes product browsing, session cart management, checkout, order history, admin operations, newsletter sending, Slack contact alerts, coupons, product reviews, and in-app notifications.
 
-ElectroHub is a modern, full-stack e-commerce platform built for selling premium electronics. It combines an elegant, responsive UI with a robust backend featuring secure authentication, real-time AJAX interactions, and comprehensive admin capabilities.
+## Features
 
-## ✨ Features
+- Secure registration, login, logout, password reset, profile update, and password change flows.
+- Session-backed cart with server-side product price and stock validation.
+- Transactional checkout with order and order item records.
+- Coupon validation through the database-backed `/api/cart/apply-coupon` endpoint.
+- Customer order history and product review eligibility.
+- Admin dashboard for users, orders, product stock, product creation, and newsletter broadcasts.
+- In-app notifications for account welcome, order placement, and order status updates.
+- Contact form persistence with optional Slack webhook alerts.
+- Supabase Storage image uploads with Sharp-based WebP optimization.
+- Compression, Helmet security headers, rate limiting, and secure session cookie settings.
 
-- **🔐 Secure Authentication**: Encrypted user registration and login with bcrypt hashing
-- **🛒 Dynamic Shopping Cart**: AJAX-powered cart management without page reloads
-- **📊 PostgreSQL Database**: Structured relational data for users, products, orders, and categories
-- **💳 Secure Checkout**: Transactional order processing with stock validation
-- **👨‍💼 Admin Dashboard**: Restricted admin area with user/order insights and full product CRUD
-- **🎨 Modern UI/UX**: Glassmorphism design with smooth AOS animations
-- **📱 Responsive Design**: Mobile-first approach with Bootstrap 5
-- **📧 Real-time Notifications**: Slack integration for contact form submissions
+## Tech Stack
 
-## 🛠️ Tech Stack
+Frontend:
+- HTML5, CSS3, Bootstrap 5, jQuery 3.7, Chart.js, Swiper
 
-### Frontend
-- **HTML5** - Semantic markup
-- **CSS3** - Custom styling with glassmorphism effects
-- **Bootstrap 5** - Responsive framework
-- **jQuery 3.7** - AJAX operations and DOM manipulation
-- **AOS (Animate On Scroll)** - Smooth scroll animations
+Backend:
+- Node.js, Express 5, PostgreSQL via `pg`, Supabase Storage, `express-session`, `bcryptjs`, `helmet`, `compression`, `express-rate-limit`, `multer`, `sharp`, `resend`
 
-### Backend
-- **Node.js** - Runtime environment
-- **Express.js** - Web framework
-- **PostgreSQL** - Primary database
-- **Supabase** - Cloud database hosting
-- **express-session** - Session management
-- **bcryptjs** - Password hashing
+Database:
+- PostgreSQL hosted locally or through Supabase.
 
-### Development Tools
-- **pg** - PostgreSQL client
-- **dotenv** - Environment variable management
+## Setup
 
-## 📋 Prerequisites
-
-Before running this application, make sure you have the following installed:
-
-- **Node.js** (>= 16.0.0)
-- **PostgreSQL** (>= 15.0)
-- **npm** or **yarn**
-- **Git**
-
-## 🚀 Installation & Setup
-
-### 1. Clone the Repository
-
-```bash
-git clone https://github.com/yourusername/electrohub.git
-cd electrohub
-```
-
-### 2. Install Dependencies
+1. Install dependencies:
 
 ```bash
 npm install
 ```
 
-### 3. Environment Configuration
+2. Create your environment file:
 
-Create a `.env` file in the root directory:
+```bash
+cp .env.example .env
+```
+
+On Windows PowerShell:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+3. Fill the required values in `.env`:
 
 ```env
-# Database Configuration
-DB_HOST=localhost
-DB_PORT=5432
-DB_USER=postgres
-DB_PASSWORD=your_postgres_password
-SUPABASE_DB_URL=your_supabase_connection_string
-
-# Session Configuration
-SESSION_SECRET=your_super_secret_session_key
-
-# Slack Notifications (Optional)
+SUPABASE_DB_URL=postgresql://...
+SUPABASE_URL=https://your-project-ref.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
+SESSION_SECRET=replace_with_a_long_random_secret
+SESSION_COOKIE_SECURE=false
+RESEND_API_KEY=re_your_resend_api_key
 SLACK_WEBHOOK_URL=https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK
 ```
 
-### 4. Database Setup
+Use `SESSION_COOKIE_SECURE=true` only when the app is served over HTTPS. In production, `SESSION_SECRET` is required and the app will fail fast if it is missing.
 
-#### Option A: Local PostgreSQL
-1. Ensure PostgreSQL is running on your system
-2. Update `.env` with your local database credentials
-
-#### Option B: Supabase (Recommended)
-1. Create a [Supabase](https://supabase.com) account
-2. Create a new project
-3. Copy the connection string to `SUPABASE_DB_URL` in `.env`
-
-### 5. Initialize Database
-
-Run the database initialization script:
+4. Initialize the database:
 
 ```bash
 node database/scripts/init_db.js
 ```
 
-This will:
-- Create all necessary tables (users, categories, products, orders, etc.)
-- Set up relationships and constraints
-- Seed initial categories and featured products
+This creates the schema, applies compatibility columns for existing databases, seeds base categories, coupons, testimonials, and optionally creates an admin account.
 
-### 6. Seed Additional Data (Optional)
+5. Optional admin bootstrap:
 
-For a fuller product catalog:
+```env
+DEFAULT_ADMIN_NAME=ElectroHub Admin
+DEFAULT_ADMIN_EMAIL=admin@example.com
+DEFAULT_ADMIN_PASSWORD=replace_with_a_strong_admin_password
+```
+
+Run `node database/scripts/init_db.js` after setting these values. The script will create the account or promote the matching email to admin.
+
+6. Optional full product catalog seed:
 
 ```bash
 node database/scripts/seed.js
 ```
 
-### 7. Start the Application
+7. Start the app:
 
 ```bash
 npm start
-# or for development
-npm run dev
 ```
 
-The application will be available at `http://localhost:3000`
+Open `http://localhost:3000`.
 
-## 🧪 Testing
+## Database Export
 
-### Test Credentials
+Submission schema export:
 
-After setup, register a new user account. To test admin features:
-
-1. Register normally
-2. Use a database tool to update the user's role:
-   ```sql
-   UPDATE users SET role = 'admin' WHERE email = 'your-email@example.com';
-   ```
-
-### Manual Testing
-
-- **User Flow**: Register → Browse Products → Add to Cart → Checkout
-- **Admin Flow**: Login as admin → Access `/admin.html` → Manage products
-- **API Testing**: Use tools like Postman to test endpoints
-
-## 📡 API Endpoints
-
-### Authentication
-- `POST /api/auth/register` - User registration
-- `POST /api/auth/login` - User login
-- `POST /api/auth/logout` - User logout
-- `GET /api/auth/check` - Check current session
-
-### Products
-- `GET /api/products` - Get all products (with optional filters)
-- `GET /api/products/:id` - Get single product details
-- `GET /api/products/categories/all` - Get all categories
-- `GET /api/products/testimonials/all` - Get testimonials
-- `GET /api/products/:id/review-eligibility` - Check review eligibility
-- `POST /api/products/:id/review` - Submit product review
-
-### Cart & Orders
-- `GET /api/cart` - Get user's cart
-- `POST /api/cart/add` - Add item to cart
-- `POST /api/cart/update` - Update cart item quantity
-- `DELETE /api/cart/remove/:id` - Remove item from cart
-- `POST /api/cart/checkout` - Process checkout
-
-### Admin (Protected)
-- `GET /api/admin/stats` - Get dashboard statistics
-- `GET /api/admin/products` - Get all products for management
-- `POST /api/admin/products` - Create new product
-- `PUT /api/admin/products/:id` - Update product
-- `DELETE /api/admin/products/:id` - Delete product
-
-### Messages
-- `POST /api/messages/contact` - Send contact form message
-
-## 📁 Project Structure
-
-```
-electrohub/
-├── config/
-│   ├── db.js                 # Database connection configuration
-│   └── emailTemplates.js     # Email template configurations
-├── database/
-│   └── scripts/
-│       ├── init_db.js        # Database initialization
-│       └── seed.js           # Data seeding
-├── public/
-│   ├── css/
-│   │   └── style.css         # Main stylesheet
-│   ├── js/
-│   │   └── app.js            # Frontend JavaScript
-│   ├── images/               # Product images
-│   ├── index.html            # Home page
-│   ├── shop.html             # Product listing
-│   ├── product.html          # Product details
-│   ├── cart.html             # Shopping cart
-│   ├── checkout.html         # Checkout process
-│   ├── login.html            # Authentication
-│   ├── profile.html          # User profile
-│   ├── admin.html            # Admin dashboard
-│   └── contact.html          # Contact form
-├── routes/
-│   ├── auth.js               # Authentication routes
-│   ├── products.js           # Product management
-│   ├── cart.js               # Cart operations
-│   ├── admin.js              # Admin functionality
-│   ├── messages.js           # Contact/message handling
-│   └── newsletter.js         # Newsletter subscriptions
-├── server.js                 # Main application entry point
-├── package.json              # Dependencies and scripts
-├── .env                      # Environment variables (gitignored)
-└── README.md                 # This file
+```text
+database/electrohub_schema.sql
 ```
 
-## 🔧 Development
+You can run this file in the Supabase SQL editor or with `psql` to recreate the schema and baseline lookup data.
 
-### Available Scripts
+## API Endpoints
 
-```bash
-npm start          # Start production server
-npm run dev        # Start development server with auto-reload
-npm test           # Run tests (if implemented)
-npm run lint       # Lint code (if configured)
+Authentication:
+- `POST /api/auth/register`
+- `POST /api/auth/login`
+- `POST /api/auth/logout`
+- `GET /api/auth/me`
+- `PUT /api/auth/profile`
+- `PUT /api/auth/change-password`
+- `POST /api/auth/forgot-password`
+- `POST /api/auth/reset-password`
+- `GET /api/auth/orders`
+
+Products:
+- `GET /api/products`
+- `GET /api/products/:id`
+- `GET /api/products/categories/all`
+- `GET /api/products/testimonials/all`
+- `GET /api/products/:id/review-eligibility`
+- `POST /api/products/:id/review`
+
+Cart and checkout:
+- `GET /api/cart`
+- `POST /api/cart/add`
+- `POST /api/cart/update`
+- `POST /api/cart/remove`
+- `DELETE /api/cart/remove/:id`
+- `POST /api/cart/apply-coupon`
+- `POST /api/cart/checkout`
+
+Notifications:
+- `GET /api/notifications`
+- `PUT /api/notifications/:id/read`
+- `PUT /api/notifications/read-all`
+
+Admin:
+- `GET /api/admin/dashboard`
+- `GET /api/admin/users`
+- `GET /api/admin/orders`
+- `GET /api/admin/categories`
+- `POST /api/admin/products`
+- `PUT /api/admin/products/:id`
+- `PUT /api/admin/products/:id/stock`
+- `DELETE /api/admin/products/:id`
+- `PUT /api/admin/orders/:id`
+- `GET /api/admin/orders/:id/items`
+- `PUT /api/admin/users/:id/role`
+- `DELETE /api/admin/users/:id`
+
+Newsletter and messages:
+- `POST /api/newsletter/subscribe`
+- `POST /api/newsletter/send`
+- `GET /api/newsletter/unsubscribe`
+- `POST /api/messages/send`
+- `GET /api/messages`
+
+## Manual Verification Checklist
+
+- Register and log in as a customer.
+- Add products to the cart, update quantities, remove products, and apply a coupon.
+- Complete checkout from `checkout.html` and confirm the order appears in `profile.html`.
+- Confirm notifications appear in the profile notifications tab.
+- Log in as admin, update order status, and confirm the customer receives a notification.
+- Create a product with an uploaded image and confirm it is stored as optimized WebP.
+- Subscribe to the newsletter and send a broadcast as admin.
+- Submit the contact form and confirm the message is stored. If configured, confirm the Slack alert is sent.
+
+## Project Structure
+
+```text
+config/
+  db.js
+  emailTemplates.js
+  session.js
+database/
+  electrohub_schema.sql
+  scripts/init_db.js
+  scripts/seed.js
+public/
+  css/style.css
+  js/app.js
+  *.html
+routes/
+  admin.js
+  auth.js
+  cart.js
+  messages.js
+  newsletter.js
+  notifications.js
+  products.js
+server.js
 ```
 
-### Code Style
+## License
 
-- Use consistent indentation (2 spaces)
-- Follow JavaScript ES6+ standards
-- Use meaningful variable and function names
-- Add JSDoc comments for complex functions
-
-## 🚀 Deployment
-
-### Environment Variables for Production
-
-Ensure these are set in your production environment:
-
-```env
-NODE_ENV=production
-SESSION_SECRET=your_production_secret
-SUPABASE_DB_URL=your_production_db_url
-SLACK_WEBHOOK_URL=your_slack_webhook
-```
-
-### Recommended Hosting
-
-- **Frontend**: Vercel, Netlify, or any static hosting
-- **Backend**: Heroku, Railway, or DigitalOcean App Platform
-- **Database**: Supabase, PlanetScale, or AWS RDS
-
-### Build Process
-
-1. Ensure all dependencies are installed
-2. Run database migrations if needed
-3. Set production environment variables
-4. Start the server with `npm start`
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/your-feature-name`
-3. Commit your changes: `git commit -m 'Add some feature'`
-4. Push to the branch: `git push origin feature/your-feature-name`
-5. Open a Pull Request
-
-### Guidelines
-
-- Follow the existing code style
-- Add tests for new features
-- Update documentation as needed
-- Ensure all tests pass before submitting
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-- Bootstrap for the responsive framework
-- AOS for smooth animations
-- PostgreSQL for reliable data storage
-- Supabase for cloud database hosting
-
-## 📞 Support
-
-If you have any questions or need help:
-
-- Open an issue on GitHub
-- Check the documentation
-- Contact the maintainers
-
----
-
-**Happy Shopping! 🛍️**
+MIT. See `LICENSE`.

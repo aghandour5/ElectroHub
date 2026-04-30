@@ -9,7 +9,7 @@ function showToast(message, type = 'success') {
   const icon = type === 'success'
     ? '<i class="fas fa-check-circle" style="color:#10b981;"></i>'
     : '<i class="fas fa-exclamation-circle" style="color:var(--coral);"></i>';
-    
+
   const toastHtml = `
     <div class="toast-msg ${type}">
       <div class="toast-content">
@@ -19,12 +19,12 @@ function showToast(message, type = 'success') {
       <i class="fas fa-times toast-close"></i>
     </div>
   `;
-  
+
   const toast = $(toastHtml);
   $('#toast-wrap').append(toast);
 
   // Close button functionality
-  toast.find('.toast-close').on('click', function() {
+  toast.find('.toast-close').on('click', function () {
     toast.addClass('hiding');
     setTimeout(() => toast.remove(), 400);
   });
@@ -79,6 +79,7 @@ function checkAuthState() {
 
     // Remove any existing admin buttons first to be safe
     $('#admin-nav-btn').remove();
+    $('#nav-notifications-btn').remove();
 
     if (res.isAuthenticated) {
       const user = res.user;
@@ -106,6 +107,8 @@ function checkAuthState() {
         const adminBtn = $('<a href="/admin.html" class="icon-btn" id="admin-nav-btn" title="Admin Dashboard" style="font-size:1.3rem; color:var(--coral); text-decoration:none; display:flex; align-items:center; justify-content:center; width:40px; height:40px; margin-right:8px;"><i class="fas fa-tachometer-alt"></i></a>');
         accountLink.before(adminBtn);
       }
+
+      loadNotifications();
     } else {
       accountLink
         .attr('href', '/login.html')
@@ -125,6 +128,22 @@ function checkAuthState() {
 }
 window.checkAuthState = checkAuthState;
 
+function loadNotifications() {
+  if (!$('#nav-account').length) return;
+
+  $.get('/api/notifications').done(function (res) {
+    $('#nav-notifications-btn').remove();
+    const unread = res.unreadCount || 0;
+    const btn = $(`
+      <a href="/profile.html#notifications" id="nav-notifications-btn" title="Notifications" style="font-size:1.2rem;color:var(--charcoal);text-decoration:none;position:relative;display:flex;align-items:center;justify-content:center;width:40px;height:40px;margin-right:8px;">
+        <i class="far fa-bell"></i>
+        <span style="position:absolute;top:2px;right:0;background:#ef4444;color:#fff;font-size:.62rem;font-weight:700;min-width:18px;height:18px;border-radius:9px;display:${unread ? 'flex' : 'none'};align-items:center;justify-content:center;">${unread}</span>
+      </a>`);
+    $('#nav-account').before(btn);
+  });
+}
+window.loadNotifications = loadNotifications;
+
 // ── CART STATE & SYNC ─────────────────────────
 window.globalCart = [];
 
@@ -133,7 +152,7 @@ function updateCartBadge() {
     window.globalCart = res.items || [];
     const count = window.globalCart.length;
     $('#nav-cart-count').text(count).css('display', 'flex');
-    
+
     // Trigger a global event so other components (like shop grid) can re-render if needed
     $(document).trigger('cartUpdated', [window.globalCart]);
   });
@@ -170,12 +189,12 @@ $(document).on('click', '.quick-view-btn', function () {
   currentQvProductId = id;
   currentQvQty = 1;
   $('#qv-qty').text(1);
-  
+
   // Show modal immediately with loader
   const modal = $('#quickViewModal');
   const loader = $('#qv-loader');
   const content = $('#qv-content-wrap');
-  
+
   loader.removeClass('hidden');
   content.removeClass('visible');
   modal.modal('show');
@@ -190,16 +209,15 @@ $(document).on('click', '.quick-view-btn', function () {
     $('#qv-price').text('$' + parseFloat(p.price).toFixed(2));
     $('#qv-desc').text(p.description || 'Premium device crafted for performance and longevity.');
     $('#qv-stock').text(p.stock > 0 ? p.stock + ' in stock' : 'Out of stock');
-    
+
     // Quantity controls in modal
     const cartWrapper = $('#qv-cart-btn-wrapper');
     if (cartWrapper.length) {
       cartWrapper.html(getCartButtonHtml(p.id));
     }
-    
+
     // Initialize Wishlist Button
-    const w = JSON.parse(localStorage.getItem('electrohub_wishlist') || '[]');
-    const isWished = w.includes(String(p.id)) || w.includes(Number(p.id));
+    const isWished = isInWishlist(p.id);
     $('#qv-wishlist-btn').data('id', p.id).toggleClass('active', isWished);
     $('#qv-wishlist-btn i').attr('class', isWished ? 'fas fa-heart' : 'far fa-heart');
 
@@ -467,25 +485,25 @@ $(document).on('click', '.add-to-cart-btn', function (e) {
   }
 });
 
-$(document).on('click', '.btn-qty-mini', function(e) {
+$(document).on('click', '.btn-qty-mini', function (e) {
   e.stopPropagation();
   const ctrl = $(this).closest('.qty-ctrl-mini');
   const id = ctrl.data('id');
   const valSpan = ctrl.find('.qty-val');
   let currentQty = parseInt(valSpan.text());
-  
+
   if ($(this).hasClass('plus')) {
     currentQty++;
   } else {
     currentQty--;
   }
-  
+
   $.ajax({
     url: '/api/cart/update',
     type: 'POST',
     contentType: 'application/json',
     data: JSON.stringify({ product_id: id, quantity: currentQty }),
-    success: function() {
+    success: function () {
       updateCartBadge();
       if (currentQty <= 0) {
         ctrl.parent().html(getCartButtonHtml(id));
@@ -497,8 +515,32 @@ $(document).on('click', '.btn-qty-mini', function(e) {
 });
 
 // ── WISHLIST TOGGLE ───────────────────────────
+function isInWishlist(id) {
+  const w = getStoredWishlist();
+  return w.some(item => String(item) === String(id));
+}
+window.isInWishlist = isInWishlist;
+
+function getStoredWishlist() {
+  let w = [];
+  try {
+    w = JSON.parse(localStorage.getItem('electrohub_wishlist') || '[]');
+  } catch (error) {
+    w = [];
+  }
+
+  if (!Array.isArray(w)) w = [];
+  const cleanW = [...new Set(w.map(String))]
+    .map(item => item.trim())
+    .filter(item => item && item !== 'null' && item !== 'undefined');
+
+  localStorage.setItem('electrohub_wishlist', JSON.stringify(cleanW));
+  return cleanW;
+}
+window.getStoredWishlist = getStoredWishlist;
+
 function updateWishlistBadge() {
-  let w = JSON.parse(localStorage.getItem('electrohub_wishlist') || '[]');
+  const w = getStoredWishlist();
   const badge = $('#nav-wishlist-count');
   badge.text(w.length).css('display', 'flex');
 }
@@ -510,12 +552,12 @@ $(document).on('click', '.wishlist-toggle, #qv-wishlist-btn', function (e) {
   const id = btn.data('id');
   if (!id) return; // Prevent errors if id is missing
 
-  let w = JSON.parse(localStorage.getItem('electrohub_wishlist') || '[]');
+  let w = getStoredWishlist();
   const icon = btn.find('i');
-  const isActive = w.includes(id);
+  const isActive = w.some(item => String(item) === String(id));
 
   if (isActive) {
-    w = w.filter(item => item !== id);
+    w = w.filter(item => String(item) !== String(id));
     icon.removeClass('fas').addClass('far');
     btn.removeClass('active');
     showToast('Removed from wishlist.', 'error');
@@ -525,30 +567,11 @@ $(document).on('click', '.wishlist-toggle, #qv-wishlist-btn', function (e) {
     btn.addClass('active');
     showToast('Added to wishlist! ❤️', 'success');
   }
-  localStorage.setItem('electrohub_wishlist', JSON.stringify(w));
+  // Normalize to unique strings and filter out invalid values
+  const cleanW = [...new Set(w.map(String))].filter(item => item && item !== 'null' && item !== 'undefined');
+  localStorage.setItem('electrohub_wishlist', JSON.stringify(cleanW));
   updateWishlistBadge();
 });
-
-// ── UTILS ─────────────────────────────────────
-function getRatingHtml(reviews) {
-  const reviewsArr = reviews || [];
-  const count = reviewsArr.length;
-  let ratingHtml = '';
-  if (count > 0) {
-    const avg = reviewsArr.reduce((s, r) => s + r.rating, 0) / count;
-    for (let i = 1; i <= 5; i++) {
-      if (i <= Math.floor(avg)) ratingHtml += '<i class="fas fa-star"></i>';
-      else if (i === Math.ceil(avg) && avg % 1 !== 0) ratingHtml += '<i class="fas fa-star-half-alt"></i>';
-      else ratingHtml += '<i class="far fa-star"></i>';
-    }
-    ratingHtml += `<span class="text-muted ms-2">(${count})</span>`;
-  } else {
-    for (let i = 1; i <= 5; i++) ratingHtml += '<i class="far fa-star"></i>';
-    ratingHtml += `<span class="text-muted ms-2">(0)</span>`;
-  }
-  return ratingHtml;
-}
-window.getRatingHtml = getRatingHtml;
 
 // ── FEATURED PRODUCTS (Homepage Swiper) ───────
 function loadFeaturedProducts() {
@@ -569,8 +592,8 @@ function loadFeaturedProducts() {
                 <div class="product-card h-100 bg-white" style="border:1px solid var(--border); border-radius:16px; overflow:hidden;">
                 <div class="product-img-box" style="padding:24px; position:relative; background:#fff;">
                     ${(p.is_new || p.is_featured) ? '<span class="product-badge text-bg-primary" style="background:#0062FF !important; border-radius:4px; padding:4px 8px; font-size:0.7rem; font-weight:bold; position:absolute; top:16px; left:16px; z-index:2; color:#fff;">NEW</span>' : ''}
-                    <button class="wishlist-toggle icon-btn shadow-none ${JSON.parse(localStorage.getItem('electrohub_wishlist') || '[]').includes(p.id) ? 'active' : ''}" data-id="${p.id}" style="position:absolute; top:8px; right:8px; background:transparent; border:none; z-index:2; font-size:1.2rem; color:var(--muted); width:40px; height:40px; display:flex; align-items:center; justify-content:center;">
-                    <i class="${JSON.parse(localStorage.getItem('electrohub_wishlist') || '[]').includes(p.id) ? 'fas' : 'far'} fa-heart"></i>
+                    <button class="wishlist-toggle icon-btn shadow-none ${isInWishlist(p.id) ? 'active' : ''}" data-id="${p.id}" style="position:absolute; top:8px; right:8px; background:transparent; border:none; z-index:2; font-size:1.2rem; color:var(--muted); width:40px; height:40px; display:flex; align-items:center; justify-content:center;">
+                    <i class="${isInWishlist(p.id) ? 'fas' : 'far'} fa-heart"></i>
                     </button>
                     <img src="${getImageUrl(p.image_path)}" alt="${p.name}" draggable="false" style="width:100%; height:200px; object-fit:contain; transition:transform 0.3s ease;">
                     <div class="product-hover-actions">
@@ -952,19 +975,19 @@ $(document).ready(function () {
   initStickyHeader();
 
   // Global Cart Update Listeners
-  $(document).on('cartUpdated', function() {
+  $(document).on('cartUpdated', function () {
     // Instead of re-loading everything (which causes flicker), 
     // just update all visible cart buttons to match the new cart state.
-    $('.cart-btn-wrapper').each(function() {
+    $('.cart-btn-wrapper').each(function () {
       const id = $(this).closest('.product-card').find('.add-to-cart-btn, .qty-ctrl-mini').data('id');
       if (id) {
         $(this).html(getCartButtonHtml(id));
       }
     });
-    
+
     // Update Quick View modal if it's open
     if ($('#quickViewModal').hasClass('show') && window.currentQvProductId) {
-       $('#qv-cart-btn-wrapper').html(getCartButtonHtml(window.currentQvProductId));
+      $('#qv-cart-btn-wrapper').html(getCartButtonHtml(window.currentQvProductId));
     }
   });
 });
@@ -1004,7 +1027,7 @@ function initStickyHeader() {
     ticking = false;
   }
 
-  $(window).on('scroll', function() {
+  $(window).on('scroll', function () {
     if (!ticking) {
       window.requestAnimationFrame(updateHeader);
       ticking = true;

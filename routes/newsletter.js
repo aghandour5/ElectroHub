@@ -2,9 +2,11 @@ const express = require('express');
 const router = express.Router();
 const db = require('../config/db');
 const crypto = require('crypto'); // For generating secure tokens for unsubscribe links
+const { getSessionSecret } = require('../config/session');
 
 const { Resend } = require('resend');
 const resend = new Resend(process.env.RESEND_API_KEY);
+const sessionSecret = getSessionSecret();
 
 /**
  * @route   POST /api/newsletter/subscribe
@@ -64,7 +66,7 @@ router.post('/send', async (req, res) => {
     const baseUrl = process.env.PUBLIC_URL || 'http://localhost:3000'; // public url to be set in .env for generating correct unsubscribe links, defaults to localhost for testing
     const emailObjects = emails.map(email => {
       // Generate a secure HMAC token so others can't guess the unsubscribe link
-      const token = crypto.createHmac('sha256', process.env.SESSION_SECRET || 'fallback_secret').update(email).digest('hex');
+      const token = crypto.createHmac('sha256', sessionSecret).update(email).digest('hex');
       const unsubLink = `${baseUrl}/api/newsletter/unsubscribe?email=${encodeURIComponent(email)}&token=${token}`;
       
       // Print the link to the terminal so I can click it while testing locally
@@ -119,7 +121,7 @@ router.get('/unsubscribe', async (req, res) => {
   }
 
   // Verify the secure token
-  const expectedToken = crypto.createHmac('sha256', process.env.SESSION_SECRET || 'fallback_secret').update(email).digest('hex');
+  const expectedToken = crypto.createHmac('sha256', sessionSecret).update(email).digest('hex');
   if (token !== expectedToken) {
     return res.status(403).send(`
       <div style="font-family: sans-serif; max-width: 600px; margin: 40px auto; text-align: center; padding: 20px;">

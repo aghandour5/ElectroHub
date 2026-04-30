@@ -121,6 +121,9 @@
             <button class="profile-tab-btn" data-tab="settings" onclick="switchProfileTab('settings')" style="background:transparent;color:var(--muted);border:none;padding:10px 20px;border-radius:var(--radius-pill);font-size:.9rem;font-weight:500;cursor:pointer;text-align:left;">
               <i class="fas fa-cog me-2"></i> Account Settings
             </button>
+            <button class="profile-tab-btn" data-tab="notifications" onclick="switchProfileTab('notifications')" style="background:transparent;color:var(--muted);border:none;padding:10px 20px;border-radius:var(--radius-pill);font-size:.9rem;font-weight:500;cursor:pointer;text-align:left;">
+              <i class="fas fa-bell me-2"></i> Notifications
+            </button>
             <button onclick="logoutUser()" style="background:transparent;color:#ef4444;border:none;padding:10px 20px;border-radius:var(--radius-pill);font-size:.9rem;font-weight:500;cursor:pointer;text-align:left;margin-top:8px;">
               <i class="fas fa-sign-out-alt me-2"></i> Sign Out
             </button>
@@ -196,6 +199,20 @@
               <input type="password" id="settings-confirm-pw" class="form-control" style="border-radius:var(--radius-sm);padding:12px 16px;border-color:var(--border);">
             </div>
             <button onclick="changePassword()" class="btn-dark" style="padding:12px 28px;border-radius:var(--radius-sm);background:#111;color:#fff;border:none;">Change Password</button>
+          </div>
+        </div>
+
+        <!-- Notifications Tab -->
+        <div id="tab-notifications" style="display:none;">
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="section-title mb-0" style="font-size:1.7rem;">Notifications</h2>
+            <button id="mark-all-read-btn" class="btn btn-sm btn-outline-dark">Mark all read</button>
+          </div>
+          <div id="notifications-list">
+            <div class="loading-wrap">
+              <div class="spinner-border" style="color:var(--coral);"></div>
+              <p class="mt-3 text-muted">Loading notifications...</p>
+            </div>
           </div>
         </div>
 
@@ -334,6 +351,7 @@ $(document).ready(function () {
     $('#settings-address').val(user.address || '');
 
     loadOrders();
+    loadNotificationsList();
     updateCartBadge();
   });
 
@@ -410,13 +428,65 @@ $(document).ready(function () {
     if (tab === 'orders') {
       $('#tab-orders').show();
       $('#tab-settings').hide();
-    } else {
+      $('#tab-notifications').hide();
+    } else if (tab === 'settings') {
       $('#tab-orders').hide();
       $('#tab-settings').show();
+      $('#tab-notifications').hide();
+    } else {
+      $('#tab-orders').hide();
+      $('#tab-settings').hide();
+      $('#tab-notifications').show();
+      loadNotificationsList();
     }
     $('.profile-tab-btn').css({ background:'transparent', color:'var(--muted)' });
     $('[data-tab="' + tab + '"]').css({ background:'var(--charcoal)', color:'#fff' });
   };
+
+  function loadNotificationsList() {
+    $.get('/api/notifications').done(function (res) {
+      const notifications = res.notifications || [];
+      if (!notifications.length) {
+        $('#notifications-list').html(`
+          <div class="text-center py-5">
+            <i class="far fa-bell fa-3x mb-3" style="color:var(--border);"></i>
+            <h5 style="font-weight:600;">No notifications</h5>
+            <p class="text-muted mb-0">Order updates and account messages will appear here.</p>
+          </div>`);
+        return;
+      }
+
+      let html = '<div class="d-flex flex-column gap-3">';
+      notifications.forEach(n => {
+        const date = new Date(n.created_at).toLocaleString();
+        html += `
+          <div class="p-3 bg-white d-flex justify-content-between align-items-start gap-3" style="border:1px solid var(--border);border-radius:16px;${n.is_read ? '' : 'box-shadow:0 0 0 2px rgba(0,98,255,.08);'}">
+            <div>
+              <div style="font-weight:${n.is_read ? '500' : '700'};color:var(--charcoal);">${n.message}</div>
+              <div class="text-muted mt-1" style="font-size:.8rem;">${date}</div>
+            </div>
+            ${n.is_read ? '' : `<button class="btn btn-sm btn-light mark-notification-read" data-id="${n.id}">Mark read</button>`}
+          </div>`;
+      });
+      html += '</div>';
+      $('#notifications-list').html(html);
+    }).fail(function () {
+      $('#notifications-list').html('<div class="alert alert-info">Could not load notifications.</div>');
+    });
+  }
+
+  $(document).on('click', '.mark-notification-read', function () {
+    const id = $(this).data('id');
+    $.ajax({ url: '/api/notifications/' + id + '/read', type: 'PUT', success: loadNotificationsList });
+  });
+
+  $('#mark-all-read-btn').on('click', function () {
+    $.ajax({ url: '/api/notifications/read-all', type: 'PUT', success: loadNotificationsList });
+  });
+
+  if (window.location.hash === '#notifications') {
+    switchProfileTab('notifications');
+  }
 
   window.saveProfile = function() {
     const data = {
@@ -447,7 +517,7 @@ $(document).ready(function () {
     const confirmPassword = $('#settings-confirm-pw').val();
 
     if (!oldPassword || !newPassword) return showToast('Please fill all password fields', 'error');
-    if (newPassword.length < 6) return showToast('New password must be at least 6 characters', 'error');
+    if (newPassword.length < 8) return showToast('New password must be at least 8 characters', 'error');
     if (newPassword !== confirmPassword) return showToast('New passwords do not match', 'error');
 
     $.ajax({
@@ -474,5 +544,3 @@ $(document).ready(function () {
 </script>
 </body>
 </html>
-
-

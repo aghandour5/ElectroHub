@@ -212,37 +212,51 @@
 <script src="js/app.js"></script>
 <script>
 $(document).ready(function() {
+  function renderEmptyWishlist() {
+    $('#wishlist-count').text('(0)');
+    $('#wishlist-items-wrap').html(`
+      <div class="col-12 text-center py-5">
+        <i class="far fa-heart mb-4 d-block" style="font-size:5rem; color:var(--border);"></i>
+        <h3 class="fw-bold mb-2">Your wishlist is empty</h3>
+        <p class="text-muted mb-4">Save items you love by pressing the heart on any product.</p>
+        <a href="shop.html" class="btn-coral px-5 py-3 rounded-pill">Start Shopping</a>
+      </div>
+    `);
+  }
+
   function renderWishlist() {
-    const w = JSON.parse(localStorage.getItem('electrohub_wishlist') || '[]');
+    let w = typeof getStoredWishlist === 'function'
+      ? getStoredWishlist()
+      : JSON.parse(localStorage.getItem('electrohub_wishlist') || '[]');
     const wrap = $('#wishlist-items-wrap');
 
     if (w.length === 0) {
-      $('#wishlist-count').text('(0)');
-      wrap.html(`
-        <div class="col-12 text-center py-5">
-          <i class="far fa-heart mb-4 d-block" style="font-size:5rem; color:var(--border);"></i>
-          <h3 class="fw-bold mb-2">Your wishlist is empty</h3>
-          <p class="text-muted mb-4">Save items you love by pressing the heart on any product.</p>
-          <a href="shop.html" class="btn-coral px-5 py-3 rounded-pill">Start Shopping</a>
-        </div>
-      `);
+      renderEmptyWishlist();
       return;
     }
 
     wrap.html('<div class="col-12 text-center py-4"><div class="spinner-border" style="color:var(--coral);"></div></div>');
 
     $.get('/api/products').done(function(allProducts) {
-      const wishlistProducts = allProducts.filter(p => w.includes(p.id));
+      // Use string comparison to be type-safe (handles string vs number IDs)
+      const wishlistProducts = allProducts.filter(p => w.some(wid => String(wid) === String(p.id)));
+      const validWishlistIds = wishlistProducts.map(p => String(p.id));
+      if (validWishlistIds.length !== w.length) {
+        localStorage.setItem('electrohub_wishlist', JSON.stringify(validWishlistIds));
+        w = validWishlistIds;
+        updateWishlistBadge();
+      }
+
       $('#wishlist-count').text('(' + wishlistProducts.length + ')');
 
       if (wishlistProducts.length === 0) {
-        wrap.html('<div class="col-12 text-center py-5 text-muted"><p>Some saved items are no longer available.</p><a href="shop.html" class="btn-coral px-5 py-3 rounded-pill">Browse Shop</a></div>');
+        renderEmptyWishlist();
         return;
       }
 
       let html = '';
       wishlistProducts.forEach(p => {
-        const isInWishlist = JSON.parse(localStorage.getItem('electrohub_wishlist') || '[]').includes(p.id);
+        const isWished = isInWishlist(p.id);
         html += `
         <div class="col-sm-6 col-md-4 col-xl-3" id="wishcard-${p.id}">
           <div class="product-card h-100 bg-white" style="border:1px solid var(--border); border-radius:16px; overflow:hidden; position:relative;">
@@ -278,6 +292,13 @@ $(document).ready(function() {
   $(document).on('click', '.wishlist-toggle', function() {
     // Small delay to let app.js update localStorage first
     setTimeout(renderWishlist, 150);
+  });
+
+  $(document).on('click', '#clear-wishlist-btn', function() {
+    localStorage.setItem('electrohub_wishlist', '[]');
+    updateWishlistBadge();
+    renderEmptyWishlist();
+    showToast('Wishlist cleared.');
   });
 
   renderWishlist();

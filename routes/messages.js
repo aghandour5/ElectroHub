@@ -93,6 +93,14 @@ router.post('/send', async (req, res) => {
     // Send notification to Slack asynchronously
     sendToSlack(name, email, subject, message);
 
+    await db.query(
+      `INSERT INTO notifications (user_id, message)
+       SELECT id, $1
+       FROM users
+       WHERE role = 'admin'`,
+      [`New contact message from ${name}: ${subject}`]
+    );
+
     res.status(201).json({
       success: true,
       message: 'Your message has been received! We will get back to you shortly.',

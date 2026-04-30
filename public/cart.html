@@ -239,8 +239,19 @@
 $(document).ready(function () {
 
   function loadCart() {
-    const discount = parseFloat($('#promo-input').data('discount') || 0);
     $.get('/api/cart').done(function (res) {
+      if (res.coupon && res.coupon.discount) {
+        $('#promo-input').data('discount', res.coupon.discount).val(res.coupon.code || '');
+        $('#promo-msg').html(`
+          <div class="d-flex align-items-center justify-content-between">
+            <span style="color:#16a34a;font-weight:600;"><i class="fas fa-check-circle me-1"></i>Applied -$${parseFloat(res.coupon.discount).toFixed(2)}</span>
+            <button id="promo-remove-btn" class="btn btn-link p-0 text-muted" style="font-size:.75rem; text-decoration:none;">Remove</button>
+          </div>
+        `);
+      }
+
+      const discount = parseFloat($('#promo-input').data('discount') || 0);
+
       if (!res.items || res.items.length === 0) {
         $('#cart-items-wrap').removeClass('loading-wrap').html(`
           <div class="text-center py-5">
@@ -329,20 +340,55 @@ $(document).ready(function () {
 
   // Promo Apply
   $('#promo-apply-btn').on('click', function () {
-    const code = $('#promo-input').val().trim().toUpperCase();
+    const code = $('#promo-input').val().trim();
     const msg = $('#promo-msg');
-    const coupons = { 'ELECTROHUB10': 50, 'WELCOME20': 100, 'SAVE15': 75 };
 
-    if (coupons[code]) {
-      const disc = coupons[code];
-      $('#promo-input').data('discount', disc);
-      msg.html(`<span style="color:#16a34a;font-weight:600;"><i class="fas fa-check-circle me-1"></i>Applied -$${disc.toFixed(2)}</span>`);
-      loadCart();
-    } else if (!code) {
+    if (!code) {
       msg.html('<span style="color:#ef4444;">Please enter a code.</span>');
-    } else {
-      msg.html('<span style="color:#ef4444;">Invalid promo code.</span>');
+      return;
     }
+
+    const btn = $(this);
+    btn.prop('disabled', true).text('Checking...');
+
+    $.ajax({
+      url: '/api/cart/apply-coupon',
+      type: 'POST',
+      contentType: 'application/json',
+      data: JSON.stringify({ code }),
+      success: function (res) {
+        $('#promo-input').data('discount', res.discount);
+        msg.html(`
+          <div class="d-flex align-items-center justify-content-between">
+            <span style="color:#16a34a;font-weight:600;"><i class="fas fa-check-circle me-1"></i>${res.message}</span>
+            <button id="promo-remove-btn" class="btn btn-link p-0 text-muted" style="font-size:.75rem; text-decoration:none;">Remove</button>
+          </div>
+        `);
+        loadCart();
+      },
+      error: function (err) {
+        $('#promo-input').data('discount', 0);
+        msg.html(`<span style="color:#ef4444;">${err.responseJSON?.message || 'Invalid promo code.'}</span>`);
+        loadCart();
+      },
+      complete: function () {
+        btn.prop('disabled', false).text('Apply');
+      }
+    });
+  });
+
+  // Promo Remove
+  $(document).on('click', '#promo-remove-btn', function() {
+    $.ajax({
+      url: '/api/cart/remove-coupon',
+      type: 'POST',
+      success: function() {
+        $('#promo-input').val('').data('discount', 0);
+        $('#promo-msg').html('');
+        loadCart();
+        showToast('Coupon removed.');
+      }
+    });
   });
 
   // Remove item
@@ -377,27 +423,6 @@ $(document).ready(function () {
         success: function () { loadCart(); }
       });
     }
-  });
-
-  // Checkout
-  $('#checkout-btn').click(function () {
-    const addr = $('#checkout-address').val().trim();
-    if (!addr) { showToast('Please enter a shipping address.', 'error'); return; }
-    $(this).prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i> Processing…');
-    $.ajax({
-      url: '/api/cart/checkout', type: 'POST', contentType: 'application/json',
-      data: JSON.stringify({ shipping_address: addr }),
-      success: function (res) {
-        showToast('Order #' + res.orderId + ' placed successfully! ðŸŽ‰', 'success');
-        setTimeout(() => window.location.href = '/profile.html', 2000);
-      },
-      error: function (err) {
-        const msg = err.responseJSON?.error || 'Checkout failed.';
-        showToast(msg, 'error');
-        if (err.status === 401) setTimeout(() => window.location.href = '/login.html', 1500);
-        $('#checkout-btn').prop('disabled', false).html('<i class="fas fa-lock me-2"></i> Secure Checkout');
-      }
-    });
   });
 
   loadCart();
