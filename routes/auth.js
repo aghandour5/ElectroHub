@@ -6,9 +6,12 @@ const { Resend } = require('resend'); // Resend SDK for sending transactional em
 const rateLimit = require('express-rate-limit'); // Rate limiting to prevent brute-force attacks
 const db = require('../config/db');
 const { passwordResetEmail } = require('../config/emailTemplates');
+const { createClient } = require('@supabase/supabase-js');
 
 // Initialize Resend with API key from environment
 const resend = new Resend(process.env.RESEND_API_KEY);
+// Initialize Supabase Client for backend verification
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function cleanString(value) {
@@ -124,6 +127,53 @@ router.post('/login', authLimiter, async (req, res) => {
   }
 });
 
+// @route   GET /api/auth/config
+// @desc    Get Supabase public config
+router.get('/config', (req, res) => {
+  res.json({
+    url: process.env.SUPABASE_URL,
+    anonKey: process.env.SUPABASE_ANON_KEY
+  });
+});
+
+// @route   POST /api/auth/session-sync
+// @desc    Sync Supabase session to Express session
+router.post('/session-sync', async (req, res) => {
+  const { access_token } = req.body;
+  if (!access_token) return res.status(400).json({ error: 'Access token required.' });
+
+  try {
+    // Verify the token with Supabase
+    const { data: { user }, error } = await supabase.auth.getUser(access_token);
+    
+    if (error || !user) {
+      return res.status(401).json({ error: 'Invalid token.' });
+    }
+
+    // Find the user in our public.users table by email
+    let dbUserResult = await db.query('SELECT * FROM users WHERE email = $1', [user.email]);
+    
+    // If the database trigger hasn't fired yet or the user doesn't exist, fallback to insert
+    if (dbUserResult.rows.length === 0) {
+        const name = user.user_metadata?.name || user.user_metadata?.full_name || 'User';
+        dbUserResult = await db.query(
+            'INSERT INTO users (name, email, role) VALUES ($1, $2, $3) RETURNING *',
+            [name, user.email, 'customer']
+        );
+    }
+
+    const dbUser = dbUserResult.rows[0];
+
+    // Setup Express Session
+    req.session.user = { id: dbUser.id, name: dbUser.name, role: dbUser.role };
+
+    res.json({ message: 'Session synchronized successfully', user: req.session.user });
+  } catch (error) {
+    console.error('Session sync error:', error);
+    res.status(500).json({ error: 'Server error during session sync.' });
+  }
+});
+
 // @route   POST /api/auth/logout
 // @desc    Destroy session and logout
 router.post('/logout', (req, res) => {
@@ -136,7 +186,7 @@ router.post('/logout', (req, res) => {
 // @route   GET /api/auth/me
 // @desc    Get current session context & profile data
 router.get('/me', async (req, res) => {
-  if (req.session.user) {
+  if (req.session.user) { // If user is logged in, fetch their profile data to return (instead of just session info)
     try {
       const userResult = await db.query('SELECT id, name, email, role, phone, address, created_at FROM users WHERE id = $1', [req.session.user.id]);
       if (userResult.rows.length > 0) {

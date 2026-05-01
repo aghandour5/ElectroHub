@@ -12,6 +12,8 @@ function requireAuth(req, res, next) {
 
 router.use(requireAuth);
 
+// @route   GET /api/notifications
+// @desc    Get current user's notifications (most recent 50)
 router.get('/', async (req, res) => {
   try {
     const result = await db.query(
@@ -31,6 +33,8 @@ router.get('/', async (req, res) => {
   }
 });
 
+// @route   PUT /api/notifications/read-all
+// @desc    Mark all notifications as read for current user
 router.put('/read-all', async (req, res) => {
   try {
     await db.query('UPDATE notifications SET is_read = true WHERE user_id = $1', [req.session.user.id]);
@@ -41,6 +45,8 @@ router.put('/read-all', async (req, res) => {
   }
 });
 
+// @route   PUT /api/notifications/:id/read
+// @desc    Mark a specific notification as read for current user
 router.put('/:id/read', async (req, res) => {
   const notificationId = Number.parseInt(req.params.id, 10);
   if (!Number.isInteger(notificationId) || notificationId <= 0) {

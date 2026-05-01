@@ -1,9 +1,9 @@
-const crypto = require('crypto');
+const crypto = require('crypto'); // Used for generating a random session secret in development if not provided via environment variable
 let cachedSecret;
 
 function getSessionSecret() {
   if (cachedSecret) {
-    return cachedSecret;
+    return cachedSecret; // Return cached secret if already generated or loaded from environment variable
   }
 
   if (process.env.SESSION_SECRET) {
@@ -11,7 +11,7 @@ function getSessionSecret() {
     return cachedSecret;
   }
 
-  if (process.env.NODE_ENV === 'production') {
+  if (process.env.NODE_ENV === 'production') { // In production, we require a SESSION_SECRET to be set for security reasons
     throw new Error('SESSION_SECRET must be set in production.');
   }
 

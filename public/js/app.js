@@ -9,9 +9,9 @@ function showToast(message, type = 'success') {
   // Clear any existing toasts to prevent stacking
   $('#toast-wrap').empty();
 
-  const icon = type === 'success'
-    ? '<i class="fas fa-check-circle" style="color:#10b981;"></i>'
-    : '<i class="fas fa-exclamation-circle" style="color:var(--coral);"></i>';
+  const icon = type === 'success' // Choose icon based on type
+    ? '<i class="fas fa-check-circle" style="color:#10b981;"></i>' // Green check for success
+    : '<i class="fas fa-exclamation-circle" style="color:var(--coral);"></i>'; // Red exclamation for error
 
   const toastHtml = `
     <div class="toast-msg ${type}">
@@ -133,21 +133,21 @@ window.loadNotifications = loadNotifications;
 function updateNotificationIcon(unread) {
   const badge = $('#nav-notifications-count');
   if (badge.length) {
-    badge.text(unread).css('display', 'flex');
+    badge.text(unread).css('display', 'flex'); // Show badge if it exists, even if count is 0 (to indicate "no notifications")
   }
   
   const onNotificationPage = window.location.pathname.includes('profile.html') && window.location.hash === '#notifications';
   const icon = $('#nav-notifications-btn i');
   
   if (unread > 0 || onNotificationPage) {
-    icon.removeClass('far').addClass('fas text-coral');
+    icon.removeClass('far').addClass('fas text-coral'); // far is outline, fas is solid
     $('html').addClass('has-notifications');
   } else {
     icon.removeClass('fas text-coral').addClass('far');
     $('html').removeClass('has-notifications');
   }
 }
-window.addEventListener('hashchange', loadNotifications);
+window.addEventListener('hashchange', loadNotifications); // Reload notifications when navigating to/from notifications section in profile
 
 // ── CART STATE & SYNC ─────────────────────────
 window.globalCart = [];
@@ -472,8 +472,8 @@ $(document).on('click', '#qv-add-btn', function () {
 // ── GLOBAL MODAL SCROLL LOCK ──────────────────
 $(document).on('show.bs.modal', '.modal', function () {
   const scrollY = window.scrollY;
-  document.body.style.top = `-${scrollY}px`;
-  document.body.classList.add('modal-open-lock');
+  document.body.style.top = `-${scrollY}px`; // Lock body scroll by fixing its position and offsetting to current scroll
+  document.body.classList.add('modal-open-lock'); // This class should set overflow:hidden and position:fixed to prevent background scrolling while modal is open
 });
 
 $(document).on('hidden.bs.modal', '.modal', function () {

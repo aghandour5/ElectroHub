@@ -84,7 +84,17 @@
 
       <!-- Login Form -->
       <div id="form-login">
-        <div id="login-error" class="alert alert-danger py-2 d-none" style="font-size:.88rem;border-radius:var(--radius-sm);"></div>
+        
+<div id="login-error" class="alert alert-danger py-2 d-none" style="font-size:.88rem;border-radius:var(--radius-sm);"></div>
+
+        <button class="btn btn-outline-dark w-100 mb-3" id="google-login-btn" style="border-radius:var(--radius-sm); padding:10px; font-weight: 500; border-color: #d1d5db; color: #374151; background: #fff;">
+          <img src="https://www.google.com/favicon.ico" style="width:18px; margin-right:8px; vertical-align:text-bottom;"> Continue with Google
+        </button>
+        <div class="d-flex align-items-center mb-4">
+          <hr class="flex-grow-1">
+          <span class="mx-3 text-muted" style="font-size:.8rem; font-weight:600;">OR EMAIL</span>
+          <hr class="flex-grow-1">
+        </div>
         <div class="mb-4">
           <label class="form-label fw-600" style="font-size:.85rem;font-weight:600;">Email Address</label>
           <input type="email" id="login-email" class="form-control" placeholder="you@example.com" style="border-radius:var(--radius-sm);padding:12px 16px;border-color:var(--border);">
@@ -105,7 +115,17 @@
 
       <!-- Register Form -->
       <div id="form-register" style="display:none;">
-        <div id="register-error" class="alert alert-danger py-2 d-none" style="font-size:.88rem;border-radius:var(--radius-sm);"></div>
+        
+<div id="register-error" class="alert alert-danger py-2 d-none" style="font-size:.88rem;border-radius:var(--radius-sm);"></div>
+
+        <button class="btn btn-outline-dark w-100 mb-3" id="google-register-btn" style="border-radius:var(--radius-sm); padding:10px; font-weight: 500; border-color: #d1d5db; color: #374151; background: #fff;">
+          <img src="https://www.google.com/favicon.ico" style="width:18px; margin-right:8px; vertical-align:text-bottom;"> Continue with Google
+        </button>
+        <div class="d-flex align-items-center mb-4">
+          <hr class="flex-grow-1">
+          <span class="mx-3 text-muted" style="font-size:.8rem; font-weight:600;">OR EMAIL</span>
+          <hr class="flex-grow-1">
+        </div>
         <div class="mb-3">
           <label class="form-label" style="font-size:.85rem;font-weight:600;">Full Name</label>
           <input type="text" id="reg-name" class="form-control" placeholder="Ali Ghandour" style="border-radius:var(--radius-sm);padding:12px 16px;border-color:var(--border);">
@@ -202,8 +222,67 @@
 
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/app.js"></script>
 <script>
+  // Initialize Supabase synchronously with public keys (anon key is safe to expose client-side)
+  const SUPABASE_URL = 'https://jvspaoznulktgnvmarce.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2c3Bhb3pudWxrdGdudm1hcmNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcwMjgzMDMsImV4cCI6MjA5MjYwNDMwM30.Zn9uvDaoTBdAeC954_CnEflVBWatQ36X2WbqsMAWJ8o';
+  const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  // Check for OAuth or password-reset callback on page load
+  (async function checkOAuthCallback() {
+    const hashStr = window.location.hash.substring(1);
+    const hashParams = new URLSearchParams(hashStr);
+
+    // Check if this is a password recovery redirect
+    if (hashParams.get('type') === 'recovery') {
+      switchTab('reset');
+      return;
+    }
+
+    // It's a Google OAuth callback — auto-sync session
+    if (hashParams.get('access_token')) {
+      const { data } = await supabaseClient.auth.getSession();
+      if (data?.session) {
+        $('#login-btn').html('<i class="fas fa-spinner fa-spin me-2"></i> Syncing…').prop('disabled', true);
+        syncSession(data.session.access_token);
+      }
+    }
+  })();
+
+  // After Supabase login (email or Google), sync the session to the Express backend
+  async function syncSession(accessToken) {
+    $.ajax({
+      url: '/api/auth/session-sync',
+      type: 'POST',
+      contentType: 'application/json',
+      data: JSON.stringify({ access_token: accessToken }),
+      success: function(res) {
+        const redirect = new URLSearchParams(window.location.search).get('redirect');
+        window.location.href = redirect ? redirect : (res.user.role === 'admin' ? '/admin.html' : '/index.html');
+      },
+      error: function() {
+        $('#login-error').text('Could not sync session. Please try again.').removeClass('d-none');
+        $('#login-btn').prop('disabled', false).html('Sign In');
+        $('#google-login-btn').prop('disabled', false).html('<img src="https://www.google.com/favicon.ico" style="width:18px;margin-right:8px;vertical-align:text-bottom;"> Continue with Google');
+      }
+    });
+  }
+
+  // Google OAuth Login / Register
+  $('#google-login-btn, #google-register-btn').on('click', async function() {
+    $(this).prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i> Redirecting…');
+    const { error } = await supabaseClient.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: window.location.origin + '/login.html' }
+    });
+    if (error) {
+      $('#login-error, #register-error').text(error.message).removeClass('d-none');
+      $(this).prop('disabled', false).html('<img src="https://www.google.com/favicon.ico" style="width:18px;margin-right:8px;vertical-align:text-bottom;"> Continue with Google');
+    }
+  });
+
   // Check hash for direct register link
   if (window.location.hash === '#register') switchTab('register');
 
@@ -255,111 +334,85 @@
     else $('#pw-strength').html(`Strength: <span style="color:${color};font-weight:600;">${strength}</span>`);
   });
 
-  // Login
-  $('#login-btn').on('click', function () {
+  // Email/Password Login via Supabase
+  $('#login-btn').on('click', async function () {
     const email = $('#login-email').val().trim();
     const password = $('#login-password').val();
     if (!email || !password) { $('#login-error').text('Please fill in all fields.').removeClass('d-none'); return; }
     $(this).prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i> Signing in…');
-    $.ajax({
-      url: '/api/auth/login', type: 'POST', contentType: 'application/json',
-      data: JSON.stringify({ email, password }),
-      success: function (res) {
-        const urlParams = new URLSearchParams(window.location.search);
-        const redirect = urlParams.get('redirect');
-        if (redirect) {
-          window.location.href = redirect;
-        } else {
-          window.location.href = res.user.role === 'admin' ? '/admin.html' : '/index.html';
-        }
-      },
-      error: function (err) {
-        $('#login-error').text(err.responseJSON?.error || 'Invalid credentials.').removeClass('d-none');
-        $('#login-btn').prop('disabled', false).html('Sign In');
-      }
-    });
+    const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+    if (error) {
+      $('#login-error').text(error.message).removeClass('d-none');
+      $(this).prop('disabled', false).html('Sign In');
+    } else if (data?.session) {
+      syncSession(data.session.access_token);
+    }
   });
 
-  // Register
-  $('#register-btn').on('click', function () {
+  // Email/Password Register via Supabase
+  $('#register-btn').on('click', async function () {
     const name = $('#reg-name').val().trim();
     const email = $('#reg-email').val().trim();
     const password = $('#reg-password').val();
     if (!name || !email || !password) { $('#register-error').text('All fields are required.').removeClass('d-none'); return; }
     if (password.length < 8) { $('#register-error').text('Password must be at least 8 characters.').removeClass('d-none'); return; }
     $(this).prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i> Creating account…');
-    $.ajax({
-      url: '/api/auth/register', type: 'POST', contentType: 'application/json',
-      data: JSON.stringify({ name, email, password }),
-      success: function () { 
-        const urlParams = new URLSearchParams(window.location.search);
-        const redirect = urlParams.get('redirect');
-        if (redirect) {
-          window.location.href = redirect;
-        } else {
-          window.location.href = '/index.html'; 
-        }
-      },
-      error: function (err) {
-        $('#register-error').text(err.responseJSON?.error || 'Registration failed.').removeClass('d-none');
-        $('#register-btn').prop('disabled', false).html('Create Account');
-      }
-    });
+    const { data, error } = await supabaseClient.auth.signUp({ email, password, options: { data: { name } } });
+    if (error) {
+      $('#register-error').text(error.message).removeClass('d-none');
+      $(this).prop('disabled', false).html('Create Account');
+    } else if (data?.session) {
+      syncSession(data.session.access_token);
+    } else {
+      // Email confirmation required
+      $('#register-error').removeClass('alert-danger').addClass('alert-success').text('Account created! Please check your email to confirm your account.').removeClass('d-none');
+      $(this).prop('disabled', false).html('Create Account');
+    }
   });
 
-  // Forgot Password
-  $('#forgot-btn').on('click', function () {
+  // Forgot Password via Supabase
+  $('#forgot-btn').on('click', async function () {
     const email = $('#forgot-email').val().trim();
     if (!email) { $('#forgot-error').text('Please provide an email.').removeClass('d-none'); return; }
-    
     $('#forgot-error, #forgot-message').addClass('d-none');
     $(this).prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i> Sending...');
-    
-    $.ajax({
-      url: '/api/auth/forgot-password', type: 'POST', contentType: 'application/json',
-      data: JSON.stringify({ email }),
-      success: function (res) {
-        $('#forgot-btn').prop('disabled', false).html('Send Reset Link');
-        $('#forgot-message').text(res.message).removeClass('d-none');
-      },
-      error: function (err) {
-        $('#forgot-error').text(err.responseJSON?.error || 'Failed to request reset.').removeClass('d-none');
-        $('#forgot-btn').prop('disabled', false).html('Send Reset Link');
-      }
+    const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.origin + '/login.html',
     });
+    if (error) {
+      $('#forgot-error').text(error.message).removeClass('d-none');
+    } else {
+      $('#forgot-message').text('If an account exists, a password reset link has been sent.').removeClass('d-none');
+    }
+    $(this).prop('disabled', false).html('Send Reset Link');
   });
 
-  // Reset Password
-  $('#reset-btn').on('click', function () {
-    const token = $('#reset-token').val().trim();
+  // Update Password via Supabase (after redirect from reset email)
+  $('#reset-btn').on('click', async function () {
     const newPassword = $('#reset-password').val();
-    
-    if (!token || !newPassword) { $('#reset-error').text('All fields are required.').removeClass('d-none'); return; }
     if (newPassword.length < 8) { $('#reset-error').text('Password must be at least 8 characters.').removeClass('d-none'); return; }
-    
     $('#reset-error').addClass('d-none');
-    $(this).prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i> Resetting...');
-    
-    $.ajax({
-      url: '/api/auth/reset-password', type: 'POST', contentType: 'application/json',
-      data: JSON.stringify({ token, newPassword }),
-      success: function (res) {
-        alert(res.message);
+    $(this).prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i> Updating...');
+    const { data, error } = await supabaseClient.auth.updateUser({ password: newPassword });
+    if (error) {
+      $('#reset-error').text(error.message).removeClass('d-none');
+      $(this).prop('disabled', false).html('Update Password');
+    } else {
+      const { data: sessionData } = await supabaseClient.auth.getSession();
+      if (sessionData?.session) {
+        syncSession(sessionData.session.access_token);
+      } else {
+        alert('Password updated! Please sign in.');
         switchTab('login');
-        $('#reset-btn').prop('disabled', false).html('Reset Password');
-      },
-      error: function (err) {
-        $('#reset-error').text(err.responseJSON?.error || 'Failed to reset password.').removeClass('d-none');
-        $('#reset-btn').prop('disabled', false).html('Reset Password');
       }
-    });
+    }
   });
 
   // Enter key support
   $(document).on('keypress', 'input', function (e) {
     if (e.which === 13) {
       if ($('#form-login').is(':visible')) $('#login-btn').click();
-      else $('#register-btn').click();
+      else if ($('#form-register').is(':visible')) $('#register-btn').click();
     }
   });
 </script>

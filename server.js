@@ -1,4 +1,5 @@
 const express = require('express'); // Express framework for building the server
+require('dns').setDefaultResultOrder('ipv4first'); // Fix IPv6 resolution timeouts on Windows/WSL
 const session = require('express-session'); // Session management for shopping cart and authentication state
 const cors = require('cors'); // CORS middleware to allow cross-origin requests from the frontend
 const path = require('path'); // Path module for handling file paths
@@ -15,7 +16,7 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 // Middleware
-app.use(helmet({ contentSecurityPolicy: false })); // Disable CSP to allow CDN scripts (Bootstrap, jQuery, etc.)
+app.use(helmet({ contentSecurityPolicy: false })); // helmet is used to set various HTTP headers for security, but we disable the default content security policy since it can interfere with loading resources in development (like from webpack dev server) - in production we will set a custom CSP header in nginx config instead for better control and performance
 app.use(cors());
 app.use(compression());
 app.use(express.json()); // Parse JSON bodies
