@@ -505,11 +505,25 @@ $(document).ready(function () {
 
   $(document).on('click', '.mark-notification-read', function () {
     const id = $(this).data('id');
-    $.ajax({ url: '/api/notifications/' + id + '/read', type: 'PUT', success: loadNotificationsList });
+    $.ajax({ 
+      url: '/api/notifications/' + id + '/read', 
+      type: 'PUT', 
+      success: function() {
+        loadNotificationsList();
+        if (typeof loadNotifications === 'function') loadNotifications();
+      } 
+    });
   });
 
   $('#mark-all-read-btn').on('click', function () {
-    $.ajax({ url: '/api/notifications/read-all', type: 'PUT', success: loadNotificationsList });
+    $.ajax({ 
+      url: '/api/notifications/read-all', 
+      type: 'PUT', 
+      success: function() {
+        loadNotificationsList();
+        if (typeof loadNotifications === 'function') loadNotifications();
+      } 
+    });
   });
 
   if (window.location.hash === '#notifications') {
