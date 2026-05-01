@@ -1,7 +1,7 @@
 # ElectroHub E-Commerce Platform
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Version](https://img.shields.io/github/package-json/v/aghandour5/electrohub-ecommerce)](https://github.com/aghandour5/electrohub-ecommerce)
+[![Version](https://img.shields.io/github/package-json/v/aghandour5/ElectroHub)](https://github.com/aghandour5/ElectroHub)
 [![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)](https://nodejs.org/)
 
 ElectroHub is a full-stack electronics store built with Node.js, Express, PostgreSQL/Supabase, and a responsive HTML/CSS/Bootstrap frontend. It includes product browsing, session cart management, checkout, order history, admin operations, newsletter sending, Slack contact alerts, coupons, product reviews, and in-app notifications.
