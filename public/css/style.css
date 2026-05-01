@@ -93,6 +93,50 @@ textarea {
   color: var(--coral) !important;
 }
 
+/* Simulated outline for icons that don't have a 'far' version in FA Free */
+.icon-stroke {
+  -webkit-text-stroke: 1.2px var(--charcoal);
+  color: transparent !important;
+}
+
+.header-right-actions a i {
+  transition: color 0.3s ease, -webkit-text-stroke 0.3s ease;
+}
+
+/* Instant States (applied via head script to prevent flicker) */
+html.has-notifications #nav-notifications-btn i {
+  font-family: "Font Awesome 6 Free" !important;
+  font-weight: 900 !important; /* Force fas */
+  color: var(--coral) !important;
+}
+
+html.has-cart-items a[href="cart.html"] i {
+  -webkit-text-stroke: 0 !important;
+  color: var(--coral) !important;
+}
+
+html.has-wishlist-items a[href="wishlist.html"] i {
+  font-family: "Font Awesome 6 Free" !important;
+  font-weight: 900 !important; /* Force fas */
+  color: var(--coral) !important;
+}
+
+html.is-logged-in #nav-account-login {
+  display: none !important;
+}
+
+html.is-logged-in #nav-account-user {
+  display: flex !important;
+}
+
+html.is-logged-in #mobile-nav-auth-login {
+  display: none !important;
+}
+
+html.is-logged-in #mobile-nav-auth-user {
+  display: flex !important;
+}
+
 .bg-soft {
   background: var(--bg-soft);
 }
@@ -1863,8 +1907,9 @@ body.drawer-open {
     display: none !important;
   }
 
-  /* Hide login button and divider on mobile — accessible via drawer */
-  #nav-account,
+  /* Hide login/user buttons and divider on mobile — accessible via drawer */
+  #nav-account-login,
+  #nav-account-user,
   .header-divider {
     display: none !important;
   }
@@ -2049,11 +2094,22 @@ body.drawer-open {
     display: flex !important;
   }
 
-  /* Collapse empty sidebar space on mobile */
-  .col-lg-3 {
+  /* Collapse empty sidebar space on mobile - scoped only to Shop page filters */
+  .shop-sidebar-col {
     margin: 0 !important;
     padding: 0 !important;
     height: 0 !important;
+    overflow: hidden;
+  }
+
+  /* Profile Sidebar: ensure it stacks correctly and looks good */
+  .profile-sidebar-col {
+    height: auto !important;
+    margin-bottom: 2rem !important;
+  }
+
+  .profile-sidebar-col > div {
+    padding: 24px !important; /* Slightly reduced padding for mobile */
   }
 
   .row.g-5 {

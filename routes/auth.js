@@ -138,7 +138,7 @@ router.post('/logout', (req, res) => {
 router.get('/me', async (req, res) => {
   if (req.session.user) {
     try {
-      const userResult = await db.query('SELECT id, name, email, role, phone, address FROM users WHERE id = $1', [req.session.user.id]);
+      const userResult = await db.query('SELECT id, name, email, role, phone, address, created_at FROM users WHERE id = $1', [req.session.user.id]);
       if (userResult.rows.length > 0) {
         return res.json({ isAuthenticated: true, user: userResult.rows[0] });
       }

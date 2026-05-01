@@ -1,6 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script>
+    (function() {
+      try {
+        const unread = localStorage.getItem('electrohub_unread_count');
+        const cart = localStorage.getItem('electrohub_cart_count');
+        const wishlist = JSON.parse(localStorage.getItem('electrohub_wishlist') || '[]');
+        const user = localStorage.getItem('electrohub_user');
+        const onNotif = window.location.pathname.includes('profile.html') && window.location.hash === '#notifications';
+        const onCart = window.location.pathname.includes('cart.html');
+        const onWish = window.location.pathname.includes('wishlist.html');
+        if (parseInt(unread) > 0 || onNotif) document.documentElement.classList.add('has-notifications');
+        if (parseInt(cart) > 0 || onCart) document.documentElement.classList.add('has-cart-items');
+        if (wishlist.length > 0 || onWish) document.documentElement.classList.add('has-wishlist-items');
+        if (user) document.documentElement.classList.add('is-logged-in');
+      } catch (e) {}
+    })();
+  </script>
+  
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>My Wishlist | ElectroHub</title>
@@ -27,14 +45,18 @@
     </div>
 
     <div class="header-right-actions" style="display:flex; align-items:center; justify-content:flex-end; gap:20px;">
-      <a href="login.html" id="nav-account" class="btn btn-dark rounded-pill px-4" style="font-size:0.9rem; font-weight:600; text-decoration:none;">Login / Sign Up</a>
+      <a href="login.html" id="nav-account-login" class="btn btn-dark rounded-pill px-4" style="font-size:0.9rem; font-weight:600; color:#fff !important; text-decoration:none;">Login / Sign Up</a><a href="profile.html" id="nav-account-user" class="icon-btn filled" style="display:none; align-items:center; justify-content:center; width:40px; height:40px; border-radius:50%; background:#111; color:#fff; font-size:1.1rem; text-decoration:none;" title="My Account"><i class="fas fa-user"></i></a>
       <div class="header-divider" style="width:1px; height:16px; background:#e2e8f0;"></div>
+      <a href="profile.html#notifications" id="nav-notifications-btn" style="font-size:1.3rem; color:var(--charcoal); text-decoration:none; margin-right:12px; position:relative; display:flex; align-items:center;">
+        <i class="far fa-bell"></i>
+        <span class="badge" id="nav-notifications-count" style="position:absolute; top:-5px; right:-12px; background:#ef4444; color:#fff; font-size:0.65rem; font-weight:700; padding:2px 6px; min-width:20px; height:20px; border-radius:12px; display:flex; align-items:center; justify-content:center;">0</span>
+      </a>
       <a href="wishlist.html" style="font-size:1.3rem; color:var(--coral); text-decoration:none; margin-right:12px; position:relative; display:flex; align-items:center;">
         <i class="fas fa-heart"></i>
         <span class="badge" id="nav-wishlist-count" style="position:absolute; top:-5px; right:-12px; background:#ef4444; color:#fff; font-size:0.65rem; font-weight:700; padding:2px 6px; min-width:20px; height:20px; border-radius:12px; display:none; align-items:center; justify-content:center;">0</span>
       </a>
       <a href="cart.html" style="font-size:1.3rem; color:var(--charcoal); text-decoration:none; position:relative; display:flex; align-items:center;">
-        <i class="fas fa-shopping-bag"></i>
+        <i class="fas icon-stroke fa-shopping-bag"></i>
         <span class="badge" id="nav-cart-count" style="position:absolute; top:-5px; right:-12px; background:#ef4444; color:#fff; font-size:0.65rem; font-weight:700; padding:2px 6px; min-width:20px; height:20px; border-radius:12px; display:flex; align-items:center; justify-content:center;">0</span>
       </a>
       <button class="burger-btn" id="burger-btn" aria-label="Open menu">
@@ -80,8 +102,8 @@
       <a href="contact.html"><i class="fas fa-envelope"></i> Contact</a>
     </nav>
     <div class="mobile-drawer-footer">
-      <a href="login.html" class="mobile-auth-btn"><i class="fas fa-user"></i> Login / Sign Up</a>
-      <a href="cart.html" class="mobile-auth-btn mobile-cart-btn"><i class="fas fa-shopping-bag"></i> Cart</a>
+      <a href="login.html" class="mobile-auth-btn" id="mobile-nav-auth-login"><i class="fas fa-user"></i> Login / Sign Up</a><a href="profile.html" class="mobile-auth-btn" id="mobile-nav-auth-user" style="display:none;"><i class="fas fa-user"></i> My Profile</a>
+      <a href="cart.html" class="mobile-auth-btn mobile-cart-btn" id="mobile-nav-cart"><i class="fas icon-stroke fa-shopping-bag"></i> Cart</a>
     </div>
   </div>
 </div>
@@ -118,7 +140,9 @@
     <div class="row g-5">
       <div class="col-lg-4">
         <div class="footer-logo">
-          <img src="images/logo-brand.png" alt="ElectroHub" style="height: 38px; filter: brightness(0) invert(1);">
+          <a href="index.html">
+            <img src="images/logo-brand.png" alt="ElectroHub" style="height: 38px; filter: brightness(0) invert(1);">
+          </a>
         </div>
         <p class="footer-desc">Your trusted destination for premium electronics. Fast shipping, secure checkout, and real support.</p>
       </div>
@@ -306,3 +330,7 @@ $(document).ready(function() {
 </script>
 </body>
 </html>
+
+
+
+

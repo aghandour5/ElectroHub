@@ -1,6 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script>
+    (function() {
+      try {
+        const unread = localStorage.getItem('electrohub_unread_count');
+        const cart = localStorage.getItem('electrohub_cart_count');
+        const wishlist = JSON.parse(localStorage.getItem('electrohub_wishlist') || '[]');
+        const user = localStorage.getItem('electrohub_user');
+        const onNotif = window.location.pathname.includes('profile.html') && window.location.hash === '#notifications';
+        const onCart = window.location.pathname.includes('cart.html');
+        const onWish = window.location.pathname.includes('wishlist.html');
+        if (parseInt(unread) > 0 || onNotif) document.documentElement.classList.add('has-notifications');
+        if (parseInt(cart) > 0 || onCart) document.documentElement.classList.add('has-cart-items');
+        if (wishlist.length > 0 || onWish) document.documentElement.classList.add('has-wishlist-items');
+        if (user) document.documentElement.classList.add('is-logged-in');
+      } catch (e) {}
+    })();
+  </script>
+  
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Shop | ElectroHub</title>
@@ -30,14 +48,18 @@
 
     <!-- Right Actions -->
     <div class="header-right-actions" style="display:flex; align-items:center; justify-content:flex-end; gap:20px;">
-      <a href="login.html" id="nav-account" class="btn btn-dark rounded-pill px-4" style="font-size:0.9rem; font-weight:600; color:#fff !important; text-decoration:none;">Login / Sign Up</a>
+      <a href="login.html" id="nav-account-login" class="btn btn-dark rounded-pill px-4" style="font-size:0.9rem; font-weight:600; color:#fff !important; text-decoration:none;">Login / Sign Up</a><a href="profile.html" id="nav-account-user" class="icon-btn filled" style="display:none; align-items:center; justify-content:center; width:40px; height:40px; border-radius:50%; background:#111; color:#fff; font-size:1.1rem; text-decoration:none;" title="My Account"><i class="fas fa-user"></i></a>
       <div class="header-divider" style="width:1px; height:16px; background:#e2e8f0;"></div>
+      <a href="profile.html#notifications" id="nav-notifications-btn" style="font-size:1.3rem; color:var(--charcoal); text-decoration:none; margin-right:12px; position:relative; display:flex; align-items:center;">
+        <i class="far fa-bell"></i>
+        <span class="badge" id="nav-notifications-count" style="position:absolute; top:-5px; right:-12px; background:#ef4444; color:#fff; font-size:0.65rem; font-weight:700; padding:2px 6px; min-width:20px; height:20px; border-radius:12px; display:flex; align-items:center; justify-content:center;">0</span>
+      </a>
       <a href="wishlist.html" style="font-size:1.3rem; color:var(--charcoal); text-decoration:none; margin-right:12px; position:relative; display:flex; align-items:center;">
         <i class="far fa-heart"></i>
         <span class="badge" id="nav-wishlist-count" style="position:absolute; top:-5px; right:-12px; background:#ef4444; color:#fff; font-size:0.65rem; font-weight:700; padding:2px 6px; min-width:20px; height:20px; border-radius:12px; display:none; align-items:center; justify-content:center;">0</span>
       </a>
       <a href="cart.html" style="font-size:1.3rem; color:var(--charcoal); text-decoration:none; position:relative; display:flex; align-items:center;">
-        <i class="fas fa-shopping-bag"></i>
+        <i class="fas icon-stroke fa-shopping-bag"></i>
         <span class="badge" id="nav-cart-count" style="position:absolute; top:-5px; right:-12px; background:#ef4444; color:#fff; font-size:0.65rem; font-weight:700; padding:2px 6px; min-width:20px; height:20px; border-radius:12px; display:flex; align-items:center; justify-content:center;">0</span>
       </a>
       <!-- Hamburger button: only visible on mobile -->
@@ -85,12 +107,11 @@
       <a href="index.html"><i class="fas fa-home"></i> Home</a>
       <a href="shop.html"><i class="fas fa-store"></i> Shop</a>
       <a href="about.html"><i class="fas fa-info-circle"></i> About</a>
-      <a href="index.html#reviews"><i class="fas fa-star"></i> Reviews</a>
       <a href="contact.html"><i class="fas fa-envelope"></i> Contact</a>
     </nav>
     <div class="mobile-drawer-footer">
-      <a href="login.html" class="mobile-auth-btn"><i class="fas fa-user"></i> Login / Sign Up</a>
-      <a href="cart.html" class="mobile-auth-btn mobile-cart-btn"><i class="fas fa-shopping-bag"></i> Cart</a>
+      <a href="login.html" class="mobile-auth-btn" id="mobile-nav-auth-login"><i class="fas fa-user"></i> Login / Sign Up</a><a href="profile.html" class="mobile-auth-btn" id="mobile-nav-auth-user" style="display:none;"><i class="fas fa-user"></i> My Profile</a>
+      <a href="cart.html" class="mobile-auth-btn mobile-cart-btn" id="mobile-nav-cart"><i class="fas icon-stroke fa-shopping-bag"></i> Cart</a>
     </div>
   </div>
 </div>
@@ -133,7 +154,7 @@
       <div class="mobile-filter-overlay" id="mobile-filter-overlay"></div>
 
       <!-- SIDEBAR -->
-      <div class="col-lg-3">
+      <div class="col-lg-3 shop-sidebar-col">
         <div class="filter-sidebar" id="filter-sidebar">
           <div class="d-flex justify-content-between align-items-center mb-4 filter-sidebar-close">
             <h5 class="fw-bold m-0">Filters</h5>
@@ -345,12 +366,12 @@ $(document).ready(function () {
     let html = '';
     products.forEach(p => {
       const badge = (p.is_new || p.is_featured) ? '<span class="product-badge text-bg-primary" style="background:#0062FF !important; border-radius:4px; padding:4px 8px; font-size:0.7rem; font-weight:bold; position:absolute; top:16px; left:16px; z-index:2; color:#fff;">NEW</span>' : '';
-      const stockBadge = p.stock < 5 ? `<span class="product-badge text-bg-danger" style="background:#ef4444 !important; border-radius:4px; padding:4px 8px; font-size:0.7rem; font-weight:bold; position:absolute; top:16px; right:16px; z-index:2; color:#fff;">Low Stock</span>` : '';
+      const lowStockMsg = p.stock > 0 && p.stock < 10 ? `<div class="mt-2" style="font-size:0.75rem; color:#ef4444; font-weight:700;"><i class="fas fa-fire-alt me-1"></i> Only ${p.stock} left in stock!</div>` : '';
       html += `
       <div class="col-6 col-md-6 col-xl-4 px-2 px-md-3">
         <div class="product-card h-100 bg-white" style="border:1px solid var(--border); border-radius:16px; overflow:hidden;">
           <div class="product-img-box" style="padding:24px; position:relative; background:#fff;">
-            ${badge}${stockBadge}
+            ${badge}
             <button class="wishlist-toggle icon-btn shadow-none ${isInWishlist(p.id) ? 'active' : ''}" data-id="${p.id}" style="position:absolute; top:8px; right:8px; background:transparent; border:none; z-index:2; font-size:1.2rem; color:var(--muted); width:40px; height:40px; display:flex; align-items:center; justify-content:center;">
               <i class="${isInWishlist(p.id) ? 'fas' : 'far'} fa-heart"></i>
             </button>
@@ -364,13 +385,14 @@ $(document).ready(function () {
             <div class="product-name fw-bold mb-2" title="${p.name}" style="font-size:1.1rem; line-height:1.3; color:var(--charcoal);">
               <a href="javascript:void(0)" class="quick-view-btn text-dark text-decoration-none" data-id="${p.id}">${p.name}</a>
             </div>
-            <div class="d-flex align-items-center mb-3 quick-view-btn" data-id="${p.id}" data-show-reviews="true" style="font-size:0.8rem; color:#f59e0b; cursor:pointer;">
+            <div class="d-flex align-items-center mb-1 quick-view-btn" data-id="${p.id}" data-show-reviews="true" style="font-size:0.8rem; color:#f59e0b; cursor:pointer;">
               ${getRatingHtml(p.reviews_data)}
             </div>
+            ${lowStockMsg}
             <div class="d-flex justify-content-between align-items-center mt-auto pt-2">
               <div class="product-price fw-bold" style="font-size:1.25rem;">$${parseFloat(p.price).toFixed(2)}</div>
               <div class="cart-btn-wrapper">
-                ${getCartButtonHtml(p.id)}
+                ${getCartButtonHtml(p.id, p.stock)}
               </div>
             </div>
           </div>
@@ -408,6 +430,16 @@ $(document).ready(function () {
   $.get('/api/products').done(function (products) {
     $('#shop-grid').removeClass('loading-wrap');
     allProducts = products;
+    
+    // Dynamically set max price from product list
+    if (products.length) {
+      const prices = products.map(p => parseFloat(p.price));
+      const realMax = Math.max(...prices);
+      const sliderMax = Math.ceil(realMax / 100) * 100 || 2500; 
+      $('#price-range').attr('max', sliderMax).val(sliderMax);
+      $('#price-label').text(sliderMax);
+    }
+    
     renderBrandFilters();
     applyFilters();
   });
@@ -481,10 +513,18 @@ $(document).ready(function () {
     $('.brand-filter[data-brand=""]').removeClass('bg-light text-dark border').addClass('bg-primary text-white active border-0').attr('style', 'border-radius:16px; font-weight:normal; background:#0062FF !important;');
     selectedBrand = '';
 
-    $('#price-range').val(2500); $('#price-label').text('2500');
     $('#sort-select').val('default');
     allProducts = [];
-    $.get('/api/products').done(function (products) { allProducts = products; applyFilters(); });
+    $.get('/api/products').done(function (products) { 
+      allProducts = products; 
+      if (products.length) {
+        const prices = products.map(p => parseFloat(p.price));
+        const sliderMax = Math.ceil(Math.max(...prices) / 100) * 100 || 2500;
+        $('#price-range').attr('max', sliderMax).val(sliderMax);
+        $('#price-label').text(sliderMax);
+      }
+      applyFilters(); 
+    });
   });
 
   // Init mobile filter drawer
@@ -512,7 +552,9 @@ $(document).ready(function () {
     <div class="row g-5">
       <div class="col-lg-4">
         <div class="footer-logo">
-          <img src="images/logo-brand.png" alt="ElectroHub" style="height: 38px; filter: brightness(0) invert(1);">
+          <a href="index.html">
+            <img src="images/logo-brand.png" alt="ElectroHub" style="height: 38px; filter: brightness(0) invert(1);">
+          </a>
         </div>
         <p class="footer-desc">Your trusted destination for premium electronics. Fast shipping, secure checkout, and real support.</p>
       </div>
@@ -551,5 +593,10 @@ $(document).ready(function () {
 </footer>
 </body>
 </html>
+
+
+
+
+
 
 

@@ -1,6 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script>
+    (function() {
+      try {
+        const unread = localStorage.getItem('electrohub_unread_count');
+        const cart = localStorage.getItem('electrohub_cart_count');
+        const wishlist = JSON.parse(localStorage.getItem('electrohub_wishlist') || '[]');
+        const user = localStorage.getItem('electrohub_user');
+        const onNotif = window.location.pathname.includes('profile.html') && window.location.hash === '#notifications';
+        const onCart = window.location.pathname.includes('cart.html');
+        const onWish = window.location.pathname.includes('wishlist.html');
+        if (parseInt(unread) > 0 || onNotif) document.documentElement.classList.add('has-notifications');
+        if (parseInt(cart) > 0 || onCart) document.documentElement.classList.add('has-cart-items');
+        if (wishlist.length > 0 || onWish) document.documentElement.classList.add('has-wishlist-items');
+        if (user) document.documentElement.classList.add('is-logged-in');
+      } catch (e) {}
+    })();
+  </script>
+  
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Checkout | ElectroHub</title>
@@ -381,6 +399,18 @@
       align-items: center;
       gap: 4px;
     }
+
+    @media (max-width: 480px) {
+      .coupon-row {
+        flex-direction: column;
+      }
+      .coupon-apply-btn {
+        width: 100%;
+      }
+      .sidebar-card {
+        padding: 24px;
+      }
+    }
   </style>
 </head>
 <body class="checkout-wrap">
@@ -403,14 +433,18 @@
 
     <!-- Right Actions -->
     <div class="header-right-actions" style="display:flex; align-items:center; justify-content:flex-end; gap:20px;">
-      <a href="login.html" id="nav-account" class="btn btn-dark rounded-pill px-4" style="font-size:0.9rem; font-weight:600; color:#fff !important; text-decoration:none;">Login / Sign Up</a>
+      <a href="login.html" id="nav-account-login" class="btn btn-dark rounded-pill px-4" style="font-size:0.9rem; font-weight:600; color:#fff !important; text-decoration:none;">Login / Sign Up</a><a href="profile.html" id="nav-account-user" class="icon-btn filled" style="display:none; align-items:center; justify-content:center; width:40px; height:40px; border-radius:50%; background:#111; color:#fff; font-size:1.1rem; text-decoration:none;" title="My Account"><i class="fas fa-user"></i></a>
       <div class="header-divider" style="width:1px; height:16px; background:#e2e8f0;"></div>
+      <a href="profile.html#notifications" id="nav-notifications-btn" style="font-size:1.3rem; color:var(--charcoal); text-decoration:none; margin-right:12px; position:relative; display:flex; align-items:center;">
+        <i class="far fa-bell"></i>
+        <span class="badge" id="nav-notifications-count" style="position:absolute; top:-5px; right:-12px; background:#ef4444; color:#fff; font-size:0.65rem; font-weight:700; padding:2px 6px; min-width:20px; height:20px; border-radius:12px; display:flex; align-items:center; justify-content:center;">0</span>
+      </a>
       <a href="wishlist.html" style="font-size:1.3rem; color:var(--charcoal); text-decoration:none; margin-right:12px; position:relative; display:flex; align-items:center;">
         <i class="far fa-heart"></i>
         <span class="badge" id="nav-wishlist-count" style="position:absolute; top:-5px; right:-12px; background:#ef4444; color:#fff; font-size:0.65rem; font-weight:700; padding:2px 6px; min-width:20px; height:20px; border-radius:12px; display:none; align-items:center; justify-content:center;">0</span>
       </a>
       <a href="cart.html" style="font-size:1.3rem; color:var(--charcoal); text-decoration:none; position:relative; display:flex; align-items:center;">
-        <i class="fas fa-shopping-bag"></i>
+        <i class="fas icon-stroke fa-shopping-bag"></i>
         <span class="badge" id="nav-cart-count" style="position:absolute; top:-5px; right:-12px; background:#ef4444; color:#fff; font-size:0.65rem; font-weight:700; padding:2px 6px; min-width:20px; height:20px; border-radius:12px; display:flex; align-items:center; justify-content:center;">0</span>
       </a>
       <!-- Hamburger button: only visible on mobile -->
@@ -457,12 +491,11 @@
       <a href="index.html"><i class="fas fa-home"></i> Home</a>
       <a href="shop.html"><i class="fas fa-store"></i> Shop</a>
       <a href="about.html"><i class="fas fa-info-circle"></i> About</a>
-      <a href="index.html#reviews"><i class="fas fa-star"></i> Reviews</a>
       <a href="contact.html"><i class="fas fa-envelope"></i> Contact</a>
     </nav>
     <div class="mobile-drawer-footer">
-      <a href="login.html" class="mobile-auth-btn"><i class="fas fa-user"></i> Login / Sign Up</a>
-      <a href="cart.html" class="mobile-auth-btn mobile-cart-btn"><i class="fas fa-shopping-bag"></i> Cart</a>
+      <a href="login.html" class="mobile-auth-btn" id="mobile-nav-auth-login"><i class="fas fa-user"></i> Login / Sign Up</a><a href="profile.html" class="mobile-auth-btn" id="mobile-nav-auth-user" style="display:none;"><i class="fas fa-user"></i> My Profile</a>
+      <a href="cart.html" class="mobile-auth-btn mobile-cart-btn" id="mobile-nav-cart"><i class="fas icon-stroke fa-shopping-bag"></i> Cart</a>
     </div>
   </div>
 </div>
@@ -659,7 +692,9 @@
     <div class="row g-5">
       <div class="col-lg-4">
         <div class="footer-logo">
-          <img src="images/logo-brand.png" alt="ElectroHub" style="height: 38px; filter: brightness(0) invert(1);">
+          <a href="index.html">
+            <img src="images/logo-brand.png" alt="ElectroHub" style="height: 38px; filter: brightness(0) invert(1);">
+          </a>
         </div>
         <p class="footer-desc">Your trusted destination for premium electronics. Fast shipping, secure checkout, and real support.</p>
       </div>
@@ -702,6 +737,21 @@
 <script src="js/app.js"></script>
 <script>
 $(document).ready(function () {
+  // ── AUTH GUARD ──────────────────────────────
+  $.get('/api/auth/me').done(function(res) {
+    if (!res.isAuthenticated) {
+      window.location.href = 'login.html?redirect=checkout.html';
+      return;
+    }
+    // Pre-fill user data
+    if (res.user) {
+      $('#co-email').val(res.user.email);
+      const names = res.user.name.split(' ');
+      $('#co-fname').val(names[0] || '');
+      $('#co-lname').val(names.slice(1).join(' ') || '');
+    }
+  });
+
   const TAX_RATE = 0.08;
   let cartSubtotal = 0;
 
@@ -719,8 +769,7 @@ $(document).ready(function () {
       }
 
       if (!res.items || res.items.length === 0) {
-        $('#summary-items-list').html('<p class="text-muted" style="font-size:.85rem;">Your cart is empty. <a href="shop.html">Shop now</a></p>');
-        updateTotals(0);
+        window.location.href = '/cart.html';
         return;
       }
 
@@ -923,3 +972,8 @@ $(document).ready(function () {
 </script>
 </body>
 </html>
+
+
+
+
+

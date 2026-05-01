@@ -1,6 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script>
+    (function() {
+      try {
+        const unread = localStorage.getItem('electrohub_unread_count');
+        const cart = localStorage.getItem('electrohub_cart_count');
+        const wishlist = JSON.parse(localStorage.getItem('electrohub_wishlist') || '[]');
+        const user = localStorage.getItem('electrohub_user');
+        const onNotif = window.location.pathname.includes('profile.html') && window.location.hash === '#notifications';
+        const onCart = window.location.pathname.includes('cart.html');
+        const onWish = window.location.pathname.includes('wishlist.html');
+        if (parseInt(unread) > 0 || onNotif) document.documentElement.classList.add('has-notifications');
+        if (parseInt(cart) > 0 || onCart) document.documentElement.classList.add('has-cart-items');
+        if (wishlist.length > 0 || onWish) document.documentElement.classList.add('has-wishlist-items');
+        if (user) document.documentElement.classList.add('is-logged-in');
+      } catch (e) {}
+    })();
+  </script>
+  
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sign In | ElectroHub</title>
@@ -16,20 +34,22 @@
   <div class="auth-visual">
     <div class="mb-5">
       <div class="mb-4">
-        <img src="images/logo-brand.png" alt="ElectroHub" style="height: 42px; filter: brightness(0) invert(1);">
+        <a href="index.html">
+          <img src="images/logo-brand.png" alt="ElectroHub" style="height: 42px; filter: brightness(0) invert(1);">
+        </a>
       </div>
       <p style="color:rgba(255,255,255,.55);font-size:.95rem;max-width:300px;">Your gateway to premium electronics. Fast delivery, honest prices, real support.</p>
     </div>
-    <div style="background:rgba(255,255,255,.06);border-radius:var(--radius-xl);padding:32px;max-width:320px;width:100%;">
+    <div id="auth-testimonial-card" style="background:rgba(255,255,255,.06);border-radius:var(--radius-xl);padding:32px;max-width:320px;width:100%;opacity:0;transition:opacity 0.3s ease;">
       <div class="d-flex align-items-center gap-3 mb-4">
-        <div class="reviewer-avatar" style="background:var(--coral);flex-shrink:0;">AG</div>
+        <div class="reviewer-avatar" id="auth-reviewer-avatar" style="background:var(--coral);flex-shrink:0;"></div>
         <div>
-          <div style="font-weight:600;color:#fff;">Ali Ghandour</div>
-          <div style="font-size:.8rem;color:rgba(255,255,255,.4);">ElectroHub Member</div>
+          <div id="auth-reviewer-name" style="font-weight:600;color:#fff;"></div>
+          <div id="auth-reviewer-role" style="font-size:.8rem;color:rgba(255,255,255,.4);"></div>
         </div>
       </div>
-      <p style="font-size:.88rem;color:rgba(255,255,255,.6);line-height:1.7;">"ElectroHub is where I shop for all my tech. The experience is always smooth and the products are genuinely premium."</p>
-      <div class="rating-stars mt-3" style="font-size:.8rem;"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
+      <p id="auth-review-text" style="font-size:.88rem;color:rgba(255,255,255,.6);line-height:1.7;"></p>
+      <div id="auth-review-stars" class="rating-stars mt-3" style="font-size:.8rem;"></div>
     </div>
     <div class="mt-5 text-center" style="color:rgba(255,255,255,.25);font-size:.8rem;">
       <a href="https://maps.google.com/?q=Nabatiye,Lebanon" target="_blank" style="color:rgba(255,255,255,.55);text-decoration:none;">📍 Nabatiye, Lebanon</a> &nbsp;|&nbsp; <a href="tel:+96179307904" style="color:rgba(255,255,255,.55);text-decoration:none;">+961 79 30 79 04</a>
@@ -140,7 +160,9 @@
     <div class="row g-5">
       <div class="col-lg-4">
         <div class="footer-logo">
-          <img src="images/logo-brand.png" alt="ElectroHub" style="height: 38px; filter: brightness(0) invert(1);">
+          <a href="index.html">
+            <img src="images/logo-brand.png" alt="ElectroHub" style="height: 38px; filter: brightness(0) invert(1);">
+          </a>
         </div>
         <p class="footer-desc">Your trusted destination for premium electronics. Fast shipping, secure checkout, and real support.</p>
       </div>
@@ -180,6 +202,7 @@
 
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/app.js"></script>
 <script>
   // Check hash for direct register link
   if (window.location.hash === '#register') switchTab('register');
@@ -216,11 +239,20 @@
   // Password strength
   $('#reg-password').on('keyup', function () {
     const pw = $(this).val();
-    let strength = '', color = '';
-    if (pw.length < 4) { strength = 'Weak'; color = '#ef4444'; }
-    else if (pw.length < 8) { strength = 'Fair'; color = '#f59e0b'; }
-    else { strength = 'Strong'; color = '#16a34a'; }
-    $('#pw-strength').html(`Strength: <span style="color:${color};font-weight:600;">${strength}</span>`);
+    let score = 0;
+    
+    if (pw.length >= 8) score++;
+    if (pw.length >= 12) score++;
+    if (/[a-z]/.test(pw) && /[A-Z]/.test(pw)) score++;
+    if (/\d/.test(pw)) score++;
+    if (/[^A-Za-z0-9]/.test(pw)) score++;
+
+    let strength = 'Weak', color = '#ef4444';
+    if (score >= 4) { strength = 'Strong'; color = '#16a34a'; }
+    else if (score >= 2) { strength = 'Fair'; color = '#f59e0b'; }
+    
+    if (pw.length === 0) $('#pw-strength').html('');
+    else $('#pw-strength').html(`Strength: <span style="color:${color};font-weight:600;">${strength}</span>`);
   });
 
   // Login
@@ -233,7 +265,13 @@
       url: '/api/auth/login', type: 'POST', contentType: 'application/json',
       data: JSON.stringify({ email, password }),
       success: function (res) {
-        window.location.href = res.user.role === 'admin' ? '/admin.html' : '/index.html';
+        const urlParams = new URLSearchParams(window.location.search);
+        const redirect = urlParams.get('redirect');
+        if (redirect) {
+          window.location.href = redirect;
+        } else {
+          window.location.href = res.user.role === 'admin' ? '/admin.html' : '/index.html';
+        }
       },
       error: function (err) {
         $('#login-error').text(err.responseJSON?.error || 'Invalid credentials.').removeClass('d-none');
@@ -253,7 +291,15 @@
     $.ajax({
       url: '/api/auth/register', type: 'POST', contentType: 'application/json',
       data: JSON.stringify({ name, email, password }),
-      success: function () { window.location.href = '/index.html'; },
+      success: function () { 
+        const urlParams = new URLSearchParams(window.location.search);
+        const redirect = urlParams.get('redirect');
+        if (redirect) {
+          window.location.href = redirect;
+        } else {
+          window.location.href = '/index.html'; 
+        }
+      },
       error: function (err) {
         $('#register-error').text(err.responseJSON?.error || 'Registration failed.').removeClass('d-none');
         $('#register-btn').prop('disabled', false).html('Create Account');
@@ -319,4 +365,7 @@
 </script>
 </body>
 </html>
+
+
+
 

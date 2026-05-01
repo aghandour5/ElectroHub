@@ -1,6 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script>
+    (function() {
+      try {
+        const unread = localStorage.getItem('electrohub_unread_count');
+        const cart = localStorage.getItem('electrohub_cart_count');
+        const wishlist = JSON.parse(localStorage.getItem('electrohub_wishlist') || '[]');
+        const user = localStorage.getItem('electrohub_user');
+        const onNotif = window.location.pathname.includes('profile.html') && window.location.hash === '#notifications';
+        const onCart = window.location.pathname.includes('cart.html');
+        const onWish = window.location.pathname.includes('wishlist.html');
+        if (parseInt(unread) > 0 || onNotif) document.documentElement.classList.add('has-notifications');
+        if (parseInt(cart) > 0 || onCart) document.documentElement.classList.add('has-cart-items');
+        if (wishlist.length > 0 || onWish) document.documentElement.classList.add('has-wishlist-items');
+        if (user) document.documentElement.classList.add('is-logged-in');
+      } catch (e) {}
+    })();
+  </script>
+  
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ElectroHub | Operator Console</title>
@@ -221,7 +239,7 @@
                     <i class="fas fa-cube"></i> Products
                 </a>
                 <a href="javascript:void(0)" class="nav-item" onclick="switchView('orders', this)">
-                    <i class="fas fa-shopping-bag"></i> Orders
+                    <i class="fas icon-stroke fa-shopping-bag"></i> Orders
                 </a>
                 <a href="javascript:void(0)" class="nav-item" onclick="switchView('users', this)">
                     <i class="fas fa-users"></i> Customers
@@ -585,8 +603,10 @@
                 }).fail(() => $('#global-loader').removeClass('active'));
             }
 
+            let allOrders = [];
             function loadOrders() {
                 $.get('/api/admin/orders').done(function(orders) {
+                    allOrders = orders;
                     let html = `
                     <div class="dashboard-card p-0 overflow-hidden">
                         <div class="table-responsive">
@@ -807,15 +827,42 @@
             };
 
             window.viewOrderDetails = function(id) {
+                const order = allOrders.find(o => o.id === id);
                 $('#orderDetailsModal').modal('show');
-                $('#order-items-list').html('<div class="text-center py-4"><div class="spinner-border" style="color:var(--primary-teal);"></div></div>');
+                let modalHtml = `
+                <div class="mb-4 p-3 bg-light" style="border-radius:12px;">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="text-muted small fw-bold text-uppercase mb-1">Customer Info</div>
+                            <div class="fw-bold text-dark">${order.customer_name}</div>
+                            <div class="text-muted">${order.customer_email}</div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="text-muted small fw-bold text-uppercase mb-1">Shipping Address</div>
+                            <div class="text-dark" style="font-size:0.85rem; line-height:1.4;">${order.shipping_address || 'No address provided.'}</div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="text-muted small fw-bold text-uppercase mb-1">Placement Date</div>
+                            <div class="text-dark">${new Date(order.created_at).toLocaleString()}</div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="text-muted small fw-bold text-uppercase mb-1">Total Amount</div>
+                            <div class="fw-bold text-primary fs-5">$${parseFloat(order.total_amount).toFixed(2)}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="section-title mb-3" style="font-size:0.9rem;">Order Items</div>
+                <div id="order-items-list"><div class="text-center py-4"><div class="spinner-border" style="color:var(--primary-teal);"></div></div></div>
+                `;
+                
+                $('#order-items-list').parent().html(modalHtml);
                 $.get('/api/admin/orders/' + id + '/items').done(function(items) {
                     if(!items || items.length === 0) return $('#order-items-list').html('<p>No items found.</p>');
                     let html = '<ul class="list-group list-group-flush">';
                     items.forEach(item => {
                         html += `
                         <li class="list-group-item d-flex align-items-center gap-3 py-3 border-0 px-0">
-                            <img src="${getImageUrl(item.image_path)}" style="width:64px; height:64px; object-fit:contain; border-radius:12px; background:#f8f9fa;">
+                            <img src="${getImageUrl(item.image_path)}" style="width:64px; height:64px; object-fit:contain; border-radius:12px; background:#f8f9fa;" onerror="this.src='/images/placeholder.png'">
                             <div class="flex-grow-1">
                                 <h6 class="mb-1 fw-bold text-dark">${item.name}</h6>
                                 <small class="text-muted">Qty: ${item.quantity}</small>
@@ -848,3 +895,6 @@
     </script>
 </body>
 </html>
+
+
+

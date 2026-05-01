@@ -6,6 +6,9 @@
 
 // ── TOAST UTILITY ────────────────────────────
 function showToast(message, type = 'success') {
+  // Clear any existing toasts to prevent stacking
+  $('#toast-wrap').empty();
+
   const icon = type === 'success'
     ? '<i class="fas fa-check-circle" style="color:#10b981;"></i>'
     : '<i class="fas fa-exclamation-circle" style="color:var(--coral);"></i>';
@@ -75,91 +78,116 @@ window.formatOrderId = formatOrderId;
 // ── AUTH STATE ────────────────────────────────
 function checkAuthState() {
   $.get('/api/auth/me').done(function (res) {
-    const accountLink = $('#nav-account, .header-login-link');
+    const loginBtn = $('#nav-account-login');
+    const userBtn = $('#nav-account-user');
 
-    // Remove any existing admin buttons first to be safe
+    // Remove admin button if present
     $('#admin-nav-btn').remove();
-    $('#nav-notifications-btn').remove();
 
     if (res.isAuthenticated) {
       const user = res.user;
+      localStorage.setItem('electrohub_user', JSON.stringify(user));
+      $('html').addClass('is-logged-in');
 
-      accountLink
-        .attr('href', '/profile.html')
+      userBtn
         .attr('title', 'My Account — ' + user.name)
-        .removeClass('header-login-link')
-        .addClass('icon-btn filled')
-        .html('<i class="fas fa-user"></i>')
-        .css({
-          'display': 'flex',
-          'align-items': 'center',
-          'justify-content': 'center',
-          'width': '40px',
-          'height': '40px',
-          'border-radius': '50%',
-          'background': '#111',
-          'color': '#fff',
-          'font-size': '1.1rem',
-          'text-decoration': 'none'
-        });
+        .find('i').attr('class', 'fas fa-user');
 
       if (user.role === 'admin') {
         const adminBtn = $('<a href="/admin.html" class="icon-btn" id="admin-nav-btn" title="Admin Dashboard" style="font-size:1.3rem; color:var(--coral); text-decoration:none; display:flex; align-items:center; justify-content:center; width:40px; height:40px; margin-right:8px;"><i class="fas fa-tachometer-alt"></i></a>');
-        accountLink.before(adminBtn);
+        userBtn.before(adminBtn);
       }
 
       loadNotifications();
+
+      // Mobile Drawer
+      const mobileLogin = $('#mobile-nav-auth-login');
+      const mobileUser = $('#mobile-nav-auth-user');
+      if (mobileLogin.length) {
+        // Classes handled by CSS html.is-logged-in
+      }
     } else {
-      accountLink
-        .attr('href', '/login.html')
-        .attr('title', 'Sign In')
-        .removeClass('icon-btn filled')
-        .addClass('btn btn-dark rounded-pill px-4')
-        .text('Login / Sign Up')
-        .removeAttr('style')
-        .css({
-          'font-size': '0.9rem',
-          'font-weight': '600',
-          'color': '#fff',
-          'text-decoration': 'none'
-        });
+      localStorage.removeItem('electrohub_user');
+      $('html').removeClass('is-logged-in');
+      
+      // Mobile Drawer
+      const mobileLogin = $('#mobile-nav-auth-login');
+      const mobileUser = $('#mobile-nav-auth-user');
     }
   });
 }
 window.checkAuthState = checkAuthState;
 
 function loadNotifications() {
-  if (!$('#nav-account').length) return;
-
   $.get('/api/notifications').done(function (res) {
-    $('#nav-notifications-btn').remove();
     const unread = res.unreadCount || 0;
-    const btn = $(`
-      <a href="/profile.html#notifications" id="nav-notifications-btn" title="Notifications" style="font-size:1.2rem;color:var(--charcoal);text-decoration:none;position:relative;display:flex;align-items:center;justify-content:center;width:40px;height:40px;margin-right:8px;">
-        <i class="far fa-bell"></i>
-        <span style="position:absolute;top:2px;right:0;background:#ef4444;color:#fff;font-size:.62rem;font-weight:700;min-width:18px;height:18px;border-radius:9px;display:${unread ? 'flex' : 'none'};align-items:center;justify-content:center;">${unread}</span>
-      </a>`);
-    $('#nav-account').before(btn);
+    localStorage.setItem('electrohub_unread_count', unread);
+    updateNotificationIcon(unread);
+  }).fail(function () {
+    const cached = localStorage.getItem('electrohub_unread_count') || 0;
+    updateNotificationIcon(cached);
   });
 }
 window.loadNotifications = loadNotifications;
+
+function updateNotificationIcon(unread) {
+  const badge = $('#nav-notifications-count');
+  if (badge.length) {
+    badge.text(unread).css('display', 'flex');
+  }
+  
+  const onNotificationPage = window.location.pathname.includes('profile.html') && window.location.hash === '#notifications';
+  const icon = $('#nav-notifications-btn i');
+  
+  if (unread > 0 || onNotificationPage) {
+    icon.removeClass('far').addClass('fas text-coral');
+    $('html').addClass('has-notifications');
+  } else {
+    icon.removeClass('fas text-coral').addClass('far');
+    $('html').removeClass('has-notifications');
+  }
+}
+window.addEventListener('hashchange', loadNotifications);
 
 // ── CART STATE & SYNC ─────────────────────────
 window.globalCart = [];
 
 function updateCartBadge() {
   $.get('/api/cart').done(function (res) {
-    window.globalCart = res.items || [];
-    const count = window.globalCart.length;
-    $('#nav-cart-count').text(count).css('display', 'flex');
+    const items = res.items || [];
+    window.globalCart = items;
+    const count = items.length;
+    localStorage.setItem('electrohub_cart_count', count);
+    updateCartIcon(count);
 
     // Trigger a global event so other components (like shop grid) can re-render if needed
     $(document).trigger('cartUpdated', [window.globalCart]);
   });
 }
+
+function updateCartIcon(count) {
+  $('#nav-cart-count').text(count).css('display', 'flex');
+
+  const onCartPage = window.location.pathname.includes('cart.html');
+  const icon = $('a[href="cart.html"] i');
+
+  if (count > 0 || onCartPage) {
+    icon.addClass('fas text-coral').removeClass('far icon-stroke');
+    $('html').addClass('has-cart-items');
+  } else {
+    icon.addClass('fas icon-stroke').removeClass('far text-coral');
+    $('html').removeClass('has-cart-items');
+  }
+
+  // Update Mobile Drawer
+  const mobileCartLink = $('#mobile-nav-cart');
+  if (mobileCartLink.length) {
+    mobileCartLink.html(`<i class="fas ${count > 0 || onCartPage ? 'text-coral' : 'icon-stroke'} fa-shopping-bag"></i> Cart (${count})`);
+  }
+}
 window.updateCartBadge = updateCartBadge;
 
-function getCartButtonHtml(productId) {
+function getCartButtonHtml(productId, stock = 1) {
   const item = window.globalCart.find(i => i.product_id === parseInt(productId));
   if (item) {
     return `
@@ -169,6 +197,14 @@ function getCartButtonHtml(productId) {
         <button class="btn-qty-mini plus" style="width:32px; height:32px; border-radius:50%; border:none; background:#0062FF; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:bold; box-shadow:var(--shadow-sm);"><i class="fas fa-plus" style="font-size:0.7rem;"></i></button>
       </div>`;
   }
+  
+  if (stock <= 0) {
+    return `
+      <button class="btn btn-secondary rounded-pill px-3 py-2 disabled" style="font-size:0.75rem; background:#f1f5f9; color:#94a3b8; border:1px solid #e2e8f0; cursor:not-allowed; height:44px; display:flex; align-items:center; justify-content:center; font-weight:700;" disabled>
+        Out of Stock
+      </button>`;
+  }
+
   return `
     <button class="btn btn-primary rounded-circle shadow-none add-to-cart-btn" data-id="${productId}" style="width:44px; height:44px; display:flex; align-items:center; justify-content:center; background:#0062FF; border:none;">
         <i class="fas fa-shopping-cart"></i>
@@ -213,7 +249,7 @@ $(document).on('click', '.quick-view-btn', function () {
     // Quantity controls in modal
     const cartWrapper = $('#qv-cart-btn-wrapper');
     if (cartWrapper.length) {
-      cartWrapper.html(getCartButtonHtml(p.id));
+      cartWrapper.html(getCartButtonHtml(p.id, p.stock));
     }
 
     // Initialize Wishlist Button
@@ -541,8 +577,19 @@ window.getStoredWishlist = getStoredWishlist;
 
 function updateWishlistBadge() {
   const w = getStoredWishlist();
+  const count = w.length;
   const badge = $('#nav-wishlist-count');
-  badge.text(w.length).css('display', 'flex');
+  badge.text(count).css('display', 'flex');
+  
+  const onWishlistPage = window.location.pathname.includes('wishlist.html');
+  const icon = $('a[href="wishlist.html"] i');
+  if (count > 0 || onWishlistPage) {
+    icon.removeClass('far').addClass('fas text-coral');
+    $('html').addClass('has-wishlist-items');
+  } else {
+    icon.removeClass('fas text-coral').addClass('far');
+    $('html').removeClass('has-wishlist-items');
+  }
 }
 window.updateWishlistBadge = updateWishlistBadge;
 
@@ -558,12 +605,12 @@ $(document).on('click', '.wishlist-toggle, #qv-wishlist-btn', function (e) {
 
   if (isActive) {
     w = w.filter(item => String(item) !== String(id));
-    icon.removeClass('fas').addClass('far');
+    icon.removeClass('fas text-coral').addClass('far');
     btn.removeClass('active');
     showToast('Removed from wishlist.', 'error');
   } else {
     w.push(id);
-    icon.removeClass('far').addClass('fas');
+    icon.removeClass('far').addClass('fas text-coral');
     btn.addClass('active');
     showToast('Added to wishlist! ❤️', 'success');
   }
@@ -605,13 +652,14 @@ function loadFeaturedProducts() {
                     <div class="product-name fw-bold mb-2" title="${p.name}" style="font-size:1.1rem; line-height:1.3; color:var(--charcoal);">
                     <a href="javascript:void(0)" class="quick-view-btn text-dark text-decoration-none" data-id="${p.id}">${p.name}</a>
                     </div>
-                    <div class="d-flex align-items-center mb-3 quick-view-btn" data-id="${p.id}" data-show-reviews="true" style="font-size:0.8rem; color:#f59e0b; cursor:pointer;">
+                    <div class="d-flex align-items-center mb-1 quick-view-btn" data-id="${p.id}" data-show-reviews="true" style="font-size:0.8rem; color:#f59e0b; cursor:pointer;">
                       ${getRatingHtml(p.reviews_data)}
                     </div>
+                    ${p.stock > 0 && p.stock < 10 ? `<div class="mt-1 mb-2" style="font-size:0.75rem; color:#ef4444; font-weight:700;"><i class="fas fa-fire-alt me-1"></i> Only ${p.stock} left in stock!</div>` : ''}
                     <div class="d-flex justify-content-between align-items-center mt-auto pt-2">
                     <div class="product-price fw-bold" style="font-size:1.25rem;">$${parseFloat(p.price).toFixed(2)}</div>
                     <div class="cart-btn-wrapper">
-                      ${getCartButtonHtml(p.id)}
+                      ${getCartButtonHtml(p.id, p.stock)}
                     </div>
                     </div>
                 </div>
@@ -733,13 +781,28 @@ function initBurgerMenu() {
   const overlay = document.getElementById('mobile-drawer-overlay');
   const closeBtn = document.getElementById('drawer-close-btn');
 
-  if (!burgerBtn || !drawer) return; // not on a page with the drawer
+  if (!burgerBtn || !drawer) return;
+
+  // ── AUTO-HIGHLIGHT ACTIVE LINK ──────────
+  const currentPath = window.location.pathname.split('/').pop() || 'index.html';
+  const currentHash = window.location.hash;
+  const navLinks = drawer.querySelectorAll('.mobile-nav a');
+
+  navLinks.forEach(link => {
+    const href = link.getAttribute('href');
+    if (href === currentPath || (currentHash && href.includes(currentHash))) {
+      link.classList.add('active');
+    } else if (currentPath === 'index.html' && href === 'index.html') {
+      link.classList.add('active');
+    } else {
+      link.classList.remove('active');
+    }
+  });
 
   function openDrawer() {
     drawer.classList.add('open');
     overlay.classList.add('open');
     burgerBtn.classList.add('open');
-    // iOS-safe scroll lock: freeze body at current position
     const scrollY = window.scrollY;
     document.body.style.top = '-' + scrollY + 'px';
     document.body.classList.add('drawer-open');
@@ -749,7 +812,6 @@ function initBurgerMenu() {
     drawer.classList.remove('open');
     overlay.classList.remove('open');
     burgerBtn.classList.remove('open');
-    // Restore scroll position
     const scrollY = parseInt(document.body.style.top || '0') * -1;
     document.body.classList.remove('drawer-open');
     document.body.style.top = '';
@@ -802,6 +864,8 @@ function loadTestimonials() {
 
   $.get('/api/products/testimonials/all').done(function (data) {
     let html = '';
+    // Randomize the order of reviews on every refresh
+    data.sort(() => Math.random() - 0.5);
     data.forEach(t => {
       let stars = '';
       for (let i = 1; i <= 5; i++) {
@@ -849,6 +913,41 @@ function loadTestimonials() {
       },
     });
   }).fail(() => console.error('Failed to load testimonials.'));
+}
+
+function loadAuthTestimonial() {
+  const card = $('#auth-testimonial-card');
+  if (!card.length) return;
+
+  $.get('/api/products/testimonials/all').done(function (data) {
+    if (!data || !data.length) {
+      card.css('opacity', '1');
+      return;
+    }
+    // Pick one random review
+    const t = data[Math.floor(Math.random() * data.length)];
+    
+    $('#auth-reviewer-avatar').text(t.avatar_initials);
+    $('#auth-reviewer-name').text(t.name);
+    
+    // Generate a realistic "Member since" year based on the record date
+    const baseYear = new Date(t.created_at || Date.now()).getFullYear();
+    const joinYear = baseYear - (Math.floor(Math.random() * 5) + 1); // 1-5 years ago
+    $('#auth-reviewer-role').text(`Member since ${joinYear}`);
+    
+    $('#auth-review-text').text(`"${t.message}"`);
+    
+    let stars = '';
+    for (let i = 1; i <= 5; i++) {
+      stars += `<i class="${i <= t.rating ? 'fas' : 'far'} fa-star"></i> `;
+    }
+    $('#auth-review-stars').html(stars);
+
+    // Fade in
+    card.css('opacity', '1');
+  }).fail(function() {
+    card.css('opacity', '1'); // Show whatever is there if API fails
+  });
 }
 
 // ── LIVE SEARCH ───────────────────────────────
@@ -957,15 +1056,31 @@ function initNewsletter() {
   });
 }
 
+// ── NAVBAR INSTANT STATE ──────────────────────
+function initNavbarIcons() {
+  // 1. Notifications
+  const cachedUnread = parseInt(localStorage.getItem('electrohub_unread_count') || '0');
+  updateNotificationIcon(cachedUnread);
+
+  // 2. Cart
+  const cachedCart = parseInt(localStorage.getItem('electrohub_cart_count') || '0');
+  updateCartIcon(cachedCart);
+
+  // 3. Wishlist
+  updateWishlistBadge(); // Already reads from localStorage
+}
+
 // ── INIT ──────────────────────────────────────
 $(document).ready(function () {
-  $.ajaxSetup({ cache: false }); // Prevent browser from caching API GET requests
+  $.ajaxSetup({ cache: false });
+  initNavbarIcons(); // Run immediately to prevent flicker
   checkAuthState();
   updateCartBadge();
   updateWishlistBadge();
   loadFeaturedProducts();
   loadCategories();
   loadTestimonials();
+  loadAuthTestimonial();
   initNewsletter();
   initBackToTop();
   updateCopyrightYear();
@@ -990,6 +1105,13 @@ $(document).ready(function () {
       $('#qv-cart-btn-wrapper').html(getCartButtonHtml(window.currentQvProductId));
     }
   });
+});
+
+// Force refresh when navigating back/forward (handles browser cache)
+window.addEventListener('pageshow', function (event) {
+  if (typeof checkAuthState === 'function') checkAuthState();
+  if (typeof updateCartBadge === 'function') updateCartBadge();
+  if (typeof updateWishlistBadge === 'function') updateWishlistBadge();
 });
 
 function initStickyHeader() {

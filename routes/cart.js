@@ -64,16 +64,21 @@ router.post('/add', async (req, res) => {
 
   if (!req.session.cart) req.session.cart = [];
 
+  const existingIndex = req.session.cart.findIndex(i => i.product_id === productId);
+  const currentQtyInCart = existingIndex > -1 ? req.session.cart[existingIndex].quantity : 0;
+  const totalRequested = currentQtyInCart + qty;
+
   try {
-    const productCheck = await db.query('SELECT id, stock FROM products WHERE id = $1', [productId]);
+    const productCheck = await db.query('SELECT name, stock FROM products WHERE id = $1', [productId]);
     if (productCheck.rows.length === 0) return res.status(404).json({ error: 'Product not found.' });
-    if (productCheck.rows[0].stock < qty) return res.status(400).json({ error: 'Requested quantity exceeds available stock.' });
+    
+    if (productCheck.rows[0].stock < totalRequested) {
+      return res.status(400).json({ error: `Only ${productCheck.rows[0].stock} units of ${productCheck.rows[0].name} available.` });
+    }
   } catch (error) {
     console.error('Product check error:', error);
     return res.status(500).json({ error: 'Failed to validate product.' });
   }
-
-  const existingIndex = req.session.cart.findIndex(i => i.product_id === productId);
 
   if (existingIndex > -1) { // If product already in cart, increase quantity
     req.session.cart[existingIndex].quantity += qty;
@@ -135,13 +140,21 @@ router.post('/checkout', async (req, res) => {
 
     let totalAmount = 0;
 
-    // Check stock
+    // Check stock and calculate total
     for (const item of req.session.cart) {
       const p = prodMap[item.product_id];
-      if (!p || p.stock < item.quantity) {
-        throw new Error('Product ' + item.product_id + ' is out of stock or does not exist.');
+      if (!p) {
+        throw new Error(`Product ${item.product_id} no longer exists.`);
       }
-      totalAmount += p.price * item.quantity;
+      
+      const requestedQty = Number(item.quantity);
+      const availableStock = Number(p.stock);
+      
+      if (availableStock < requestedQty) {
+        throw new Error(`Not enough stock for "${p.name}". Only ${availableStock} left.`);
+      }
+      
+      totalAmount += p.price * requestedQty;
     }
 
     const couponDiscount = req.session.coupon ? Number.parseFloat(req.session.coupon.discount) || 0 : 0;
@@ -192,7 +205,7 @@ router.post('/checkout', async (req, res) => {
 
 // @route   POST /api/cart/update
 // @desc    Set quantity of an item
-router.post('/update', (req, res) => {
+router.post('/update', async (req, res) => {
   const productId = parsePositiveInteger(req.body.product_id);
   const parsedQuantity = Number.parseInt(req.body.quantity, 10);
   if (!productId || !Number.isInteger(parsedQuantity)) {
@@ -202,11 +215,26 @@ router.post('/update', (req, res) => {
   const idx = req.session.cart.findIndex(i => i.product_id === productId);
   if (idx === -1) return res.status(404).json({ error: 'Item not in cart' });
   if (parsedQuantity <= 0) { // Remove item if quantity set to 0 or less
-    req.session.cart.splice(idx, 1); // splice will modify the original array by removing the item at index idx
-  } else {
-    req.session.cart[idx].quantity = parsedQuantity;
+    req.session.cart.splice(idx, 1);
+    return res.json({ message: 'Item removed', cartCount: req.session.cart.length });
   }
-  res.json({ message: 'Cart updated', cartCount: req.session.cart.length });
+
+  // Stock check for update
+  try {
+    const productRes = await db.query('SELECT name, stock FROM products WHERE id = $1', [productId]);
+    if (productRes.rows.length === 0) return res.status(404).json({ error: 'Product not found' });
+    
+    const stock = productRes.rows[0].stock;
+    if (stock < parsedQuantity) {
+      return res.status(400).json({ error: `Only ${stock} units of ${productRes.rows[0].name} available.` });
+    }
+    
+    req.session.cart[idx].quantity = parsedQuantity;
+    res.json({ message: 'Cart updated', cartCount: req.session.cart.length });
+  } catch (err) {
+    console.error('Update cart stock check error:', err);
+    res.status(500).json({ error: 'Failed to update cart.' });
+  }
 });
 
 // @route   POST /api/cart/apply-coupon
