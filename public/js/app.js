@@ -297,7 +297,8 @@ $(document).on('click', '.quick-view-btn', function () {
         }
       }
       qvRatingStars.html(globalStars);
-      toggleBtn.text(`(${p.reviews_data.length} reviews)`).show();
+      const reviewWord = p.reviews_data.length === 1 ? 'review' : 'reviews';
+      toggleBtn.text(`(${p.reviews_data.length} ${reviewWord})`).show();
 
       let reviewsHtml = '';
       p.reviews_data.forEach(rev => {
@@ -441,7 +442,8 @@ function initReviewForm(productId) {
                 </div>`;
             });
             $('#qv-reviews-list').html(rHtml);
-            $('#qv-toggle-reviews').text(`(${p.reviews_data.length} reviews)`).show();
+            const rWord = p.reviews_data.length === 1 ? 'review' : 'reviews';
+            $('#qv-toggle-reviews').text(`(${p.reviews_data.length} ${rWord})`).show();
             // Auto-show the reviews section
             $('#qv-reviews-container').slideDown();
           });
