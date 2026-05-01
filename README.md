@@ -9,6 +9,7 @@ ElectroHub is a full-stack electronics store built with Node.js, Express, Postgr
 ## Features
 
 - Secure registration, login, logout, password reset, profile update, and password change flows.
+- Google OAuth integration for quick login and registration ("Continue with Google").
 - Session-backed cart with server-side product price and stock validation.
 - Transactional checkout with order and order item records.
 - Coupon validation through the database-backed `/api/cart/apply-coupon` endpoint.
