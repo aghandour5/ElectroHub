@@ -1,5 +1,5 @@
 -- ElectroHub Database Export
--- Generated on 5/1/2026, 6:42:39 PM
+-- Generated on 5/2/2026, 10:19:18 AM
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -7,7 +7,6 @@ SET idle_in_transaction_session_timeout = 0;
 SET client_encoding = 'UTF8';
 
 -- Table: users
-INSERT INTO users (id, name, email, password_hash, role, created_at, phone, address, reset_token, reset_token_expiry) VALUES (1, 'System Admin', 'admin@electrohub.com', '$2b$10$CzG34ATfaqFA5D43kJsNYey5jUrOcpXh7g.ZfnUAiNkc3lV75ZPE2', 'admin', '2026-04-24T08:44:51.700Z', NULL, NULL, NULL, NULL) ON CONFLICT DO NOTHING;
 INSERT INTO users (id, name, email, password_hash, role, created_at, phone, address, reset_token, reset_token_expiry) VALUES (4, 'Chris P.', 'chrisp@electrohub.local', '$2b$10$udQwkfVFcAqPlTbYyLNmPuEOpJQwSkzrTo2MLHw4SUbXZCpC/mM9S', 'customer', '2026-04-26T03:28:02.234Z', NULL, NULL, NULL, NULL) ON CONFLICT DO NOTHING;
 INSERT INTO users (id, name, email, password_hash, role, created_at, phone, address, reset_token, reset_token_expiry) VALUES (5, 'Amanda J.', 'amandaj@electrohub.local', '$2b$10$udQwkfVFcAqPlTbYyLNmPuEOpJQwSkzrTo2MLHw4SUbXZCpC/mM9S', 'customer', '2026-04-26T03:28:02.234Z', NULL, NULL, NULL, NULL) ON CONFLICT DO NOTHING;
 INSERT INTO users (id, name, email, password_hash, role, created_at, phone, address, reset_token, reset_token_expiry) VALUES (6, 'Emily R.', 'emilyr@electrohub.local', '$2b$10$udQwkfVFcAqPlTbYyLNmPuEOpJQwSkzrTo2MLHw4SUbXZCpC/mM9S', 'customer', '2026-04-26T03:28:02.234Z', NULL, NULL, NULL, NULL) ON CONFLICT DO NOTHING;
@@ -18,6 +17,7 @@ INSERT INTO users (id, name, email, password_hash, role, created_at, phone, addr
 INSERT INTO users (id, name, email, password_hash, role, created_at, phone, address, reset_token, reset_token_expiry) VALUES (11, 'Ryan S.', 'ryans@electrohub.local', '$2b$10$udQwkfVFcAqPlTbYyLNmPuEOpJQwSkzrTo2MLHw4SUbXZCpC/mM9S', 'customer', '2026-04-26T03:28:02.234Z', NULL, NULL, NULL, NULL) ON CONFLICT DO NOTHING;
 INSERT INTO users (id, name, email, password_hash, role, created_at, phone, address, reset_token, reset_token_expiry) VALUES (12, 'Alex T.', 'alext@electrohub.local', '$2b$10$udQwkfVFcAqPlTbYyLNmPuEOpJQwSkzrTo2MLHw4SUbXZCpC/mM9S', 'customer', '2026-04-26T03:28:02.234Z', NULL, NULL, NULL, NULL) ON CONFLICT DO NOTHING;
 INSERT INTO users (id, name, email, password_hash, role, created_at, phone, address, reset_token, reset_token_expiry) VALUES (13, 'Sarah M.', 'sarahm@electrohub.local', '$2b$10$udQwkfVFcAqPlTbYyLNmPuEOpJQwSkzrTo2MLHw4SUbXZCpC/mM9S', 'customer', '2026-04-26T03:28:02.234Z', NULL, NULL, NULL, NULL) ON CONFLICT DO NOTHING;
+INSERT INTO users (id, name, email, password_hash, role, created_at, phone, address, reset_token, reset_token_expiry) VALUES (1, 'System Admin', 'admin@electrohub.com', '$2b$10$uuYbH5sP2/ZqbxJKvgVYged4U9nwtx4MLlIoy5FfH1D8OAhZfJuFG', 'admin', '2026-04-24T08:44:51.700Z', NULL, NULL, NULL, NULL) ON CONFLICT DO NOTHING;
 
 -- Table: categories
 INSERT INTO categories (id, name, slug) VALUES (5, 'Computing', 'computing') ON CONFLICT DO NOTHING;
