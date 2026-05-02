@@ -1858,6 +1858,11 @@ html.is-logged-in #nav-account-user {
   background: #333;
 }
 
+.mobile-cart-btn .icon-stroke {
+  -webkit-text-stroke: 0;
+  color: #fff !important;
+}
+
 /* ── RESPONSIVE ───────────────────────────── */
 
 /* Prevent horizontal overflow on all screen sizes */
@@ -1919,11 +1924,6 @@ body.drawer-open {
   .header-divider {
     display: none !important;
   }
-
-
-
-
-
 
   /* Quick View Modal stacking */
   .modal-dialog.modal-lg {
