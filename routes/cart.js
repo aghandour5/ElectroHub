@@ -129,11 +129,18 @@ router.post('/checkout', async (req, res) => {
   // Start Transaction
   const client = await db.connect();
   try {
+    // Verify user still exists in DB (to prevent foreign key errors if user was deleted)
+    const userExists = await client.query('SELECT id FROM users WHERE id = $1', [req.session.user.id]);
+    if (userExists.rows.length === 0) {
+      req.session.destroy();
+      return res.status(401).json({ error: 'Your account no longer exists. Please register again.' });
+    }
+
     await client.query('BEGIN');
 
     // Calculate total from DB prices
-    const productIds = req.session.cart.map(i => i.product_id); // map will return an array of product IDs from the cart
-    const dbProds = await client.query('SELECT id, price, stock FROM products WHERE id = ANY($1::int[])', [productIds]);
+    const productIds = req.session.cart.map(i => i.product_id);
+    const dbProds = await client.query('SELECT id, name, price, stock FROM products WHERE id = ANY($1::int[])', [productIds]);
 
     let prodMap = {}; // dict to quickly lookup product details by ID
     dbProds.rows.forEach(p => prodMap[p.id] = p);
@@ -195,9 +202,11 @@ router.post('/checkout', async (req, res) => {
     res.json({ message: 'Order placed successfully!', orderId: orderId });
 
   } catch (error) {
-    await client.query('ROLLBACK'); // Undo any changes if error occurs
+    if (client) await client.query('ROLLBACK');
     console.error('Checkout error:', error);
-    res.status(500).json({ error: error.message || 'Checkout failed.' });
+    // Return a user-friendly message, but log the real error on the server
+    const userMessage = error.message && !error.message.includes('violates') ? error.message : 'Something went wrong during checkout. Please try again.';
+    res.status(500).json({ error: userMessage });
   } finally {
     client.release();
   }

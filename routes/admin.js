@@ -164,7 +164,7 @@ router.post('/products', upload.single('image'), async (req, res) => {
       body: req.body,
       file: req.file ? req.file.originalname : 'none'
     });
-    res.status(500).json({ error: `Failed to add product: ${error.message}` });
+    res.status(500).json({ error: 'Failed to add product. Please check your data and try again.' });
   }
 });
 
@@ -183,7 +183,7 @@ router.put('/products/:id', async (req, res) => {
     res.json({ message: 'Product updated' });
   } catch (error) {
     console.error('Update Product Error:', error);
-    res.status(500).json({ error: `Failed to update product: ${error.message}` });
+    res.status(500).json({ error: 'Failed to update product.' });
   }
 });
 

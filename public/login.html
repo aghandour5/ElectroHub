@@ -84,9 +84,7 @@
 
       <!-- Login Form -->
       <div id="form-login">
-        
-<div id="login-error" class="alert alert-danger py-2 d-none" style="font-size:.88rem;border-radius:var(--radius-sm);"></div>
-
+        <div id="login-error" class="alert alert-danger py-2 d-none" style="font-size:.88rem;border-radius:var(--radius-sm);"></div>
         <button class="btn btn-outline-dark w-100 mb-3" id="google-login-btn" style="border-radius:var(--radius-sm); padding:10px; font-weight: 500; border-color: #d1d5db; color: #374151; background: #fff;">
           <img src="https://www.google.com/favicon.ico" style="width:18px; margin-right:8px; vertical-align:text-bottom;"> Continue with Google
         </button>
@@ -115,9 +113,7 @@
 
       <!-- Register Form -->
       <div id="form-register" style="display:none;">
-        
-<div id="register-error" class="alert alert-danger py-2 d-none" style="font-size:.88rem;border-radius:var(--radius-sm);"></div>
-
+        <div id="register-error" class="alert alert-danger py-2 d-none" style="font-size:.88rem;border-radius:var(--radius-sm);"></div>
         <button class="btn btn-outline-dark w-100 mb-3" id="google-register-btn" style="border-radius:var(--radius-sm); padding:10px; font-weight: 500; border-color: #d1d5db; color: #374151; background: #fff;">
           <img src="https://www.google.com/favicon.ico" style="width:18px; margin-right:8px; vertical-align:text-bottom;"> Continue with Google
         </button>
@@ -174,7 +170,6 @@
   </div>
 </div>
 
-
 <footer class="site-footer">
   <div class="container">
     <div class="row g-5">
@@ -225,13 +220,26 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/app.js"></script>
 <script>
-  // Initialize Supabase synchronously with public keys (anon key is safe to expose client-side)
-  const SUPABASE_URL = 'https://jvspaoznulktgnvmarce.supabase.co';
-  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2c3Bhb3pudWxrdGdudm1hcmNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcwMjgzMDMsImV4cCI6MjA5MjYwNDMwM30.Zn9uvDaoTBdAeC954_CnEflVBWatQ36X2WbqsMAWJ8o';
-  const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  // Initialize Supabase dynamically by fetching public keys from the server
+  let supabaseClient;
 
-  // Check for OAuth or password-reset callback on page load
-  (async function checkOAuthCallback() {
+  async function initSupabase() {
+    try {
+      const config = await $.get('/api/auth/config');
+      supabaseClient = window.supabase.createClient(config.url, config.anonKey);
+      
+      // Now that client is ready, check for callbacks or session
+      await checkOAuthCallback();
+    } catch (err) {
+      console.error('Failed to initialize Supabase client:', err);
+      $('#login-error').text('Authentication service is currently unavailable.').removeClass('d-none');
+    }
+  }
+
+  // Check for OAuth or password-reset callback
+  async function checkOAuthCallback() {
+    if (!supabaseClient) return;
+
     const hashStr = window.location.hash.substring(1);
     const hashParams = new URLSearchParams(hashStr);
 
@@ -249,7 +257,10 @@
         syncSession(data.session.access_token);
       }
     }
-  })();
+  }
+
+  // Run initialization
+  initSupabase();
 
   // After Supabase login (email or Google), sync the session to the Express backend
   async function syncSession(accessToken) {
@@ -272,6 +283,8 @@
 
   // Google OAuth Login / Register
   $('#google-login-btn, #google-register-btn').on('click', async function() {
+    if (!supabaseClient) return;
+
     $(this).prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i> Redirecting…');
     const { error } = await supabaseClient.auth.signInWithOAuth({
       provider: 'google',
@@ -336,6 +349,8 @@
 
   // Email/Password Login via Supabase
   $('#login-btn').on('click', async function () {
+    if (!supabaseClient) return;
+
     const email = $('#login-email').val().trim();
     const password = $('#login-password').val();
     if (!email || !password) { $('#login-error').text('Please fill in all fields.').removeClass('d-none'); return; }
@@ -351,6 +366,8 @@
 
   // Email/Password Register via Supabase
   $('#register-btn').on('click', async function () {
+    if (!supabaseClient) return;
+
     const name = $('#reg-name').val().trim();
     const email = $('#reg-email').val().trim();
     const password = $('#reg-password').val();
@@ -372,6 +389,8 @@
 
   // Forgot Password via Supabase
   $('#forgot-btn').on('click', async function () {
+    if (!supabaseClient) return;
+
     const email = $('#forgot-email').val().trim();
     if (!email) { $('#forgot-error').text('Please provide an email.').removeClass('d-none'); return; }
     $('#forgot-error, #forgot-message').addClass('d-none');
@@ -389,6 +408,8 @@
 
   // Update Password via Supabase (after redirect from reset email)
   $('#reset-btn').on('click', async function () {
+    if (!supabaseClient) return;
+
     const newPassword = $('#reset-password').val();
     if (newPassword.length < 8) { $('#reset-error').text('Password must be at least 8 characters.').removeClass('d-none'); return; }
     $('#reset-error').addClass('d-none');
@@ -418,7 +439,3 @@
 </script>
 </body>
 </html>
-
-
-
-
