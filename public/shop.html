@@ -85,7 +85,6 @@
       </nav>
     </div>
   </div>
-  </div>
 </header>
 
 <!-- â”€â”€ MOBILE DRAWER â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
@@ -163,9 +162,9 @@
 
           <div class="filter-block mb-4">
             <h6 class="fw-bold mb-3">Search products</h6>
-            <div class="input-group">
-              <input type="text" id="shop-search" class="form-control bg-light border-0 shadow-none" placeholder="Search products..." style="padding:10px 16px; border-radius:8px 0 0 8px;">
-              <button class="btn bg-light border-0 text-muted" style="border-radius:0 8px 8px 0;"><i class="fas fa-search"></i></button>
+            <div class="d-flex shadow-sm" style="border-radius:8px; overflow:hidden; border:1px solid #eee;">
+              <input type="text" id="shop-search" class="form-control bg-light border-0 shadow-none flex-grow-1" placeholder="Search products..." style="padding:10px 16px; border-radius:8px;">
+              <button class="btn bg-light border-0 text-muted d-none d-md-flex" style="border-radius:0 8px 8px 0; align-items:center; justify-content:center;"><i class="fas fa-search"></i></button>
             </div>
           </div>
 
@@ -593,10 +592,3 @@ $(document).ready(function () {
 </footer>
 </body>
 </html>
-
-
-
-
-
-
-

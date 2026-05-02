@@ -1783,13 +1783,7 @@ html.is-logged-in #nav-account-user {
 }
 
 .mobile-search button {
-  background: var(--charcoal);
-  color: #fff;
-  border: none;
-  padding: 0 16px;
-  height: 46px;
-  cursor: pointer;
-  font-size: 1rem;
+  display: none;
 }
 
 .mobile-nav {

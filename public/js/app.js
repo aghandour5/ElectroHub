@@ -954,7 +954,7 @@ function loadAuthTestimonial() {
 
 // ── LIVE SEARCH ───────────────────────────────
 function initLiveSearch() {
-  const searchInputs = $('#global-search, #mobile-search-input');
+  const searchInputs = $('#global-search, #mobile-search-input, #shop-search');
   if (!searchInputs.length) return;
 
   // Ensure parent has relative position for dropdown alignment
@@ -1017,6 +1017,21 @@ function initLiveSearch() {
   // Re-enable Quick View for search results since they are dynamically added
   $(document).on('click', '.search-suggestion-item', function () {
     $('.search-results-dropdown').removeClass('show');
+  });
+
+  // Handle Enter key for search
+  searchInputs.on('keydown', function (e) {
+    if (e.key === 'Enter') {
+      const query = $(this).val().trim();
+      if (query) {
+        // If we're on the shop page and using the shop-search input, just trigger filters and blur
+        if (window.location.pathname.includes('shop.html') && $(this).attr('id') === 'shop-search') {
+          $(this).blur();
+          return;
+        }
+        window.location.href = 'shop.html?search=' + encodeURIComponent(query);
+      }
+    }
   });
 }
 
