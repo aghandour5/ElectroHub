@@ -1861,6 +1861,12 @@ html.is-logged-in #nav-account-user {
 .mobile-cart-btn .icon-stroke {
   -webkit-text-stroke: 0;
   color: #fff !important;
+  transition: color var(--t);
+}
+
+.mobile-cart-btn:hover .icon-stroke,
+.mobile-cart-btn:active .icon-stroke {
+  color: var(--coral) !important;
 }
 
 /* ── RESPONSIVE ───────────────────────────── */
