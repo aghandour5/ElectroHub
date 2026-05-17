@@ -5,8 +5,8 @@ const crypto = require('crypto'); // crypto for generating secure tokens for pas
 const { Resend } = require('resend'); // Resend SDK for sending transactional emails (like password resets)
 const rateLimit = require('express-rate-limit'); // Rate limiting to prevent brute-force attacks
 const db = require('../config/db');
-const { passwordResetEmail } = require('../config/emailTemplates');
-const { createClient } = require('@supabase/supabase-js');
+const { passwordResetEmail } = require('../config/emailTemplates'); // Email template for password reset emails
+const { createClient } = require('@supabase/supabase-js'); // Supabase client for backend verification of access tokens
 
 // Initialize Resend with API key from environment
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -16,7 +16,7 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const EMAIL_FROM = process.env.RESEND_FROM_EMAIL || 'ElectroHub <onboarding@resend.dev>';
 
 function cleanString(value) {
-  return typeof value === 'string' ? value.trim() : '';
+  return typeof value === 'string' ? value.trim() : ''; // Basic sanitation to prevent leading/trailing whitespace and ensure it's a string. This helps maintain data consistency and can prevent certain types of injection attacks when used properly in database queries.
 }
 
 function isValidEmail(email) {
