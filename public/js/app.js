@@ -100,19 +100,9 @@ function checkAuthState() {
 
       loadNotifications();
 
-      // Mobile Drawer
-      const mobileLogin = $('#mobile-nav-auth-login');
-      const mobileUser = $('#mobile-nav-auth-user');
-      if (mobileLogin.length) {
-        // Classes handled by CSS html.is-logged-in
-      }
     } else {
       localStorage.removeItem('electrohub_user');
       $('html').removeClass('is-logged-in');
-      
-      // Mobile Drawer
-      const mobileLogin = $('#mobile-nav-auth-login');
-      const mobileUser = $('#mobile-nav-auth-user');
     }
   });
 }

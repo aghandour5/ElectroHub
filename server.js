@@ -23,7 +23,7 @@ app.use(express.json()); // Parse JSON bodies
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
 app.use(express.static(path.join(__dirname, 'public'))); // Serve HTML/CSS/JS
 
-// Session Config (For Shopping Cart and Authentication State)
+// Session Config (cookie) (For Shopping Cart and Authentication State)
 app.use(session({
   secret: sessionSecret,
   resave: false, // Don't save session if unmodified

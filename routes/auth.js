@@ -13,6 +13,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 // Initialize Supabase Client for backend verification
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const EMAIL_FROM = process.env.RESEND_FROM_EMAIL || 'ElectroHub <onboarding@resend.dev>';
 
 function cleanString(value) {
   return typeof value === 'string' ? value.trim() : '';
@@ -22,6 +23,29 @@ function isValidEmail(email) {
   return EMAIL_REGEX.test(email);
 }
 
+function getPublicUrl(req) {
+  return process.env.PUBLIC_URL || `${req.protocol}://${req.get('host')}`;
+}
+
+async function findSupabaseUserByEmail(email) {
+  const normalizedEmail = email.toLowerCase();
+  let page = 1;
+  const perPage = 100;
+
+  while (page <= 10) {
+    const { data, error } = await supabase.auth.admin.listUsers({ page, perPage });
+    if (error) throw error;
+
+    const users = data?.users || [];
+    const match = users.find(user => user.email?.toLowerCase() === normalizedEmail);
+    if (match) return match;
+    if (users.length < perPage) return null;
+    page += 1;
+  }
+
+  return null;
+}
+
 // Rate limiter: max 10 auth attempts per 15 minutes per IP
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
@@ -29,63 +53,6 @@ const authLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Too many attempts from this IP, please try again after 15 minutes.' }
-});
-
-// @route   POST /api/auth/register
-// @desc    Register a new user
-router.post('/register', authLimiter, async (req, res) => {
-  const name = cleanString(req.body.name);
-  const email = cleanString(req.body.email).toLowerCase();
-  const password = typeof req.body.password === 'string' ? req.body.password : '';
-  
-  if (!name || !email || !password) {
-    return res.status(400).json({ error: 'Please enter all fields.' });
-  }
-
-  if (name.length < 2 || name.length > 120) {
-    return res.status(400).json({ error: 'Name must be between 2 and 120 characters.' });
-  }
-
-  if (!isValidEmail(email)) {
-    return res.status(400).json({ error: 'Please enter a valid email address.' });
-  }
-
-  if (password.length < 8) {
-    return res.status(400).json({ error: 'Password must be at least 8 characters.' });
-  }
-
-  try {
-    // Check if user exists
-    const userCheck = await db.query('SELECT * FROM users WHERE email = $1', [email]);
-    if (userCheck.rows.length > 0) {
-      return res.status(400).json({ error: 'User already exists with this email.' });
-    }
-
-    // Hash Password
-    const salt = await bcrypt.genSalt(10); // Generate salt with 10 rounds (default)
-    const hashedPassword = await bcrypt.hash(password, salt); // Hash the password with the generated salt
-
-    // Save to Database
-    const newUser = await db.query(
-      'INSERT INTO users (name, email, password_hash) VALUES ($1, $2, $3) RETURNING id, name, email, role',
-      [name, email, hashedPassword] // parameterized query to prevent SQL injection
-    );
-
-    // Log the user in via session
-    const user = newUser.rows[0];
-    req.session.user = { id: user.id, name: user.name, role: user.role };
-
-    await db.query(
-      'INSERT INTO notifications (user_id, message) VALUES ($1, $2)',
-      [user.id, 'Welcome to ElectroHub. Your account is ready.']
-    );
-
-    res.status(201).json({ message: 'Registration successful', user: req.session.user });
-
-  } catch (error) {
-    console.error('Registration Error:', error);
-    res.status(500).json({ error: 'Server error during registration.' });
-  }
 });
 
 // @route   POST /api/auth/login
@@ -144,21 +111,27 @@ router.post('/session-sync', async (req, res) => {
 
   try {
     // Verify the token with Supabase
-    const { data: { user }, error } = await supabase.auth.getUser(access_token);
+    const { data: { user }, error } = await supabase.auth.getUser(access_token); // This endpoint verifies the access token and retrieves the associated user information. If the token is valid, it returns the user object; otherwise, it returns an error.
     
     if (error || !user) {
       return res.status(401).json({ error: 'Invalid token.' });
     }
 
     // Find the user in our public.users table by email
-    let dbUserResult = await db.query('SELECT * FROM users WHERE email = $1', [user.email]);
+    let dbUserResult = await db.query('SELECT * FROM users WHERE email = $1', [user.email]); // We attempt to find the user in our local database using their email address. This is necessary because while Supabase handles authentication, we maintain our own users table for application-specific data and roles.
     
     // If the database trigger hasn't fired yet or the user doesn't exist, fallback to insert
     if (dbUserResult.rows.length === 0) {
         const name = user.user_metadata?.name || user.user_metadata?.full_name || 'User';
+        const placeholderHash = await bcrypt.hash(crypto.randomBytes(32).toString('hex'), 10); // Generate a random password hash since the actual password is managed by Supabase and not stored in our DB. This ensures the user record can be created without needing the real password.
         dbUserResult = await db.query(
-            'INSERT INTO users (name, email, role) VALUES ($1, $2, $3) RETURNING *',
-            [name, user.email, 'customer']
+            'INSERT INTO users (name, email, password_hash, role) VALUES ($1, $2, $3, $4) RETURNING *',
+            [name, user.email, placeholderHash, 'customer']
+        );
+
+        await db.query(
+          'INSERT INTO notifications (user_id, message) VALUES ($1, $2)',
+          [dbUserResult.rows[0].id, 'Welcome to ElectroHub. Your account is ready.']
         );
     }
 
@@ -327,35 +300,40 @@ router.put('/change-password', async (req, res) => {
 });
 
 // @route   POST /api/auth/forgot-password
-// @desc    Generate password reset token and send via Resend
+// @desc    Generate Supabase password recovery link and send via Resend
 router.post('/forgot-password', async (req, res) => {
   const email = cleanString(req.body.email).toLowerCase();
   if (!email) return res.status(400).json({ error: 'Please provide an email.' });
   if (!isValidEmail(email)) return res.status(400).json({ error: 'Please enter a valid email address.' });
 
   try {
-    const userResult = await db.query('SELECT id, name FROM users WHERE email = $1', [email]);
-    if (userResult.rows.length === 0) {
+    const authUser = await findSupabaseUserByEmail(email);
+    if (!authUser) {
       // For security, don't reveal if email exists
       return res.json({ message: 'If an account with that email exists, a password reset link has been sent.' });
     }
 
-    // Generate a cryptographically secure token
-    const resetToken = crypto.randomBytes(32).toString('hex');
-    const expiry = new Date(Date.now() + 3600000); // 1 hour from now
+    const { data, error: linkError } = await supabase.auth.admin.generateLink({
+      type: 'recovery',
+      email,
+      options: {
+        redirectTo: `${getPublicUrl(req)}/login.html`
+      }
+    });
 
-    await db.query(
-      'UPDATE users SET reset_token = $1, reset_token_expiry = $2 WHERE email = $3',
-      [resetToken, expiry, email]
-    );
+    if (linkError) throw linkError;
 
-    // Build the reset link (uses the current request origin)
-    const resetLink = `${req.protocol}://${req.get('host')}/reset-password.html?token=${resetToken}`;
-    const userName = userResult.rows[0].name;
+    const resetLink = data?.properties?.action_link;
+    if (!resetLink) {
+      return res.status(500).json({ error: 'Failed to create reset link. Please try again.' });
+    }
+
+    const userResult = await db.query('SELECT name FROM users WHERE email = $1', [email]);
+    const userName = authUser.user_metadata?.name || authUser.user_metadata?.full_name || userResult.rows[0]?.name || 'there';
 
     // Send the email via Resend using the branded template
     const { error: emailError } = await resend.emails.send({
-      from: 'ElectroHub <onboarding@resend.dev>',
+      from: EMAIL_FROM,
       to: email,
       subject: 'Reset Your ElectroHub Password',
       html: passwordResetEmail(userName, resetLink)

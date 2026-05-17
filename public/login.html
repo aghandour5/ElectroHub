@@ -371,39 +371,94 @@
     const name = $('#reg-name').val().trim();
     const email = $('#reg-email').val().trim();
     const password = $('#reg-password').val();
+    const emailRedirectTo = window.location.origin + '/login.html';
     if (!name || !email || !password) { $('#register-error').text('All fields are required.').removeClass('d-none'); return; }
     if (password.length < 8) { $('#register-error').text('Password must be at least 8 characters.').removeClass('d-none'); return; }
+    $('#register-error').addClass('d-none').removeClass('alert-success').addClass('alert-danger');
     $(this).prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i> Creating account…');
-    const { data, error } = await supabaseClient.auth.signUp({ email, password, options: { data: { name } } });
+
+    async function resendSignupConfirmation() {
+      const { error: resendError } = await supabaseClient.auth.resend({
+        type: 'signup',
+        email,
+        options: { emailRedirectTo }
+      });
+
+      if (resendError) {
+        const message = resendError.message || '';
+        if (message.toLowerCase().includes('confirm')) {
+          $('#register-error').text('This email is already confirmed. Please sign in.').removeClass('d-none');
+        } else {
+          $('#register-error').text(message).removeClass('d-none');
+        }
+        return;
+      }
+
+      $('#register-error')
+        .removeClass('alert-danger')
+        .addClass('alert-success')
+        .text('Confirmation email sent again. Please check your inbox and spam folder.')
+        .removeClass('d-none');
+    }
+
+    const { data, error } = await supabaseClient.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { name },
+        emailRedirectTo
+      }
+    });
+
     if (error) {
-      $('#register-error').text(error.message).removeClass('d-none');
-      $(this).prop('disabled', false).html('Create Account');
+      const message = error.message || '';
+      if (message.toLowerCase().includes('already') || message.toLowerCase().includes('registered')) {
+        await resendSignupConfirmation();
+      } else {
+        $('#register-error').text(message).removeClass('d-none');
+      }
     } else if (data?.session) {
       syncSession(data.session.access_token);
     } else {
-      // Email confirmation required
-      $('#register-error').removeClass('alert-danger').addClass('alert-success').text('Account created! Please check your email to confirm your account.').removeClass('d-none');
-      $(this).prop('disabled', false).html('Create Account');
+      const identities = data?.user?.identities || [];
+      const existingAuthUser = data?.user && identities.length === 0;
+
+      if (existingAuthUser) {
+        await resendSignupConfirmation();
+      } else {
+        $('#register-error')
+          .removeClass('alert-danger')
+          .addClass('alert-success')
+          .text('Account created! Please check your email to confirm your account.')
+          .removeClass('d-none');
+      }
     }
+
+    $(this).prop('disabled', false).html('Create Account');
   });
 
-  // Forgot Password via Supabase
+  // Forgot Password via backend Resend email
   $('#forgot-btn').on('click', async function () {
-    if (!supabaseClient) return;
-
     const email = $('#forgot-email').val().trim();
     if (!email) { $('#forgot-error').text('Please provide an email.').removeClass('d-none'); return; }
     $('#forgot-error, #forgot-message').addClass('d-none');
     $(this).prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i> Sending...');
-    const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
-      redirectTo: window.location.origin + '/login.html',
+
+    $.ajax({
+      url: '/api/auth/forgot-password',
+      type: 'POST',
+      contentType: 'application/json',
+      data: JSON.stringify({ email }),
+      success: function (res) {
+        $('#forgot-message').text(res.message || 'If an account exists, a password reset link has been sent.').removeClass('d-none');
+      },
+      error: function (err) {
+        $('#forgot-error').text(err.responseJSON?.error || 'Could not send reset link. Please try again.').removeClass('d-none');
+      },
+      complete: function () {
+        $('#forgot-btn').prop('disabled', false).html('Send Reset Link');
+      }
     });
-    if (error) {
-      $('#forgot-error').text(error.message).removeClass('d-none');
-    } else {
-      $('#forgot-message').text('If an account exists, a password reset link has been sent.').removeClass('d-none');
-    }
-    $(this).prop('disabled', false).html('Send Reset Link');
   });
 
   // Update Password via Supabase (after redirect from reset email)
